@@ -8,7 +8,7 @@ redirect_from:
 ---
 Hello!
 
-I am an incoming Ph.D. student at Stanford University and a recipient of the NSF Graduate Research Fellowship. Broadly, my research interests center around
+I am an incoming Ph.D. student at Stanford University and a recipient of the NSF Graduate Research Fellowship. My research interests center around
 
 (1) building safe AI systems that do what humans actually want.\\
 (2) preventing unsafe decision-making systems from being deployed. 
