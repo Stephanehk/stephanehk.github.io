@@ -21,14 +21,14 @@ repository               : "academicpages/stephanehk.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "mountain_profile.png"
+  avatar           : "profile_pic_cistern_cropped.png"
   name             : "Stephane Hatgis-Kessell"
   pronouns         : # example: "she/her"  
   bio              : "Incoming Ph.D. student @ Stanford"
   location         : "California"
   employer         : "Stanford University"
   uri              : # URL
-  email            : "stephane@utexas.edu" 
+  email            : "stephhk@stanford.edu" 
 
   # Academic websites
   arxiv            : # URL - Update with the correct link to your profile
