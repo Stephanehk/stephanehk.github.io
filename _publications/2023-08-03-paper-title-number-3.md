@@ -1,5 +1,5 @@
 ---
-title: "A New Model of Human Preferences For Learning Reward Functions"
+title: "A new model of human preferences for learning reward functions"
 collection: publications
 permalink: /publication/2023-08-02-paper-title-number-3
 # excerpt: 'This paper is about fixing template issue #693.'
