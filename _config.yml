@@ -21,7 +21,7 @@ repository               : "academicpages/stephanehk.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile_pic_cistern_cropped.png"
+  avatar           : "raghads_pic.png"
   name             : "Stephane Hatgis-Kessell"
   pronouns         : # example: "she/her"  
   bio              : "Ph.D. student @ Stanford"
