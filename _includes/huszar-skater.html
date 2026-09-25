@@ -3,7 +3,12 @@
   Six poses traced off the original canvas, played in stride order.
   Figure only -- no painted ground, no frame.
 {% endcomment %}
-<div class="hz-skater" id="hz-skater" aria-hidden="true">
+<div class="hz-skater" id="hz-skater">
+  <a class="hz-link"
+     href="https://www.kunstmuseum.nl/en/collection/composition-ii-skaters"
+     target="_blank" rel="noopener noreferrer"
+     title="Vilmos Huszar, Composition II (Skaters), February 1917 - Kunstmuseum Den Haag"
+     aria-label="Vilmos Huszar, Composition II (Skaters), 1917, at Kunstmuseum Den Haag">
   <svg id="hz-svg" xmlns="http://www.w3.org/2000/svg"
        viewBox="-93 -36 512 520" preserveAspectRatio="xMidYMid meet">
     <defs>
@@ -13,8 +18,9 @@
                            xChannelSelector="R" yChannelSelector="G"/>
       </filter>
     </defs>
-    <g id="hz-figure" filter="url(#hz-brush)"></g>
+    <g id="hz-figure" class="hz-fig" filter="url(#hz-brush)"></g>
   </svg>
+  </a>
 </div>
 
 <style>
@@ -25,7 +31,11 @@
   @media (min-width: 925px){
     .hz-skater{ display:block; width:100%; margin:1em 0 0; }
   }
+  .hz-link{ display:block; width:100%; height:100%; }
+  .hz-link:hover .hz-fig{ opacity:.72; }
+  .hz-link:focus-visible{ outline:2px solid #b0392a; outline-offset:4px; }
   .hz-skater svg{ display:block; width:95%; height:100%; margin:0 auto; overflow:visible; }
+  .hz-fig{ transition:opacity .18s ease; }
 </style>
 
 <script>
