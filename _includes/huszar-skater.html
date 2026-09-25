@@ -18,7 +18,13 @@
 </div>
 
 <style>
-  .hz-skater{ width:100%; margin:1.25em 0 0.5em; }
+  /* The sidebar is only a real column at $large (925px); below that the
+     theme collapses the link list into a popover, so there is no
+     "remaining vertical space" to fill and the figure stays hidden. */
+  .hz-skater{ display:none; }
+  @media (min-width: 925px){
+    .hz-skater{ display:block; width:100%; margin:1em 0 0; }
+  }
   .hz-skater svg{ display:block; width:100%; height:100%; overflow:visible; }
 </style>
 
@@ -93,8 +99,10 @@
     });
   }
 
-  /* Take three quarters of the vertical space left below this point. */
+  /* Take three quarters of the vertical space left below this point.
+     Skipped while hidden (narrow screens), re-run if the window grows. */
   function size(){
+    if (!wrap.offsetParent) return;
     var top = wrap.getBoundingClientRect().top + window.pageYOffset;
     wrap.style.height = Math.max(240, 0.75 * (window.innerHeight - top)) + 'px';
   }
