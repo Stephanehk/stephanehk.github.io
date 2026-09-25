@@ -1,0 +1,115 @@
+{% comment %}
+  Animated figure after Vilmos Huszar, "Composition II (Skaters)", Feb 1917.
+  Six poses traced off the original canvas, played in stride order.
+  Figure only -- no painted ground, no frame.
+{% endcomment %}
+<div class="hz-skater" id="hz-skater" aria-hidden="true">
+  <svg id="hz-svg" xmlns="http://www.w3.org/2000/svg"
+       viewBox="-95 -36 432 520" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <filter id="hz-brush" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="3" result="w"/>
+        <feDisplacementMap in="SourceGraphic" in2="w" scale="3.4"
+                           xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+    <g id="hz-figure" filter="url(#hz-brush)"></g>
+  </svg>
+</div>
+
+<style>
+  .hz-skater{ width:100%; margin:1.25em 0 0.5em; }
+  .hz-skater svg{ display:block; width:100%; height:100%; overflow:visible; }
+</style>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var C  = { h:'#17150f', t:'#1e6244', r:'#b0392a', k:'#17150f' };
+
+  /* Parts are [kind, x, y, w, h]. The green torso is pinned at
+     (120,60,86,158) in every pose -- that is how the painting works,
+     torso fixed, everything else migrating around it. Mirror axis is
+     its centre, 163, so 2*163 = 326. */
+  var TORSO = ['t',120,60,86,158];
+  function mirror(p){
+    return p.map(function(a){ return [a[0], 326-a[1]-a[3], a[2], a[3], a[4]]; });
+  }
+
+  var POSES = [
+    /* contact -- legs apart, lead leg planted forward */
+    [ ['h',230, -3, 95, 50], TORSO,
+      ['r', 35,174, 65, 33], ['r', 60,222, 35, 85], ['r',125,225, 35,152],
+      ['k', 17,340, 84, 29], ['k', 77,402, 88, 30] ],
+
+    /* weight shift -- trailing leg still down, lead leg long */
+    [ ['h',220, -8, 90, 58], TORSO,
+      ['r', 20,178, 75, 37], ['r', 50,230, 38, 80], ['r',118,230, 37,145],
+      ['k',  0,335, 85, 35], ['k', 55,405,105, 30] ],
+
+    /* push-off -- back leg thrown out flat behind */
+    mirror(
+    [ ['h', 30,-10, 70, 60], TORSO,
+      ['r',215,143, 43, 64], ['r',160,215, 38,135], ['r',218,225, 84, 35],
+      ['k',330,218, 38, 85], ['k',108,385, 92, 30] ]),
+
+    /* glide -- full extension */
+    [ ['h',218,-26, 93, 68], TORSO,
+      ['r', 55,165, 48, 55], ['r',-15,248,118, 50], ['r',127,245, 46,187],
+      ['k',-83,248, 36,107], ['k',123,438,112, 34] ],
+
+    /* recovery -- rear leg folded up off the ice */
+    mirror(
+    [ ['h', 13,-19, 90, 52], TORSO,
+      ['r',213,153, 60, 35], ['r',150,200, 40,153], ['r',218,198, 35, 80],
+      ['k',215,285, 72, 33], ['k',145,370, 90, 30] ]),
+
+    /* passing -- legs nearly together underneath */
+    mirror(
+    [ ['h', 13,-14, 97, 52], TORSO,
+      ['r',213,170, 75, 38], ['r',150,236, 40,137], ['r',217,226, 36,132],
+      ['k',188,388, 88, 30], ['k',122,372, 80, 28] ])
+  ];
+
+  /* Stable per-slot wobble, so the rectangles sit slightly off-square
+     the way the brushed originals do -- without jittering frame to frame. */
+  var TILT = [0.5,-0.4,0.7,-0.6,0.35,-0.75,0.55];
+
+  var wrap = document.getElementById('hz-skater');
+  var g    = document.getElementById('hz-figure');
+  if (!wrap || !g) return;
+
+  function draw(pose){
+    while (g.firstChild) g.removeChild(g.firstChild);
+    pose.forEach(function(p, i){
+      var r = document.createElementNS(NS,'rect');
+      r.setAttribute('x',p[1]); r.setAttribute('y',p[2]);
+      r.setAttribute('width',p[3]); r.setAttribute('height',p[4]);
+      r.setAttribute('fill', C[p[0]]);
+      r.setAttribute('transform',
+        'rotate(' + TILT[i % TILT.length] + ' ' +
+        (p[1]+p[3]/2) + ' ' + (p[2]+p[4]/2) + ')');
+      g.appendChild(r);
+    });
+  }
+
+  /* Take three quarters of the vertical space left below this point. */
+  function size(){
+    var top = wrap.getBoundingClientRect().top + window.pageYOffset;
+    wrap.style.height = Math.max(240, 0.75 * (window.innerHeight - top)) + 'px';
+  }
+  size();
+  window.addEventListener('resize', size);
+
+  var i = 0;
+  draw(POSES[0]);
+
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (still && still.matches) return;
+
+  setInterval(function(){
+    i = (i + 1) % POSES.length;
+    draw(POSES[i]);
+  }, 150);
+})();
+</script>
