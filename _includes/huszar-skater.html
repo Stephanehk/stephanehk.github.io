@@ -107,7 +107,12 @@
     wrap.style.height = Math.max(240, 0.75 * (window.innerHeight - top)) + 'px';
   }
   size();
+  /* The avatar above has no intrinsic size until it loads, so the first
+     measurement lands too high on the page. Re-measure once everything
+     that can shift our offset has settled. */
+  window.addEventListener('load', size);
   window.addEventListener('resize', size);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
 
   var i = 0;
   draw(POSES[0]);
