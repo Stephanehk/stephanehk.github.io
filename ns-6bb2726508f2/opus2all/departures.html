@@ -1,0 +1,80 @@
+---
+sitemap: false
+layout: null
+---
+{% raw %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"></head><body>
+<title>Flash Departures 578</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>:root{--ground:#f1f3f5;--ink:#1a222c;--muted:#5c6a78;--paper:#fcfcfb;--rule:#d8dfe6} @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#10151b;--ink:#e4e9ee;--muted:#95a3b1;--paper:#1a1a19;--rule:#2a3540;color-scheme:dark}} :root[data-theme="dark"]{--ground:#10151b;--ink:#e4e9ee;--muted:#95a3b1;--paper:#1a1a19;--rule:#2a3540;color-scheme:dark}
+body{background:var(--ground);color:var(--ink);font:16px/1.55 Georgia,serif;margin:0;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto} h1{margin:0 0 8px} .lede{color:var(--muted);max-width:72ch} pre{background:var(--paper);border:1px solid var(--rule);padding:12px;overflow-x:auto;font-size:.8rem;line-height:1.4}</style>
+<div class="wrap"><h1>Flash Departures</h1><p class="lede">Among vignettes where the experts hold back (at least 3, or all 5, of the schools take no position), how often Flash still takes a stance, for each value of each situation dimension against all other vignettes. Fisher's exact test, odds ratio, and a Benjamini–Hochberg q over all values tested. Opus experts on the updated prompt, all 576 vignettes with Flash labels.</p><h2>At least 3 of 5 schools take no position</h2><pre>
+==== action_guidance: at least 3 of 5 schools take no position on 404 vignettes; Flash takes a stance on 306 of them
+   interaction_goal                      =normative_judgment           departs 118/120 (98%) vs 188/284 (66%)  OR 30.13  p 0.000 q 0.00
+   interaction_goal                      =executing_writing            departs 31/59 (53%) vs 275/345 (80%)  OR 0.28  p 0.000 q 0.00
+   interaction_goal                      =understanding_self_or_others departs 98/149 (66%) vs 208/255 (82%)  OR 0.43  p 0.000 q 0.01
+   lm_verdict                            =not_applicable               departs 6/16 (38%) vs 300/388 (77%)  OR 0.18  p 0.001 q 0.02
+   lm_verdict_confidence                 =not_applicable               departs 6/16 (38%) vs 300/388 (77%)  OR 0.18  p 0.001 q 0.02
+   user_normative_significance_external  =3                            departs 112/162 (69%) vs 194/242 (80%)  OR 0.55  p 0.013 q 0.14
+   user_pleasantness                     =2                            departs 57/87 (66%) vs 249/317 (79%)  OR 0.52  p 0.016 q 0.14
+   user_problem_focused_coping           =2                            departs 48/54 (89%) vs 258/350 (74%)  OR 2.85  p 0.016 q 0.14
+   action_phase                          =deliberation                 departs 82/121 (68%) vs 224/283 (79%)  OR 0.55  p 0.016 q 0.14
+   lm_normative_significance_external    =2                            departs 38/42 (90%) vs 268/362 (74%)  OR 3.33  p 0.021 q 0.15
+   user_normative_significance_external  =2                            departs 38/42 (90%) vs 268/362 (74%)  OR 3.33  p 0.021 q 0.15
+   user_pleasantness                     =1                            departs 186/233 (80%) vs 120/171 (70%)  OR 1.68  p 0.034 q 0.22
+   user_problem_focused_coping           =3                            departs 134/189 (71%) vs 172/215 (80%)  OR 0.61  p 0.037 q 0.22
+   action_phase                          =evaluation                   departs 146/181 (81%) vs 160/223 (72%)  OR 1.64  p 0.047 q 0.25
+   user_loss                             =3                            departs 130/183 (71%) vs 176/221 (80%)  OR 0.63  p 0.048 q 0.25
+
+==== framing_guidance: at least 3 of 5 schools take no position on 310 vignettes; Flash takes a stance on 269 of them
+   interaction_goal                      =executing_writing            departs 40/73 (55%) vs 229/237 (97%)  OR 0.04  p 0.000 q 0.00
+   interaction_goal                      =normative_judgment           departs 100/100 (100%) vs 169/210 (80%)  OR inf  p 0.000 q 0.00
+   interaction_goal                      =understanding_self_or_others departs 76/76 (100%) vs 193/234 (82%)  OR inf  p 0.000 q 0.00
+   user_loss                             =1                            departs 138/150 (92%) vs 131/160 (82%)  OR 2.55  p 0.011 q 0.22
+   user_loss                             =3                            departs 103/127 (81%) vs 166/183 (91%)  OR 0.44  p 0.017 q 0.26
+   user_problem_focused_coping           =1                            departs 98/106 (92%) vs 171/204 (84%)  OR 2.36  p 0.035 q 0.44
+   user_problem_focused_coping           =3                            departs 145/174 (83%) vs 124/136 (91%)  OR 0.48  p 0.045 q 0.44
+   lm_loss                               =1                            departs 131/144 (91%) vs 138/166 (83%)  OR 2.04  p 0.045 q 0.44
+   user_attentional_activity             =1                            departs 77/83 (93%) vs 192/227 (85%)  OR 2.34  p 0.061 q 0.53
+   lm_loss                               =3                            departs 110/133 (83%) vs 159/177 (90%)  OR 0.54  p 0.089 q 0.65
+   user_fairness                         =1                            departs 125/138 (91%) vs 144/172 (84%)  OR 1.87  p 0.092 q 0.65
+   action_phase                          =planning                     departs 72/88 (82%) vs 197/222 (89%)  OR 0.57  p 0.136 q 0.84
+   lm_accountability_self                =2                            departs 29/30 (97%) vs 240/280 (86%)  OR 4.83  p 0.151 q 0.84
+   user_accountability_self              =2                            departs 29/30 (97%) vs 240/280 (86%)  OR 4.83  p 0.151 q 0.84
+   user_accountability_other             =3                            departs 138/154 (90%) vs 131/156 (84%)  OR 1.65  p 0.180 q 0.89
+</pre><h2>At least 5 of 5 schools take no position</h2><pre>
+==== action_guidance: at least 5 of 5 schools take no position on 171 vignettes; Flash takes a stance on 123 of them
+   interaction_goal                      =normative_judgment           departs 49/51 (96%) vs 74/120 (62%)  OR 15.23  p 0.000 q 0.00
+   interaction_goal                      =executing_writing            departs 7/19 (37%) vs 116/152 (76%)  OR 0.18  p 0.001 q 0.03
+   user_problem_focused_coping           =2                            departs 19/19 (100%) vs 104/152 (68%)  OR inf  p 0.002 q 0.03
+   lm_verdict                            =not_applicable               departs 2/9 (22%) vs 121/162 (75%)  OR 0.10  p 0.002 q 0.03
+   lm_verdict_confidence                 =not_applicable               departs 2/9 (22%) vs 121/162 (75%)  OR 0.10  p 0.002 q 0.03
+   action_phase                          =deliberation                 departs 40/68 (59%) vs 83/103 (81%)  OR 0.34  p 0.003 q 0.04
+   action_phase                          =evaluation                   departs 57/68 (84%) vs 66/103 (64%)  OR 2.90  p 0.005 q 0.06
+   user_pleasantness                     =2                            departs 21/37 (57%) vs 102/134 (76%)  OR 0.41  p 0.024 q 0.24
+   user_novelty                          =3                            departs 50/78 (64%) vs 73/93 (78%)  OR 0.49  p 0.042 q 0.36
+   lm_verdict                            =1                            departs 56/70 (80%) vs 67/101 (66%)  OR 2.03  p 0.058 q 0.45
+   user_pleasantness                     =1                            departs 71/91 (78%) vs 52/80 (65%)  OR 1.91  p 0.063 q 0.45
+   user_normative_significance_external  =3                            departs 45/69 (65%) vs 78/102 (76%)  OR 0.58  p 0.121 q 0.60
+   interaction_goal                      =understanding_self_or_others departs 47/72 (65%) vs 76/99 (77%)  OR 0.57  p 0.121 q 0.60
+   user_novelty                          =1                            departs 55/70 (79%) vs 68/101 (67%)  OR 1.78  p 0.122 q 0.60
+   user_goal_conduciveness               =3                            departs 66/85 (78%) vs 57/86 (66%)  OR 1.77  p 0.126 q 0.60
+
+==== framing_guidance: at least 5 of 5 schools take no position on 53 vignettes; Flash takes a stance on 39 of them
+   interaction_goal                      =executing_writing            departs 8/20 (40%) vs 31/33 (94%)  OR 0.04  p 0.000 q 0.00
+   interaction_goal                      =understanding_self_or_others departs 11/11 (100%) vs 28/42 (67%)  OR inf  p 0.026 q 0.83
+   interaction_goal                      =normative_judgment           departs 10/10 (100%) vs 29/43 (67%)  OR inf  p 0.047 q 0.90
+   user_problem_focused_coping           =1                            departs 8/8 (100%) vs 31/45 (69%)  OR inf  p 0.093 q 0.90
+   lm_loss                               =2                            departs 2/5 (40%) vs 37/48 (77%)  OR 0.20  p 0.108 q 0.90
+   user_loss                             =2                            departs 2/5 (40%) vs 37/48 (77%)  OR 0.20  p 0.108 q 0.90
+   user_fairness                         =1                            departs 18/21 (86%) vs 21/32 (66%)  OR 3.14  p 0.125 q 0.90
+   user_loss                             =1                            departs 21/25 (84%) vs 18/28 (64%)  OR 2.92  p 0.129 q 0.90
+   user_problem_focused_coping           =3                            departs 28/41 (68%) vs 11/12 (92%)  OR 0.20  p 0.148 q 0.90
+   user_normative_significance_external  =3                            departs 11/18 (61%) vs 28/35 (80%)  OR 0.39  p 0.191 q 0.90
+   user_normative_significance_external  =1                            departs 26/32 (81%) vs 13/21 (62%)  OR 2.67  p 0.202 q 0.90
+   lm_accountability_self                =3                            departs 16/25 (64%) vs 23/28 (82%)  OR 0.39  p 0.212 q 0.90
+   user_accountability_self              =3                            departs 16/25 (64%) vs 23/28 (82%)  OR 0.39  p 0.212 q 0.90
+   lm_loss                               =1                            departs 19/23 (83%) vs 20/30 (67%)  OR 2.38  p 0.225 q 0.90
+   user_goal_conduciveness               =2                            departs 10/11 (91%) vs 29/42 (69%)  OR 4.48  p 0.251 q 0.90
+</pre></div>
+</body></html>{% endraw %}
