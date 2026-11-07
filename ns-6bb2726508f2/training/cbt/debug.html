@@ -101,7 +101,7 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 
 /* Principle cards. */
 .principle-teaches { font-size: 18px; line-height: 1.5; }
-.principle-text { margin: 0; font-size: clamp(28px, 3.8vw, 42px); font-weight: 600; line-height: 1.3; letter-spacing: -0.02em; }
+.principle-text { margin: 0; font-size: clamp(19px, 2.3vw, 25px); font-weight: 600; line-height: 1.45; }
 .principle-quote {
   margin: 4px 0 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px;
   background: rgba(122, 111, 159, 0.08); font-size: 15.5px; line-height: 1.45; color: var(--ink);
@@ -231,6 +231,16 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
   .lucky-bee, .lucky-bee .lucky-bee-wing, .lucky-bee .lucky-bee-arm--wave, .lucky-flower,
   .lucky-garden .lucky-butterfly, .lucky-garden .lucky-butterfly-wing, .lucky-chat-bubble { animation: none; }
 }
+
+/* One response dimension per page: the name, a one-line definition, the answer choices. */
+.dim-page-name { margin: 0; font-size: clamp(22px, 2.8vw, 30px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.dim-page-def { margin: 0; font-size: 17px; color: var(--ink-soft); line-height: 1.45; }
+.dim-page-choices { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.dim-page-choices li { padding: 10px 14px; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--surface-strong); font-size: 15.5px; line-height: 1.4; }
+.dim-page-choices li b { font-weight: 700; }
+.dim-page-choices--inline { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 320px; }
+.dim-page-choices--inline li { text-align: center; font-weight: 700; }
+.survey-card-body > .dim-tag { justify-self: start; }
 
 </style>
   </head>
@@ -523,7 +533,7 @@ const QUIZ1 = [
   },
   {
     id: "CBT-A",
-    stem: "Which of these describes how a CBT counselor examines a doubtful thought?",
+    stem: "How does a CBT counselor handle a thought that the counselor believes is mistaken?",
     cbt: [
       "The counselor examines the thought with the person through questions, such as what the evidence is and whether there is another explanation, and only rarely contradicts it outright.",
       "The counselor rarely says a thought is wrong; instead it is tested together through questions rather than argued down.",
@@ -1069,7 +1079,7 @@ function renderQ1(i) {
     eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}`;
   } else {
     options = [
-      { text: q.cbt[(attempt - 1) % q.cbt.length], correct: true, source: q.id },
+      { text: q.cbt[0], correct: true, source: q.id },
       ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source })),
     ];
     eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
@@ -1086,10 +1096,9 @@ function renderQ1(i) {
 function q1Score(attempt) {
   return Q1_ITEMS.filter(({ q }) => (state.q1.answers[`${q.id}@${attempt}`] || {}).correct).length;
 }
-// The principle a quiz-1 item is about (strength items point at a claim).
-const q1Claim = ({ kind, q }) => (kind === "strength" ? q.claim : q.id);
 
-function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onRetake, onSkipReview, onExit, retakeLabel, attempt }) {
+
+function resultScreen({ step, score, total, pass, passLabel, onPass, onRetake, onExit, retakeLabel, attempt }) {
   screen({ step, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
@@ -1097,16 +1106,8 @@ function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onR
   const sc = el("div", "score"); sc.append(`${score} / ${total}`, el("small", null, pass ? "passed" : "not yet"));
   body.appendChild(sc);
   body.appendChild(el("p", "survey-signpost-text", pass ? passLabel : attempt < THRESHOLDS.attempts
-    ? "Not quite there. Have another look at the principles you missed, then try the quiz again with fresh wording."
+    ? "Not quite there. Try the quiz again."
     : "That is the second attempt, so the study ends here. Thank you for your time."));
-  if (missed.length) {
-    const list = el("ul", "review-list");
-    for (const m of missed) {
-      const li = el("li"); li.append(el("span", "mark mark--bad", "✗"), m);
-      list.appendChild(li);
-    }
-    body.appendChild(list);
-  }
   card.appendChild(body);
   if (pass) { const n = button("Next →"); n.addEventListener("click", onPass); card.appendChild(nav(n)); }
   else {
@@ -1115,7 +1116,6 @@ function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onR
     else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
     if (DEBUG) {
       const c = button("Continue past this quiz (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c);
-      if (onSkipReview && attempt < THRESHOLDS.attempts) { const r = button("Retake without review (debug) →", true); r.addEventListener("click", onSkipReview); buttons.unshift(r); }
     }
     card.appendChild(nav(...buttons));
   }
@@ -1126,149 +1126,102 @@ function renderQ1Result() {
   const attempt = state.q1.attempt;
   const score = q1Score(attempt);
   const pass = score >= THRESHOLDS.quiz1Pass;
-  const missedIds = [...new Set(Q1_ITEMS.filter(({ q }) => !(state.q1.answers[`${q.id}@${attempt}`] || {}).correct).map(q1Claim))];
-  state.q1.missed = missedIds;
   if (pass) state.critters = Math.max(state.critters, 2);
   save();
   resultScreen({
     step: 2, score, total: Q1_ITEMS.length, pass, attempt,
     passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the questions we ask about responses.`,
-    missed: missedIds.map((id) => `Principle ${cardNumber(id)}: ${cardById[id].teaches}`),
     onPass: () => go("dims:0"),
-    retakeLabel: "Review the missed principles →",
-    onRetake: () => { state.q1.attempt += 1; go("q1review:0"); },
-    onSkipReview: () => { state.q1.attempt += 1; go("q1:0"); },
+    retakeLabel: "Retake the quiz →",
+    onRetake: () => { state.q1.attempt += 1; go("q1:0"); },
     onExit: () => go("exit"),
   });
 }
 
-// Before a retake: the missed principles' cards again, one per page.
-function renderQ1Review(i) {
-  const missed = state.q1.missed || [];
-  if (!missed.length) return go("q1:0");
-  const id = missed[i];
-  screen({ step: 2, frac: 0 });
-  const card = principleCard(cardById[id], cardNumber(id) - 1);
-  const next = button(i === missed.length - 1 ? "Retake the quiz →" : "Next →");
-  next.addEventListener("click", () => go(i === missed.length - 1 ? "q1:0" : `q1review:${i + 1}`));
-  card.appendChild(nav(next));
-  bodyEl.appendChild(card);
-}
-
 // ---------------------------------------------------------------------------
-// Stage 2: response dimensions.
+// Stage 2: response dimensions. One sentence, then one page per dimension (name,
+// one-line definition, answer choices), then how to read the situation.
 
 function principleTag(ids) {
   return ids.map((id) => `Principle ${cardNumber(id)}`).join(" · ");
 }
 
-function dimsScreen0() {
-  screen({ step: 3, frac: 0.1 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Response dimensions · 1 of 4"));
-  card.appendChild(el("h2", null, "What we will ask about each response"));
-  const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "principle-teaches", "In the main task you will read a person’s situation and their message to an AI assistant, then say how a CBT counselor would respond, using eleven questions about the response:"));
-  const list = el("ul", "notes");
-  list.append(
-    el("li", null, "Nine yes/no questions: which emotional support strategies the response should include (for example, Validation, Questioning, Advice)."),
-    el("li", null, "Two stance questions: which stance the response should lead with toward the person’s action, and toward how the person reads the situation."),
-  );
-  body.appendChild(list);
-  body.appendChild(el("p", "callout", "Four of the strategies and one of the stances are constrained by the CBT principles you just learned. The next pages show which ones, and how."));
-  card.appendChild(body);
-  const back = button("← Back", true); back.addEventListener("click", () => go("q1result"));
-  const next = button("Next →"); next.addEventListener("click", () => go("dims:1"));
+const DIM_PAGES = [
+  ...TACTICS.map((tactic) => ({ kind: "tactic", tactic })),
+  ...STANCES.map((stance) => ({ kind: "stance", stance })),
+];
+const DIMS_TOTAL = DIM_PAGES.length + 2; // intro + dimensions + reading the situation
+
+function dimsNav(card, i) {
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(i === 0 ? "q1result" : `dims:${i - 1}`));
+  const next = button("Next →");
+  next.addEventListener("click", () => {
+    if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("q2intro"); }
+    else go(`dims:${i + 1}`);
+  });
   card.appendChild(nav(back, next));
-  bodyEl.appendChild(card);
 }
 
-function dimsScreen1() {
-  screen({ step: 3, frac: 0.35 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Response dimensions · 2 of 4"));
-  card.appendChild(el("h2", null, "The nine support strategies"));
-  const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "survey-signpost-sub", "Each is a yes/no: does the response include it anywhere? Highlighted ones are constrained by a CBT principle."));
-  const list = el("div", "dim-list");
-  for (const t of TACTICS) {
-    const d = el("div", `dim${t.cbt ? " dim--cbt" : ""}`);
-    const head = el("div", "dim-head"); head.appendChild(el("span", "dim-name", t.name));
-    if (t.cbt) head.appendChild(el("span", "dim-tag", principleTag(t.cbt)));
-    d.append(head, el("p", "dim-def", t.def), el("p", "dim-ex", `Example: ${t.ex}`));
-    list.appendChild(d);
+function renderDims(i) {
+  if (i === 0) {
+    return signpost({
+      step: 3, frac: 0,
+      text: `In the main task you will read a person’s situation and their message to an AI assistant, then say how a ${SCHOOL.short} counselor would respond, using eleven questions about the response.`,
+      back: () => go("q1result"),
+      next: () => go("dims:1"),
+      withBee: false,
+    });
   }
-  body.appendChild(list);
-  const notes = el("ul", "notes");
-  for (const n of TACTIC_NOTES) notes.appendChild(el("li", null, n));
-  body.appendChild(notes);
+  screen({ step: 3, frac: i / DIMS_TOTAL });
+  const card = el("section", "card survey-card");
+  if (i === DIMS_TOTAL - 1) {
+    card.appendChild(el("div", "card-eyebrow", "Reading the situation"));
+    const body = el("div", "survey-card-body");
+    body.appendChild(el("p", "principle-teaches", "Several principles say “it depends”. What they depend on is in the situation you will read. Before deciding how the counselor responds, answer these questions for yourself:"));
+    const list = el("div", "feature-list");
+    for (const f of SITUATION_FEATURES) {
+      const d = el("div", "feature");
+      d.append(el("div", "q", f.q), el("p", "d", f.detail), el("p", "w", f.why));
+      list.appendChild(d);
+    }
+    body.appendChild(list);
+    card.appendChild(body);
+    dimsNav(card, i);
+    bodyEl.appendChild(card);
+    return;
+  }
+  const page = DIM_PAGES[i - 1];
+  card.appendChild(el("div", "card-eyebrow", `Response dimension ${i} of ${DIM_PAGES.length}`));
+  const body = el("div", "survey-card-body");
+  if (page.kind === "tactic") {
+    const t = page.tactic;
+    body.appendChild(el("p", "dim-page-name", t.name));
+    body.appendChild(el("p", "dim-page-def", t.def));
+    body.appendChild(el("p", "dim-page-def", `Example: ${t.ex}`));
+    body.appendChild(el("p", "survey-question-text", "Does the response include it?"));
+    const choices = el("ul", "dim-page-choices dim-page-choices--inline");
+    choices.append(el("li", null, "Yes"), el("li", null, "No"));
+    body.appendChild(choices);
+    if (t.cbt) body.appendChild(el("span", "dim-tag", principleTag(t.cbt)));
+  } else {
+    const s = page.stance;
+    body.appendChild(el("p", "dim-page-name", s.name));
+    body.appendChild(el("p", "dim-page-def", `About ${s.target}.`));
+    body.appendChild(el("p", "survey-question-text", "Which stance should the response lead with?"));
+    const choices = el("ul", "dim-page-choices");
+    for (const o of STANCE_OPTIONS) {
+      const li = el("li");
+      li.append(el("b", null, o.name), ": " + o.def.replace(/\[target\]/g, page.stance === STANCES[0] ? "action" : "framing"));
+      choices.appendChild(li);
+    }
+    body.appendChild(choices);
+    if (s.cbt.length) body.appendChild(el("span", "dim-tag", principleTag(s.cbt)));
+  }
   card.appendChild(body);
-  const back = button("← Back", true); back.addEventListener("click", () => go("dims:0"));
-  const next = button("Next →"); next.addEventListener("click", () => go("dims:2"));
-  card.appendChild(nav(back, next));
+  dimsNav(card, i);
   bodyEl.appendChild(card);
 }
-
-function dimsScreen2() {
-  screen({ step: 3, frac: 0.6 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Response dimensions · 3 of 4"));
-  card.appendChild(el("h2", null, "The two stances"));
-  const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "survey-signpost-sub", "For each stance: which option should the response lead with? Both use the same six options; what differs is the target."));
-  const grid = el("div", "stance-grid");
-  for (const s of STANCES) {
-    const box = el("div", `stance${s.cbt.length ? " stance--cbt" : ""}`);
-    const h = el("h3", null, s.name);
-    box.appendChild(h);
-    if (s.cbt.length) box.appendChild(el("span", "dim-tag", principleTag(s.cbt)));
-    box.appendChild(el("p", "target", `Target: ${s.target}.`));
-    box.appendChild(el("p", "note", s.note));
-    grid.appendChild(box);
-  }
-  body.appendChild(grid);
-  const table = el("table", "option-table");
-  for (const o of STANCE_OPTIONS) {
-    const tr = el("tr");
-    const td1 = el("td"); td1.append(o.name);
-    if (o.group !== "none") td1.appendChild(el("span", `group-pill group-pill--${o.group}`, o.group));
-    const td2 = el("td", null, o.def.replace(/\[target\]/g, "action or framing"));
-    tr.append(td1, td2);
-    table.appendChild(tr);
-  }
-  body.appendChild(table);
-  const notes = el("ul", "notes");
-  for (const n of STANCE_NOTES) notes.appendChild(el("li", null, n));
-  body.appendChild(notes);
-  card.appendChild(body);
-  const back = button("← Back", true); back.addEventListener("click", () => go("dims:1"));
-  const next = button("Next →"); next.addEventListener("click", () => go("dims:3"));
-  card.appendChild(nav(back, next));
-  bodyEl.appendChild(card);
-}
-
-function dimsScreen3() {
-  screen({ step: 3, frac: 0.85 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Response dimensions · 4 of 4"));
-  card.appendChild(el("h2", null, "Reading the situation"));
-  const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "principle-teaches", "Several principles say “it depends”. What they depend on is in the situation you will read. Before deciding how the counselor responds, answer these five questions for yourself:"));
-  const list = el("div", "feature-list");
-  for (const f of SITUATION_FEATURES) {
-    const d = el("div", "feature");
-    d.append(el("div", "q", f.q), el("p", "d", f.detail), el("p", "w", f.why));
-    list.appendChild(d);
-  }
-  body.appendChild(list);
-  card.appendChild(body);
-  const back = button("← Back", true); back.addEventListener("click", () => go("dims:2"));
-  const next = button("Next →"); next.addEventListener("click", () => { state.critters = Math.max(state.critters, 3); go("q2intro"); });
-  card.appendChild(nav(back, next));
-  bodyEl.appendChild(card);
-}
-
-const DIMS_SCREENS = [dimsScreen0, dimsScreen1, dimsScreen2, dimsScreen3];
 
 // ---------------------------------------------------------------------------
 // Quiz 2: which dimension, then which rule.
@@ -1279,7 +1232,7 @@ function renderQ2Intro() {
   signpost({
     step: 4, frac: 0,
     text: "We will now quiz you on how these principles relate to the questions you just saw.",
-    back: () => go("dims:3"),
+    back: () => go(`dims:${DIMS_TOTAL - 1}`),
     next: () => go("q2:0"),
     nextLabel: "Begin →",
   });
@@ -1304,7 +1257,7 @@ function renderQ2(i) {
     eyebrow = `Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
   } else {
     options = [
-      { text: q.rule[(attempt - 1) % q.rule.length], correct: true, source: q.id },
+      { text: q.rule[0], correct: true, source: q.id },
       ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` })),
     ];
     stem = "Which rule follows from this principle?";
@@ -1327,16 +1280,14 @@ function renderQ2Result() {
   const attempt = state.q2.attempt;
   const score = q2Score(attempt);
   const pass = score >= THRESHOLDS.quiz2Pass;
-  const missed = Q2_ITEMS.filter(({ kind, q }) => !(state.q2.answers[`${kind}:${q.id}@${attempt}`] || {}).correct);
   if (pass) state.critters = Math.max(state.critters, 4);
   save();
   resultScreen({
     step: 4, score, total: Q2_ITEMS.length, pass, attempt,
     passLabel: "You know how the principles map onto the questions. You are ready for the main task.",
-    missed: missed.map(({ kind, q }) => `${kind === "dimension" ? "Which dimension" : "Which rule"}, principle ${cardNumber(q.id)}: ${cardById[q.id].teaches}`),
     onPass: () => go("done"),
     retakeLabel: "Retake the quiz →",
-    onRetake: () => { state.q2.attempt += 1; go("dims:1"); },
+    onRetake: () => { state.q2.attempt += 1; go("q2:0"); },
     onExit: () => go("exit"),
   });
 }
@@ -1399,8 +1350,7 @@ function render() {
     case "q1intro": return renderQ1Intro();
     case "q1": return renderQ1(i);
     case "q1result": return renderQ1Result();
-    case "q1review": return renderQ1Review(i);
-    case "dims": return DIMS_SCREENS[i]();
+    case "dims": return renderDims(i);
     case "q2intro": return renderQ2Intro();
     case "q2": return renderQ2(i);
     case "q2result": return renderQ2Result();
