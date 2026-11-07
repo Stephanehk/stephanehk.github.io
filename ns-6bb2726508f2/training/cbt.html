@@ -536,7 +536,7 @@ const QUIZ1 = [
   },
   {
     id: "CBT-G",
-    stem: "Which of these describes the place of questions in a CBT counselor’s responses?",
+    stem: "How does a CBT counselor use questions?",
     cbt: [
       "The counselor asks questions in most responses to guide the person to new perspectives, but also explains, summarizes, and suggests; questions are one tool among several.",
       "Guided discovery runs on questions, so most responses include one, but the counselor does not rely on questioning alone.",
@@ -592,7 +592,7 @@ const QUIZ1 = [
   },
 ];
 
-// Quiz 1 warm-ups on the strength of a principle (feedback only, not scored).
+// Quiz 1 strength items: how strong a principle is (scored like the rest).
 const QUIZ1_STRENGTH = [
   {
     id: "S-G",
@@ -796,7 +796,7 @@ const QUIZ2_RULE = [
 ];
 
 const THRESHOLDS = {
-  quiz1Pass: 6, // of the 7 principle items (strength warm-ups are not scored)
+  quiz1Pass: 8, // of the 10 items (3 strength items + 7 principle items)
   quiz2Pass: 12, // of 14
   attempts: 2,
 };
@@ -821,6 +821,7 @@ const state = {
 };
 
 function save() { /* no persistence */ }
+try { localStorage.removeItem(`ns-training-${SCHOOL.key}`); } catch (e) { /* ignore */ }
 
 // Deterministic shuffle keyed on item and attempt, so Back re-shows the same order.
 function seededOrder(n, seedText) {
@@ -865,7 +866,7 @@ function setHero({ eyebrow, title, lede, step, frac }) {
 function screen(opts) {
   bodyEl.innerHTML = "";
   for (const g of document.body.querySelectorAll(".lucky-garden")) g.remove();
-  document.body.appendChild(luckyGardenRow(state.critters));
+  document.body.appendChild(luckyGardenRow(0));
   setHero(opts);
   window.scrollTo(0, 0);
 }
@@ -911,7 +912,7 @@ function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee
 function renderWelcome() {
   signpost({
     step: 0, frac: 0,
-    text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who brings them a difficult situation.`,
+    text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who asks about an interpersonal conflict.`,
     next: () => go("apply"),
     nextLabel: "Start →",
   });
@@ -920,7 +921,7 @@ function renderWelcome() {
 function renderApply() {
   signpost({
     step: 0, frac: 0.5,
-    text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like.",
+    text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like under this counseling discipline.",
     back: () => go("welcome"),
     next: () => go("intro"),
   });
@@ -1033,7 +1034,7 @@ function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature,
   next.addEventListener("click", onNext);
   const n = nav(back, el("span", "spacer"), check, next);
   if (DEBUG) {
-    const skip = button("Skip (debug) →", true);
+    const skip = button("Skip question (debug) →", true);
     skip.addEventListener("click", onNext);
     n.insertBefore(skip, check);
   }
@@ -1082,10 +1083,12 @@ function renderQ1(i) {
 }
 
 function q1Score(attempt) {
-  return QUIZ1.filter((q) => (state.q1.answers[`${q.id}@${attempt}`] || {}).correct).length;
+  return Q1_ITEMS.filter(({ q }) => (state.q1.answers[`${q.id}@${attempt}`] || {}).correct).length;
 }
+// The principle a quiz-1 item is about (strength items point at a claim).
+const q1Claim = ({ kind, q }) => (kind === "strength" ? q.claim : q.id);
 
-function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onRetake, onExit, retakeLabel, attempt }) {
+function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onRetake, onSkipReview, onExit, retakeLabel, attempt }) {
   screen({ step, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
@@ -1109,7 +1112,10 @@ function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onR
     const buttons = [];
     if (attempt < THRESHOLDS.attempts) { const r = button(retakeLabel); r.addEventListener("click", onRetake); buttons.push(r); }
     else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
-    if (DEBUG) { const c = button("Continue anyway (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c); }
+    if (DEBUG) {
+      const c = button("Continue past this quiz (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c);
+      if (onSkipReview && attempt < THRESHOLDS.attempts) { const r = button("Retake without review (debug) →", true); r.addEventListener("click", onSkipReview); buttons.unshift(r); }
+    }
     card.appendChild(nav(...buttons));
   }
   bodyEl.appendChild(card);
@@ -1119,17 +1125,18 @@ function renderQ1Result() {
   const attempt = state.q1.attempt;
   const score = q1Score(attempt);
   const pass = score >= THRESHOLDS.quiz1Pass;
-  const missedIds = QUIZ1.filter((q) => !(state.q1.answers[`${q.id}@${attempt}`] || {}).correct).map((q) => q.id);
+  const missedIds = [...new Set(Q1_ITEMS.filter(({ q }) => !(state.q1.answers[`${q.id}@${attempt}`] || {}).correct).map(q1Claim))];
   state.q1.missed = missedIds;
   if (pass) state.critters = Math.max(state.critters, 2);
   save();
   resultScreen({
-    step: 2, score, total: QUIZ1.length, pass, attempt,
+    step: 2, score, total: Q1_ITEMS.length, pass, attempt,
     passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the questions we ask about responses.`,
     missed: missedIds.map((id) => `Principle ${cardNumber(id)}: ${cardById[id].teaches}`),
     onPass: () => go("dims:0"),
     retakeLabel: "Review the missed principles →",
     onRetake: () => { state.q1.attempt += 1; go("q1review:0"); },
+    onSkipReview: () => { state.q1.attempt += 1; go("q1:0"); },
     onExit: () => go("exit"),
   });
 }
@@ -1142,7 +1149,7 @@ function renderQ1Review(i) {
   screen({ step: 2, frac: 0 });
   const card = principleCard(cardById[id], cardNumber(id) - 1);
   const next = button(i === missed.length - 1 ? "Retake the quiz →" : "Next →");
-  next.addEventListener("click", () => go(i === missed.length - 1 ? `q1:${QUIZ1_STRENGTH.length}` : `q1review:${i + 1}`));
+  next.addEventListener("click", () => go(i === missed.length - 1 ? "q1:0" : `q1review:${i + 1}`));
   card.appendChild(nav(next));
   bodyEl.appendChild(card);
 }
@@ -1347,7 +1354,7 @@ function renderDone() {
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("party"));
   body.appendChild(el("p", "survey-signpost-text", "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
-  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${q1Score(state.q1.attempt)} of ${QUIZ1.length} on attempt ${state.q1.attempt}. Dimensions quiz: ${q2Score(state.q2.attempt)} of ${Q2_ITEMS.length} on attempt ${state.q2.attempt}.`));
+  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${q1Score(state.q1.attempt)} of ${Q1_ITEMS.length} on attempt ${state.q1.attempt}. Dimensions quiz: ${q2Score(state.q2.attempt)} of ${Q2_ITEMS.length} on attempt ${state.q2.attempt}.`));
   const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
   body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
   body.appendChild(ta);
