@@ -805,10 +805,9 @@ const THRESHOLDS = {
     <script>
 // The training flow: welcome -> principle cards -> quiz 1 -> response dimensions ->
 // quiz 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
-// Progress is kept in localStorage (best effort) so a reload resumes the same screen.
+// State lives in memory only: every load starts at the welcome screen (user decision 2026-11-07).
 
 const STEPS = ["Welcome", "Principles", "Quiz", "Response dimensions", "Quiz", "Done"];
-const STORAGE_KEY = `ns-training-${SCHOOL.key}`;
 // Debug mode (jump bar, skip buttons, continue past a failed quiz): ?debug or a /debug path.
 const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
 
@@ -821,19 +820,9 @@ const state = {
   log: [],
 };
 
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
-}
-function restore() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const saved = JSON.parse(raw);
-    if (saved && typeof saved === "object") Object.assign(state, saved);
-  } catch (e) { /* ignore */ }
-}
+function save() { /* no persistence */ }
 
-// Deterministic shuffle so a retake reshuffles but a reload does not.
+// Deterministic shuffle keyed on item and attempt, so Back re-shows the same order.
 function seededOrder(n, seedText) {
   let h = 2166136261;
   for (const ch of seedText) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
@@ -1383,7 +1372,6 @@ function renderExit() {
 }
 
 function resetAll() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
   state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} };
   state.startedAt = new Date().toISOString();
   go("welcome");
@@ -1424,7 +1412,6 @@ if (DEBUG) {
   document.body.appendChild(bar);
 }
 
-restore();
 render();
 
 </script>
