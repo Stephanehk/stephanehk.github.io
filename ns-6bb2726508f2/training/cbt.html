@@ -414,7 +414,8 @@ function luckyGardenRow(critters) {
 
 </script>
     <script>
-// Participant-facing content for the CBT training and checks. Every principle is one
+// Participant-facing content for the CBT training and quizzes. Principle wording is the
+// plain-language claim text from experts/predictions/CLAIMS_AND_TESTS.md with "therapist" -> "counselor". Every principle is one
 // of the core claims used to check the simulated experts (experts/predictions/spec.py);
 // the `id` field is the claim id and is never shown to participants. Foils in the
 // checks are claims from the other schools (`source` names the claim) or, where no
@@ -439,96 +440,55 @@ const CARDS = [
   {
     id: "CBT-F",
     title: "Feelings are always acknowledged; only thoughts are examined",
-    teaches:
-      "The counselor acknowledges and empathizes with how the person feels and never disputes their emotions, " +
-      "whether or not what the person did was right. Only the thoughts behind the feelings are evaluated.",
-    quote:
-      "It is important to acknowledge and empathize with how patients feel and refrain from challenging or " +
-      "disputing their emotions.",
-    cite: "J. S. Beck, 2011",
+    teaches: "The counselor acknowledges and empathizes with how the patient feels and never disputes emotions, whether or not the patient’s conduct was right. Only the thoughts behind the emotions are evaluated.",
     rulesIn: "Empathizing with the feeling even when the person acted badly.",
     rulesOut: "Telling someone they should not feel the way they do, or that the feeling is wrong.",
-    strength: "Always, whenever the situation is painful for the person.",
   },
   {
     id: "CBT-B",
     title: "Thoughts are tested against the evidence, not assumed to be wrong",
-    teaches:
-      "A thought is evaluated against the evidence. The counselor questions a reading of events when the facts " +
-      "contradict it and does not dispute it when the facts support it.",
-    quote:
-      "[The therapist] did not assume automatically that the patient’s belief was inaccurate or distorted. " +
-      "In some instances, the patient will be correct.",
-    cite: "Young & Beck, Cognitive Therapy Rating Scale",
+    teaches: "Thoughts are evaluated against the evidence, not assumed to be distorted. The counselor questions a reading of events when the evidence contradicts it and does not dispute it when the evidence supports it.",
     rulesIn: "Questioning a reading the facts contradict; letting a reading stand when the facts support it.",
     rulesOut: "Treating a thought as distorted just because it is negative; disputing a reading that fits the facts.",
-    strength: "Depends on the facts: whether the thought is questioned depends on whether the evidence supports it.",
   },
   {
     id: "CBT-A",
     title: "A thought is examined through questions, rarely challenged head-on",
-    teaches:
-      "The counselor rarely directly challenges a thought. It is examined collaboratively through questions, " +
-      "not through debate, persuasion or lecturing.",
-    quote: "You would rarely directly challenge the automatic thought.",
-    cite: "J. S. Beck, 2011",
+    teaches: "The counselor rarely challenges a thought directly. It is examined collaboratively through questions, not through debate, persuasion or lecturing.",
     rulesIn: "Collaborative questions: What is the evidence? Is there another explanation?",
     rulesOut: "Debate, persuasion, lecturing, or a flat “that’s not true”.",
-    strength: "Rarely: a flat refutation is the exception, not the rule.",
   },
   {
     id: "CBT-G",
     title: "Guided discovery: questions are the usual tool, not the only one",
-    teaches:
-      "The counselor works by guided discovery, often using questions to help the person see new perspectives, " +
-      "though not relying solely on questioning.",
-    quote: "The cognitive therapist often uses exploration and questioning.",
-    cite: "Young & Beck, Cognitive Therapy Rating Scale",
+    teaches: "The counselor works by guided discovery, often using questions to help the patient see new perspectives, though not relying solely on questioning.",
     rulesIn: "At least one question in most responses.",
     rulesOut: "Responses that are nothing but questions; responses that never ask.",
-    strength: "Usually: most responses include a question.",
   },
   {
     id: "CBT-C",
     title: "Unrealistic self-blame is met with reattribution",
-    teaches:
-      "When a person unrealistically blames themself, the counselor uses reattribution: reviewing the situation " +
-      "together to find other factors that explain what happened.",
-    quote:
-      "When patients unrealistically blame themselves for unpleasant events, the therapist and patient can review " +
-      "the situation to find other factors.",
-    cite: "Young & Beck, Cognitive Therapy Rating Scale",
+    teaches: "When a patient unrealistically blames themself, the counselor uses reattribution, reviewing the situation for other factors that explain what happened.",
     rulesIn: "Pointing to other causes when the facts do not support the blame.",
     rulesOut: "Reattributing when the blame is warranted; refusing on principle to assign fault.",
-    strength: "Depends on the facts: reattribution when the blame is unrealistic, not when it is deserved.",
   },
   {
     id: "CBT-E",
     title: "CBT is educative: it explains how thoughts shape feelings and behavior",
-    teaches:
-      "CBT is educative. The counselor explains how thoughts and perceptions shape what people feel and do, in a " +
-      "way that nondirective and solution-focused approaches do not.",
-    quote: "Cognitive behavior therapy is educative.",
-    cite: "J. S. Beck, 2011",
+    teaches: "Cognitive behavior therapy is educative: the counselor explains how thoughts and perceptions shape what people feel and do, in a way nondirective and solution-focused approaches do not.",
     rulesIn: "Explanations of how the situation and the thought drive the feeling.",
     rulesOut: "Withholding explanation on principle.",
-    strength: "Usually: more explanation than most other approaches.",
   },
   {
     id: "CBT-D",
     title: "Practical problems get solutions; understanding a reaction does not",
-    teaches:
-      "When there is a practical problem to solve, the counselor helps the person devise solutions and offers " +
-      "potential solutions if needed. This is not done when the task is to understand a reaction.",
-    quote: "You will then offer potential solutions, if needed.",
-    cite: "J. S. Beck, 2011",
+    teaches: "When there is a practical problem to solve, the counselor helps the patient devise solutions and offers potential solutions if needed. This is not done when the task is to understand a reaction.",
     rulesIn: "Suggestions when the person asks what to do.",
     rulesOut: "Advice when the person asks to understand themself or someone else.",
-    strength: "Depends on what the person asks for.",
   },
 ];
 
-// Check 1: pick the CBT statement. `cbt` holds two rewordings (the second is used on
+// Quiz 1: pick the CBT statement. `cbt` holds two rewordings (the second is used on
 // the retake); each foil is a real claim from another school unless `source` is
 // "written". `feature` is the discriminating feature named in the feedback.
 const QUIZ1 = [
@@ -632,7 +592,7 @@ const QUIZ1 = [
   },
 ];
 
-// Check 1 warm-ups on the strength of a principle (feedback only, not scored).
+// Quiz 1 warm-ups on the strength of a principle (feedback only, not scored).
 const QUIZ1_STRENGTH = [
   {
     id: "S-G",
@@ -730,7 +690,7 @@ const SITUATION_FEATURES = [
   { q: "Was the person in the right or in the wrong?", detail: "Judged from the facts, not from the person’s own view.", why: "Principle 1 again: the feeling is acknowledged either way. This does not change whether the counselor validates." },
 ];
 
-// Check 2, type 1: which dimension does the principle constrain?
+// Quiz 2, type 1: which dimension does the principle constrain?
 const DIMENSION_OPTIONS = ["Validation", "Paraphrasing", "Empowerment", "Questioning", "Advice", "Information", "Action stance", "Framing stance"];
 const QUIZ2_DIMENSION = [
   { id: "CBT-F", answer: "Validation", feature: "The principle is about acknowledging feelings, which is what Validation records." },
@@ -742,7 +702,7 @@ const QUIZ2_DIMENSION = [
   { id: "CBT-D", answer: "Advice", feature: "Devising and offering solutions is Advice." },
 ];
 
-// Check 2, type 2: which rule follows? `rule` holds two wordings of the correct rule
+// Quiz 2, type 2: which rule follows? `rule` holds two wordings of the correct rule
 // (the second for the retake); the foils swap the value, the direction, or the condition.
 const QUIZ2_RULE = [
   {
@@ -843,13 +803,14 @@ const THRESHOLDS = {
 
 </script>
     <script>
-// The training flow: welcome -> principle cards -> check 1 -> response dimensions ->
-// check 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
+// The training flow: welcome -> principle cards -> quiz 1 -> response dimensions ->
+// quiz 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
 // Progress is kept in localStorage (best effort) so a reload resumes the same screen.
 
-const STEPS = ["Welcome", "Principles", "Check 1", "Response dimensions", "Check 2", "Done"];
+const STEPS = ["Welcome", "Principles", "Quiz", "Response dimensions", "Quiz", "Done"];
 const STORAGE_KEY = `ns-training-${SCHOOL.key}`;
-const DEBUG = new URLSearchParams(window.location.search).has("debug");
+// Debug mode (jump bar, skip buttons, continue past a failed quiz): ?debug or a /debug path.
+const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
 
 const state = {
   screen: "welcome",
@@ -962,41 +923,39 @@ function renderWelcome() {
   signpost({
     step: 0, frac: 0,
     text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who brings them a difficult situation.`,
-    sub: `First, seven principles of ${SCHOOL.short}, one at a time, with a short check. Then the questions we will ask about responses, with a second check. Then the main task. About 15 to 20 minutes before the main task.`,
-    next: () => go("intro"),
+    next: () => go("apply"),
     nextLabel: "Start →",
   });
 }
 
+function renderApply() {
+  signpost({
+    step: 0, frac: 0.5,
+    text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like.",
+    back: () => go("welcome"),
+    next: () => go("intro"),
+  });
+}
+
 function renderIntro() {
-  screen({ step: 1, frac: 0 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", `About ${SCHOOL.short}`));
-  card.appendChild(el("h2", null, `What ${SCHOOL.short} is`));
-  card.appendChild(el("p", "principle-teaches", SCHOOL.intro));
-  card.appendChild(el("p", "survey-signpost-sub", `Next: the seven principles, one per page. Read each one carefully; the check that follows asks you to tell them apart from how other approaches work.`));
-  const back = button("← Back", true); back.addEventListener("click", () => go("welcome"));
-  const next = button("Next →"); next.addEventListener("click", () => go("card:0"));
-  card.appendChild(nav(back, next));
-  bodyEl.appendChild(card);
+  signpost({
+    step: 1, frac: 0,
+    text: `We are going to step through ${CARDS.length} principles you will later need to apply as a ${SCHOOL.short} expert.`,
+    back: () => go("apply"),
+    next: () => go("card:0"),
+  });
 }
 
 function principleCard(c, i) {
   const card = el("section", "card survey-card");
   card.appendChild(el("div", "card-eyebrow", `Principle ${i + 1} of ${CARDS.length}`));
-  card.appendChild(el("h2", null, c.title));
   const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "principle-teaches", c.teaches));
-  const q = el("blockquote", "principle-quote");
-  q.append(`“${c.quote}”`, (() => { const ci = el("cite", null, c.cite); return ci; })());
-  body.appendChild(q);
+  body.appendChild(el("p", "principle-text", c.teaches));
   const rules = el("div", "rules");
   const rin = el("div", "rule rule--in"); rin.append(el("span", "rule-label", "In keeping with the principle"), c.rulesIn);
   const rout = el("div", "rule rule--out"); rout.append(el("span", "rule-label", "Against the principle"), c.rulesOut);
   rules.append(rin, rout);
   body.appendChild(rules);
-  const s = el("div", "strength"); s.append(el("b", null, "How strong: "), c.strength);
-  body.appendChild(s);
   card.appendChild(body);
   return card;
 }
@@ -1007,7 +966,7 @@ function renderCard(i) {
   const card = principleCard(c, i);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(i === 0 ? "intro" : `card:${i - 1}`));
-  const next = button(i === CARDS.length - 1 ? "To check 1 →" : "Next →");
+  const next = button("Next →");
   next.addEventListener("click", () => {
     if (i === CARDS.length - 1) { state.critters = Math.max(state.critters, 1); go("q1intro"); }
     else go(`card:${i + 1}`);
@@ -1084,23 +1043,27 @@ function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature,
   });
   next.addEventListener("click", onNext);
   const n = nav(back, el("span", "spacer"), check, next);
+  if (DEBUG) {
+    const skip = button("Skip (debug) →", true);
+    skip.addEventListener("click", onNext);
+    n.insertBefore(skip, check);
+  }
   card.appendChild(n);
   bodyEl.appendChild(card);
 }
 
 // ---------------------------------------------------------------------------
-// Check 1: strength warm-ups, then one item per principle.
+// Quiz 1: strength warm-ups, then one item per principle.
 
 const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.map((q) => ({ kind: "claim", q }))];
 
 function renderQ1Intro() {
   signpost({
     step: 2, frac: 0,
-    text: `Check 1: can you tell ${SCHOOL.short} apart from other approaches?`,
-    sub: `${QUIZ1_STRENGTH.length} warm-up questions about how strong each principle is (not scored), then ${QUIZ1.length} questions where you pick the statement that describes a ${SCHOOL.short} counselor among statements describing other approaches. You need ${THRESHOLDS.quiz1Pass} of ${QUIZ1.length} to continue; you get a second attempt if needed. After each answer the bee tells you the distinguishing feature.`,
+    text: "We will now quiz you on your understanding of these principles.",
     back: () => go(`card:${CARDS.length - 1}`),
     next: () => go("q1:0"),
-    nextLabel: "Begin check 1 →",
+    nextLabel: "Begin →",
   });
 }
 
@@ -1112,14 +1075,13 @@ function renderQ1(i) {
   let options, eyebrow;
   if (kind === "strength") {
     options = q.options.map((o) => ({ text: o.text, correct: o.correct, source: o.correct ? q.claim : "strength-foil" }));
-    eyebrow = `Check 1 · Warm-up ${i + 1} of ${QUIZ1_STRENGTH.length} (not scored)`;
+    eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}`;
   } else {
-    const n = i - QUIZ1_STRENGTH.length + 1;
     options = [
       { text: q.cbt[(attempt - 1) % q.cbt.length], correct: true, source: q.id },
       ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source })),
     ];
-    eyebrow = `Check 1 · Question ${n} of ${QUIZ1.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
+    eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
   }
   choiceItem({
     step: 2, frac: (i + 1) / (Q1_ITEMS.length + 1), eyebrow, stem: q.stem, options,
@@ -1142,7 +1104,7 @@ function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onR
   const sc = el("div", "score"); sc.append(`${score} / ${total}`, el("small", null, pass ? "passed" : "not yet"));
   body.appendChild(sc);
   body.appendChild(el("p", "survey-signpost-text", pass ? passLabel : attempt < THRESHOLDS.attempts
-    ? "Not quite there. Have another look at the principles you missed, then try the check again with fresh wording."
+    ? "Not quite there. Have another look at the principles you missed, then try the quiz again with fresh wording."
     : "That is the second attempt, so the study ends here. Thank you for your time."));
   if (missed.length) {
     const list = el("ul", "review-list");
@@ -1154,8 +1116,13 @@ function resultScreen({ step, score, total, pass, passLabel, missed, onPass, onR
   }
   card.appendChild(body);
   if (pass) { const n = button("Next →"); n.addEventListener("click", onPass); card.appendChild(nav(n)); }
-  else if (attempt < THRESHOLDS.attempts) { const r = button(retakeLabel); r.addEventListener("click", onRetake); card.appendChild(nav(r)); }
-  else { const e = button("Finish"); e.addEventListener("click", onExit); card.appendChild(nav(e)); }
+  else {
+    const buttons = [];
+    if (attempt < THRESHOLDS.attempts) { const r = button(retakeLabel); r.addEventListener("click", onRetake); buttons.push(r); }
+    else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
+    if (DEBUG) { const c = button("Continue anyway (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c); }
+    card.appendChild(nav(...buttons));
+  }
   bodyEl.appendChild(card);
 }
 
@@ -1185,7 +1152,7 @@ function renderQ1Review(i) {
   const id = missed[i];
   screen({ step: 2, frac: 0 });
   const card = principleCard(cardById[id], cardNumber(id) - 1);
-  const next = button(i === missed.length - 1 ? "Retake check 1 →" : "Next →");
+  const next = button(i === missed.length - 1 ? "Retake the quiz →" : "Next →");
   next.addEventListener("click", () => go(i === missed.length - 1 ? `q1:${QUIZ1_STRENGTH.length}` : `q1review:${i + 1}`));
   card.appendChild(nav(next));
   bodyEl.appendChild(card);
@@ -1299,7 +1266,7 @@ function dimsScreen3() {
   body.appendChild(list);
   card.appendChild(body);
   const back = button("← Back", true); back.addEventListener("click", () => go("dims:2"));
-  const next = button("To check 2 →"); next.addEventListener("click", () => { state.critters = Math.max(state.critters, 3); go("q2intro"); });
+  const next = button("Next →"); next.addEventListener("click", () => { state.critters = Math.max(state.critters, 3); go("q2intro"); });
   card.appendChild(nav(back, next));
   bodyEl.appendChild(card);
 }
@@ -1307,18 +1274,17 @@ function dimsScreen3() {
 const DIMS_SCREENS = [dimsScreen0, dimsScreen1, dimsScreen2, dimsScreen3];
 
 // ---------------------------------------------------------------------------
-// Check 2: which dimension, then which rule.
+// Quiz 2: which dimension, then which rule.
 
 const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.map((q) => ({ kind: "rule", q }))];
 
 function renderQ2Intro() {
   signpost({
     step: 4, frac: 0,
-    text: "Check 2: how do the principles translate into the questions?",
-    sub: `${QUIZ2_DIMENSION.length} questions asking which response dimension a principle is about, then ${QUIZ2_RULE.length} asking which rule follows from it. You need ${THRESHOLDS.quiz2Pass} of ${Q2_ITEMS.length} to continue, with a second attempt if needed.`,
+    text: "We will now quiz you on how these principles relate to the questions you just saw.",
     back: () => go("dims:3"),
     next: () => go("q2:0"),
-    nextLabel: "Begin check 2 →",
+    nextLabel: "Begin →",
   });
 }
 
@@ -1338,14 +1304,14 @@ function renderQ2(i) {
   if (kind === "dimension") {
     options = DIMENSION_OPTIONS.map((d) => ({ text: d, correct: d === q.answer, source: d }));
     stem = "Which response dimension does this principle tell you about?";
-    eyebrow = `Check 2 · Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
+    eyebrow = `Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
   } else {
     options = [
       { text: q.rule[(attempt - 1) % q.rule.length], correct: true, source: q.id },
       ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` })),
     ];
     stem = "Which rule follows from this principle?";
-    eyebrow = `Check 2 · Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
+    eyebrow = `Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
   }
   choiceItem({
     step: 4, frac: (i + 1) / (Q2_ITEMS.length + 1), eyebrow, stem, before: principleRef(q.id), options,
@@ -1372,7 +1338,7 @@ function renderQ2Result() {
     passLabel: "You know how the principles map onto the questions. You are ready for the main task.",
     missed: missed.map(({ kind, q }) => `${kind === "dimension" ? "Which dimension" : "Which rule"}: principle ${cardNumber(q.id)}, ${cardById[q.id].title}`),
     onPass: () => go("done"),
-    retakeLabel: "Retake check 2 →",
+    retakeLabel: "Retake the quiz →",
     onRetake: () => { state.q2.attempt += 1; go("dims:1"); },
     onExit: () => go("exit"),
   });
@@ -1392,7 +1358,7 @@ function renderDone() {
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("party"));
   body.appendChild(el("p", "survey-signpost-text", "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
-  body.appendChild(el("p", "survey-signpost-sub", `Check 1: ${q1Score(state.q1.attempt)} of ${QUIZ1.length} on attempt ${state.q1.attempt}. Check 2: ${q2Score(state.q2.attempt)} of ${Q2_ITEMS.length} on attempt ${state.q2.attempt}.`));
+  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${q1Score(state.q1.attempt)} of ${QUIZ1.length} on attempt ${state.q1.attempt}. Dimensions quiz: ${q2Score(state.q2.attempt)} of ${Q2_ITEMS.length} on attempt ${state.q2.attempt}.`));
   const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
   body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
   body.appendChild(ta);
@@ -1431,6 +1397,7 @@ function render() {
   const i = Number(arg);
   switch (kind) {
     case "welcome": return renderWelcome();
+    case "apply": return renderApply();
     case "intro": return renderIntro();
     case "card": return renderCard(i);
     case "q1intro": return renderQ1Intro();
@@ -1449,7 +1416,7 @@ function render() {
 
 if (DEBUG) {
   const bar = el("div", "debug-bar");
-  for (const [label, key] of [["welcome", "welcome"], ["cards", "card:0"], ["check1", "q1intro"], ["dims", "dims:0"], ["check2", "q2intro"], ["done", "done"], ["reset", null]]) {
+  for (const [label, key] of [["welcome", "welcome"], ["cards", "card:0"], ["quiz 1", "q1intro"], ["dims", "dims:0"], ["quiz 2", "q2intro"], ["done", "done"], ["reset", null]]) {
     const b = el("button", null, label);
     b.addEventListener("click", () => (key ? go(key) : resetAll()));
     bar.appendChild(b);
