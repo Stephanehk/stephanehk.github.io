@@ -1137,7 +1137,7 @@ function renderQ1Result() {
   resultScreen({
     step: 2, score, total: QUIZ1.length, pass, attempt,
     passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the questions we ask about responses.`,
-    missed: missedIds.map((id) => `Principle ${cardNumber(id)}: ${cardById[id].title}`),
+    missed: missedIds.map((id) => `Principle ${cardNumber(id)}: ${cardById[id].teaches}`),
     onPass: () => go("dims:0"),
     retakeLabel: "Review the missed principles →",
     onRetake: () => { state.q1.attempt += 1; go("q1review:0"); },
@@ -1291,7 +1291,7 @@ function renderQ2Intro() {
 function principleRef(id) {
   const c = cardById[id];
   const p = el("div", "principle-ref");
-  p.append(el("span", "card-eyebrow", `Principle ${cardNumber(id)}: ${c.title}`), c.teaches);
+  p.append(el("span", "card-eyebrow", `Principle ${cardNumber(id)}`), c.teaches);
   return p;
 }
 
@@ -1336,7 +1336,7 @@ function renderQ2Result() {
   resultScreen({
     step: 4, score, total: Q2_ITEMS.length, pass, attempt,
     passLabel: "You know how the principles map onto the questions. You are ready for the main task.",
-    missed: missed.map(({ kind, q }) => `${kind === "dimension" ? "Which dimension" : "Which rule"}: principle ${cardNumber(q.id)}, ${cardById[q.id].title}`),
+    missed: missed.map(({ kind, q }) => `${kind === "dimension" ? "Which dimension" : "Which rule"}, principle ${cardNumber(q.id)}: ${cardById[q.id].teaches}`),
     onPass: () => go("done"),
     retakeLabel: "Retake the quiz →",
     onRetake: () => { state.q2.attempt += 1; go("dims:1"); },
