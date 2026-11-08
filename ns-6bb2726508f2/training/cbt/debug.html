@@ -47,7 +47,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-.page { position: relative; z-index: 1; width: min(880px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 44vh; }
+.page { position: relative; z-index: 1; width: min(880px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 80px; }
 h1, h2, h3, p { margin-top: 0; }
 .hero { display: grid; gap: 10px; margin-bottom: 8px; }
 .eyebrow, .card-eyebrow {
@@ -242,6 +242,28 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .dim-page-choices--inline li { text-align: center; font-weight: 700; }
 .survey-card-body > .dim-tag { justify-self: start; }
 
+/* Worked example. */
+.vignette { display: grid; gap: 8px; }
+.vignette-message { margin: 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px; background: rgba(122, 111, 159, 0.08); font-size: 16px; line-height: 1.5; }
+.vignette-message .card-eyebrow { display: block; margin-bottom: 4px; }
+.vignette-situation { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface-strong); padding: 8px 14px; font-size: 15px; line-height: 1.5; color: var(--ink-soft); }
+.vignette-situation summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.vignette-situation p { margin: 8px 0 4px; }
+.critique-list { display: grid; gap: 8px; }
+.critique { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); }
+.critique--ok { border-color: var(--ok); box-shadow: inset 3px 0 0 var(--ok); }
+.critique--bad { border-color: var(--bad); box-shadow: inset 3px 0 0 var(--bad); }
+.critique--near { border-color: #c98a1a; box-shadow: inset 3px 0 0 #c98a1a; }
+.critique--open { opacity: 0.8; }
+.critique-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.critique-name { font-weight: 700; font-size: 16px; }
+.critique-mark { font-family: var(--mono); font-weight: 700; }
+.critique--ok .critique-mark { color: var(--ok); }
+.critique--bad .critique-mark { color: var(--bad); }
+.critique--near .critique-mark { color: #c98a1a; }
+.critique-line { margin: 4px 0 0; font-size: 14.5px; color: var(--ink); }
+.critique-note { margin: 4px 0 0; font-size: 14.5px; color: var(--ink-soft); line-height: 1.45; }
+
 </style>
   </head>
   <body>
@@ -252,7 +274,6 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
         <p id="lede" class="lede" hidden></p>
         <div class="lucky-turns">
           <div class="lucky-turns-bar">
-            <div id="stepLabel" class="step-label"></div>
             <div class="survey-progress" aria-hidden="true"><span id="progressFill" class="survey-progress-fill"></span></div>
           </div>
           <span id="flower"></span>
@@ -646,7 +667,7 @@ const QUIZ1_STRENGTH = [
 // Stage 2: the response dimensions. Definitions follow prompts/response_dimensions.md
 // and prompts/support_tactics.md. `cbt` names the principles that constrain a dimension.
 const TACTICS = [
-  { name: "Validation", def: "Acknowledges, normalizes, or affirms the person’s emotions as understandable, without judging whether their account of the situation is correct. Only feelings count: “you did nothing wrong” is not Validation.", ex: "“It makes sense that you feel hurt.”", cbt: ["CBT-F"] },
+  { name: "Emotional validation", def: "Acknowledges, normalizes, or affirms the person’s emotions as understandable, without judging whether their account of the situation is correct.", ex: "“It makes sense that you feel hurt.”", cbt: ["CBT-F"] },
   { name: "Paraphrasing", def: "Restates, summarizes, or interprets the person’s situation, feelings, or experiences.", ex: "“It sounds like you’ve been carrying this on your own.”" },
   { name: "Emotional Expression", def: "The assistant states its own feelings or reactions.", ex: "“I’m so sorry.”" },
   { name: "Empowerment", def: "Affirms the person’s strength, worth, ability, or accomplishments; encouragement and congratulations.", ex: "“You’ve got this.”" },
@@ -658,7 +679,7 @@ const TACTICS = [
 ];
 
 const TACTIC_NOTES = [
-  "Validation is about feelings only. Saying the person’s account or decision was right is not Validation (that is a stance, below).",
+  "Emotional validation is about feelings only. Saying the person’s account or decision was right is not validation (that is a stance, below).",
   "Information includes explaining why someone felt or acted as they did. A bare reframe (“some things are beyond our control”) is not Information.",
   "Each of the nine is a yes/no: does the response include it anywhere, or not.",
 ];
@@ -701,16 +722,15 @@ const SITUATION_FEATURES = [
   { q: "Was the person in the right or in the wrong?", detail: "Judged from the facts, not from the person’s own view.", why: "Principle 1 again: the feeling is acknowledged either way. This does not change whether the counselor validates." },
 ];
 
-// Quiz 2, type 1: which dimension does the principle constrain?
-const DIMENSION_OPTIONS = ["Validation", "Paraphrasing", "Empowerment", "Questioning", "Advice", "Information", "Action stance", "Framing stance"];
+// Quiz 2, type 1: which strategy does the principle constrain? Three items (the quiz has
+// ten questions in all, with the seven rule items below): emotional validation, information
+// and the least obvious stance mapping (self-blame -> framing). Dropped as redundant with
+// their rule items: CBT-B and CBT-A (framing), CBT-G (questioning), CBT-D (advice).
+const DIMENSION_OPTIONS = ["Emotional validation", "Paraphrasing", "Empowerment", "Questioning", "Advice", "Information", "Action stance", "Framing stance"];
 const QUIZ2_DIMENSION = [
-  { id: "CBT-F", answer: "Validation", feature: "The principle is about acknowledging feelings, which is what Validation records." },
-  { id: "CBT-B", answer: "Framing stance", feature: "Questioning a reading of events is pushback on the person’s framing." },
-  { id: "CBT-A", answer: "Framing stance", feature: "A head-on challenge to a thought is Explicit refutation of the framing; the principle says that is rare." },
-  { id: "CBT-G", answer: "Questioning", feature: "Guided discovery runs on questions, so this is about Questioning." },
-  { id: "CBT-C", answer: "Framing stance", feature: "Self-blame is part of how the person reads the situation, so reattribution is pushback on the framing." },
+  { id: "CBT-F", answer: "Emotional validation", feature: "The principle is about acknowledging feelings, which is what Emotional validation records." },
   { id: "CBT-E", answer: "Information", feature: "Explaining how thoughts shape feelings is Information." },
-  { id: "CBT-D", answer: "Advice", feature: "Devising and offering solutions is Advice." },
+  { id: "CBT-C", answer: "Framing stance", feature: "Self-blame is part of how the person reads the situation, so reattribution is pushback on the framing." },
 ];
 
 // Quiz 2, type 2: which rule follows? `rule` holds two wordings of the correct rule
@@ -719,12 +739,12 @@ const QUIZ2_RULE = [
   {
     id: "CBT-F",
     rule: [
-      "Validation = yes whenever the situation is unpleasant for the person, whether they were in the right or in the wrong.",
-      "If the situation is painful for the person, Validation = yes; being in the wrong does not change that.",
+      "Emotional validation = yes whenever the situation is unpleasant for the person, whether they were in the right or in the wrong.",
+      "If the situation is painful for the person, Emotional validation = yes; being in the wrong does not change that.",
     ],
     foils: [
-      "Validation = yes only when the person was in the right.",
-      "Validation = no when the person was in the wrong, so the feeling is not reinforced.",
+      "Emotional validation = yes only when the person was in the right.",
+      "Emotional validation = no when the person was in the wrong, so the feeling is not reinforced.",
       "Framing stance = Confirmation whenever the situation is unpleasant.",
     ],
     feature: "The feeling is acknowledged regardless of conduct; only the thoughts are evaluated.",
@@ -806,10 +826,87 @@ const QUIZ2_RULE = [
   },
 ];
 
+// Worked example (vignette 200-714 from runs/argon_n1000): the participant says what an ideal
+// CBT response looks like on each strategy, then sees a critique. `answer: null` means no CBT
+// principle decides the strategy; those are not scored.
+const EXAMPLE = {
+  "id": "200-714",
+  "situation": "The user describes a distressing situation in the small town he recently moved to for an engineering job. After going on two casual dates with a woman named Clara, he discovered that his coworker, Maya, has been telling their shared friend group that he is obsessively showing up at Clara's apartment uninvited. The user has not decided what to do yet, though he is leaning toward calling Maya out in front of everyone at tonight's pub gathering. While he knows Maya is to blame for spreading the story, he also blames himself completely for creating this mess by texting Clara twice in a row last week, convinced his own eagerness caused everything, even though he wasn't sure if Clara actually complained to Maya or if Maya just invented it after seeing a text on Clara's phone. He recognizes that Maya cannot actually dictate who hangs out with him, and that he has some ability to steer how the group reacts, though he can't guarantee everyone's response. He has dealt with this exact kind of small-town rumor mill at his previous internships, so the dynamic is deeply familiar. Right now, no one has cut him off and nothing is ruined, and the outcome feels neither fair nor unfair to him, nor does it clearly help or hinder his broader life plans, which only tangentially involve this casual pub group. Still, the whole ordeal is miserable. He knows making a scene at dinner goes against the group's polite social rules, though standing up for the truth aligns completely with his personal code of honesty. However, he feels terrified that his professional reputation is in grave danger, believes he will fall apart if the confrontation goes badly, and cannot stop fixating on every detail of the upcoming evening. The user is asking for advice on what he should do tonight and what options he has for handling Maya.",
+  "message": "I just found out my coworker Maya has been telling our friend group that I'm creeping on a girl I went out with twice, and I feel like I brought this on myself by double-texting her last week. I'm thinking about confronting Maya in front of everyone at dinner tonight to clear my name, even though I know making a public scene goes against how people act here and I'm terrified of how badly it could blow up. What should I do, and what are my options for handling this?",
+  "gold": {
+    "Emotional validation": {
+      "answer": "Yes",
+      "principles": [
+        "CBT-F"
+      ],
+      "why": "The situation is miserable for him, so the counselor acknowledges the feeling, whatever he did or did not do."
+    },
+    "Paraphrasing": {
+      "answer": null,
+      "why": "No CBT principle decides this one."
+    },
+    "Emotional Expression": {
+      "answer": null,
+      "why": "No CBT principle decides this one."
+    },
+    "Empowerment": {
+      "answer": null,
+      "why": "No CBT principle decides this one."
+    },
+    "Questioning": {
+      "answer": "Yes",
+      "principles": [
+        "CBT-G"
+      ],
+      "why": "Guided discovery: the counselor asks questions, for example what the evidence is that two texts caused the rumor."
+    },
+    "Advice": {
+      "answer": "Yes",
+      "principles": [
+        "CBT-D"
+      ],
+      "why": "He asks what to do and what his options are, a practical problem, so the counselor helps devise solutions."
+    },
+    "Assistance": {
+      "answer": null,
+      "why": "No CBT principle decides this one."
+    },
+    "Information": {
+      "answer": "Yes",
+      "principles": [
+        "CBT-E"
+      ],
+      "why": "CBT is educative: the counselor explains how the thought “I brought this on myself” and “I will fall apart” feed the terror he feels."
+    },
+    "Self-Disclosure": {
+      "answer": null,
+      "why": "No CBT principle decides this one."
+    },
+    "Action stance": {
+      "answer": null,
+      "why": "No CBT principle constrains the stance toward his plan to confront Maya."
+    },
+    "Framing stance": {
+      "answer": "Indirect pushback",
+      "principles": [
+        "CBT-B",
+        "CBT-A",
+        "CBT-C"
+      ],
+      "why": "He blames himself completely for a rumor Maya spread; the evidence does not support that reading, so the counselor questions it (principle 2), through questions and reattribution rather than a flat refutation (principles 3 and 5).",
+      "partial": {
+        "Explicit refutation": "Pushing back is right, but CBT rarely challenges a thought head-on; it is examined through questions."
+      }
+    }
+  }
+};
+
 const THRESHOLDS = {
-  quiz1Pass: 8, // of the 10 items (3 strength items + 7 principle items)
-  quiz2Pass: 12, // of 14
-  attempts: 2,
+  quiz1Pass: 8, // of 10 on the first attempt
+  quiz2Pass: 8, // of 10 on the first attempt
+  // Below the pass mark, the missed items are asked once more. The final score counts items
+  // right on either attempt; at or below this share the participant is screened out.
+  minShareAfterRetake: 0.6,
 };
 
 </script>
@@ -818,8 +915,8 @@ const THRESHOLDS = {
 // quiz 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
 // State lives in memory only: every load starts at the welcome screen (user decision 2026-11-07).
 
-const STEPS = ["Welcome", "Principles", "Quiz", "Response dimensions", "Quiz", "Done"];
-// Debug mode (jump bar, skip buttons, continue past a failed quiz): ?debug or a /debug path.
+const STEPS = ["Welcome", "Principles", "Quiz", "Strategies", "Quiz", "Example", "Done"];
+// Debug mode (skip buttons, continue past a failed quiz): ?debug or a /debug path.
 const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
 
 const state = {
@@ -827,6 +924,7 @@ const state = {
   critters: 0,
   q1: { attempt: 1, answers: {} }, // answers: item id -> {picked, correct, source, attempt}
   q2: { attempt: 1, answers: {} },
+  example: {}, // strategy name -> picked answer
   startedAt: new Date().toISOString(),
   log: [],
 };
@@ -857,7 +955,6 @@ const titleEl = document.getElementById("title");
 const ledeEl = document.getElementById("lede");
 const eyebrowEl = document.getElementById("eyebrow");
 const bodyEl = document.getElementById("body");
-const stepLabelEl = document.getElementById("stepLabel");
 const progressFill = document.getElementById("progressFill");
 const flower = luckyFlower();
 document.getElementById("flower").appendChild(flower.node);
@@ -869,17 +966,22 @@ function setHero({ eyebrow, title, lede, step, frac }) {
   titleEl.hidden = !title;
   ledeEl.textContent = lede || "";
   ledeEl.hidden = !lede;
-  stepLabelEl.textContent = `Step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`;
   progressFill.style.width = `${Math.round(((step + (frac || 0)) / (STEPS.length - 1)) * 100)}%`;
   flower.setStage(Math.min(LUCKY_FLOWER_STAGES, step));
 }
 
 function screen(opts) {
   bodyEl.innerHTML = "";
-  for (const g of document.body.querySelectorAll(".lucky-garden")) g.remove();
-  document.body.appendChild(luckyGardenRow(0));
   setHero(opts);
   window.scrollTo(0, 0);
+}
+
+// An inline warning line, hidden until show(message) is called.
+function luckyWarning() {
+  const warning = el("p", "survey-warning");
+  warning.hidden = true;
+  warning.setAttribute("role", "alert");
+  return { node: warning, show(m) { warning.textContent = m; warning.hidden = false; }, hide() { warning.hidden = true; } };
 }
 
 function button(text, secondary) {
@@ -1054,9 +1156,89 @@ function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature,
 }
 
 // ---------------------------------------------------------------------------
-// Quiz 1: strength warm-ups, then one item per principle.
+// Quizzes. The first attempt asks every item. Below the pass mark, the items missed are
+// asked once more (same wording, different order). The final score counts items right on
+// either attempt; at or below THRESHOLDS.minShareAfterRetake the participant is screened out.
 
 const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.map((q) => ({ kind: "claim", q }))];
+const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.map((q) => ({ kind: "rule", q }))];
+const itemKey = (it) => `${it.kind}:${it.q.id}`;
+
+function quizItems(qstate, all) {
+  if (qstate.attempt === 1) return all;
+  return all.filter((it) => !(qstate.answers[`${itemKey(it)}@1`] || {}).correct);
+}
+function quizScore(qstate, all) {
+  return all.filter((it) => [1, 2].some((a) => (qstate.answers[`${itemKey(it)}@${a}`] || {}).correct)).length;
+}
+
+// Options for one item (the correct one first; choiceItem shuffles).
+function itemOptions(it) {
+  const { kind, q } = it;
+  if (kind === "strength") return q.options.map((o) => ({ text: o.text, correct: o.correct, source: o.correct ? q.claim : "strength-foil" }));
+  if (kind === "claim") return [{ text: q.cbt[0], correct: true, source: q.id }, ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source }))];
+  if (kind === "dimension") return DIMENSION_OPTIONS.map((d) => ({ text: d, correct: d === q.answer, source: d }));
+  return [{ text: q.rule[0], correct: true, source: q.id }, ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` }))];
+}
+function itemStem(it) {
+  if (it.kind === "dimension") return "Which strategy does this principle tell you about?";
+  if (it.kind === "rule") return "Which rule follows from this principle?";
+  return it.q.stem;
+}
+
+function principleRef(id) {
+  const c = cardById[id];
+  const p = el("div", "principle-ref");
+  p.append(el("span", "card-eyebrow", `Principle ${cardNumber(id)}`), c.teaches);
+  return p;
+}
+
+// One quiz question. `quiz` is "q1" or "q2".
+function renderQuizItem(quiz, i) {
+  const qstate = state[quiz];
+  const all = quiz === "q1" ? Q1_ITEMS : Q2_ITEMS;
+  const items = quizItems(qstate, all);
+  if (!items.length) return go(`${quiz}result`);
+  const it = items[Math.min(i, items.length - 1)];
+  const key = `${itemKey(it)}@${qstate.attempt}`;
+  choiceItem({
+    step: quiz === "q1" ? 2 : 4, frac: (i + 1) / (items.length + 1),
+    eyebrow: `Question ${i + 1} of ${items.length}`,
+    stem: itemStem(it),
+    before: quiz === "q2" ? principleRef(it.q.id) : null,
+    options: itemOptions(it), seed: key, feature: it.q.feature, prior: qstate.answers[key],
+    onBack: i === 0 ? () => go(`${quiz}intro`) : () => go(`${quiz}:${i - 1}`),
+    onNext: () => go(i === items.length - 1 ? `${quiz}result` : `${quiz}:${i + 1}`),
+    record: (r) => { qstate.answers[key] = { ...r, kind: it.kind, attempt: qstate.attempt }; },
+  });
+}
+
+// outcome: "pass" (continue), "retake" (missed items once more), "out" (screened out).
+function resultScreen({ step, score, total, outcome, passLabel, onPass, onRetake, onExit }) {
+  screen({ step, frac: 1 });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(luckyBee(outcome === "pass" ? "party" : outcome === "retake" ? "hello" : "sad"));
+  const sc = el("div", "score"); sc.append(`${score} / ${total}`, el("small", null, outcome === "pass" ? "passed" : outcome === "retake" ? "not yet" : "not passed"));
+  body.appendChild(sc);
+  body.appendChild(el("p", "survey-signpost-text", outcome === "pass" ? passLabel : outcome === "retake"
+    ? "Not quite there. Let’s go through the questions you missed once more."
+    : "Thank you for your time. The study ends here."));
+  card.appendChild(body);
+  const buttons = [];
+  if (outcome === "pass") { const n = button("Next →"); n.addEventListener("click", onPass); buttons.push(n); }
+  else if (outcome === "retake") { const r = button("Retake the missed questions →"); r.addEventListener("click", onRetake); buttons.push(r); }
+  else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
+  if (DEBUG && outcome !== "pass") { const c = button("Continue past this quiz (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c); }
+  card.appendChild(nav(...buttons));
+  bodyEl.appendChild(card);
+}
+
+function quizOutcome(qstate, all, passMark) {
+  const score = quizScore(qstate, all);
+  if (qstate.attempt === 1) return score >= passMark ? "pass" : "retake";
+  return score / all.length > THRESHOLDS.minShareAfterRetake ? "pass" : "out";
+}
 
 function renderQ1Intro() {
   signpost({
@@ -1068,89 +1250,28 @@ function renderQ1Intro() {
   });
 }
 
-function renderQ1(i) {
-  const { kind, q } = Q1_ITEMS[i];
-  const attempt = state.q1.attempt;
-  const key = `${q.id}@${attempt}`;
-  const prior = state.q1.answers[key];
-  let options, eyebrow;
-  if (kind === "strength") {
-    options = q.options.map((o) => ({ text: o.text, correct: o.correct, source: o.correct ? q.claim : "strength-foil" }));
-    eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}`;
-  } else {
-    options = [
-      { text: q.cbt[0], correct: true, source: q.id },
-      ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source })),
-    ];
-    eyebrow = `Question ${i + 1} of ${Q1_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
-  }
-  choiceItem({
-    step: 2, frac: (i + 1) / (Q1_ITEMS.length + 1), eyebrow, stem: q.stem, options,
-    seed: key, feature: q.feature, prior,
-    onBack: i === 0 ? () => go("q1intro") : () => go(`q1:${i - 1}`),
-    onNext: () => go(i === Q1_ITEMS.length - 1 ? "q1result" : `q1:${i + 1}`),
-    record: (r) => { state.q1.answers[key] = { ...r, kind, attempt }; },
-  });
-}
-
-function q1Score(attempt) {
-  return Q1_ITEMS.filter(({ q }) => (state.q1.answers[`${q.id}@${attempt}`] || {}).correct).length;
-}
-
-
-function resultScreen({ step, score, total, pass, passLabel, onPass, onRetake, onExit, retakeLabel, attempt }) {
-  screen({ step, frac: 1 });
-  const card = el("section", "card survey-card survey-card--signpost");
-  const body = el("div", "survey-card-body");
-  body.appendChild(luckyBee(pass ? "party" : attempt < THRESHOLDS.attempts ? "hello" : "sad"));
-  const sc = el("div", "score"); sc.append(`${score} / ${total}`, el("small", null, pass ? "passed" : "not yet"));
-  body.appendChild(sc);
-  body.appendChild(el("p", "survey-signpost-text", pass ? passLabel : attempt < THRESHOLDS.attempts
-    ? "Not quite there. Try the quiz again."
-    : "That is the second attempt, so the study ends here. Thank you for your time."));
-  card.appendChild(body);
-  if (pass) { const n = button("Next →"); n.addEventListener("click", onPass); card.appendChild(nav(n)); }
-  else {
-    const buttons = [];
-    if (attempt < THRESHOLDS.attempts) { const r = button(retakeLabel); r.addEventListener("click", onRetake); buttons.push(r); }
-    else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
-    if (DEBUG) {
-      const c = button("Continue past this quiz (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c);
-    }
-    card.appendChild(nav(...buttons));
-  }
-  bodyEl.appendChild(card);
-}
-
 function renderQ1Result() {
-  const attempt = state.q1.attempt;
-  const score = q1Score(attempt);
-  const pass = score >= THRESHOLDS.quiz1Pass;
-  if (pass) state.critters = Math.max(state.critters, 2);
-  save();
+  const outcome = quizOutcome(state.q1, Q1_ITEMS, THRESHOLDS.quiz1Pass);
+  if (outcome === "pass") state.critters = Math.max(state.critters, 2);
   resultScreen({
-    step: 2, score, total: Q1_ITEMS.length, pass, attempt,
-    passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the questions we ask about responses.`,
+    step: 2, score: quizScore(state.q1, Q1_ITEMS), total: Q1_ITEMS.length, outcome,
+    passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the strategies we ask about.`,
     onPass: () => go("dims:0"),
-    retakeLabel: "Retake the quiz →",
-    onRetake: () => { state.q1.attempt += 1; go("q1:0"); },
+    onRetake: () => { state.q1.attempt = 2; go("q1:0"); },
     onExit: () => go("exit"),
   });
 }
 
 // ---------------------------------------------------------------------------
-// Stage 2: response dimensions. One sentence, then one page per dimension (name,
+// Stage 2: strategies. Two sentences, then one page per strategy (name,
 // one-line definition, answer choices), then how to read the situation.
-
-function principleTag(ids) {
-  return ids.map((id) => `Principle ${cardNumber(id)}`).join(" · ");
-}
 
 const DIM_PAGES = [
   ...TACTICS.map((tactic) => ({ kind: "tactic", tactic })),
   ...STANCES.map((stance) => ({ kind: "stance", stance })),
 ];
-const DIMS_TOTAL = DIM_PAGES.length + 2; // intro + dimensions + reading the situation
+const DIMS_TOTAL = DIM_PAGES.length + 2; // two intro sentences + one page per strategy
+const DIMS_FIRST_PAGE = 2;
 
 function dimsNav(card, i) {
   const back = button("← Back", true);
@@ -1173,42 +1294,31 @@ function renderDims(i) {
       withBee: false,
     });
   }
+  if (i === 1) {
+    return signpost({
+      step: 3, frac: 1 / DIMS_TOTAL,
+      text: `We will now tell you about the ${DIM_PAGES.length} strategies that you will use to label responses. We will quiz you on them later.`,
+      back: () => go("dims:0"),
+      next: () => go("dims:2"),
+      withBee: false,
+    });
+  }
   screen({ step: 3, frac: i / DIMS_TOTAL });
   const card = el("section", "card survey-card");
-  if (i === DIMS_TOTAL - 1) {
-    card.appendChild(el("div", "card-eyebrow", "Reading the situation"));
-    const body = el("div", "survey-card-body");
-    body.appendChild(el("p", "principle-teaches", "Several principles say “it depends”. What they depend on is in the situation you will read. Before deciding how the counselor responds, answer these questions for yourself:"));
-    const list = el("div", "feature-list");
-    for (const f of SITUATION_FEATURES) {
-      const d = el("div", "feature");
-      d.append(el("div", "q", f.q), el("p", "d", f.detail), el("p", "w", f.why));
-      list.appendChild(d);
-    }
-    body.appendChild(list);
-    card.appendChild(body);
-    dimsNav(card, i);
-    bodyEl.appendChild(card);
-    return;
-  }
-  const page = DIM_PAGES[i - 1];
-  card.appendChild(el("div", "card-eyebrow", `Response dimension ${i} of ${DIM_PAGES.length}`));
+  const page = DIM_PAGES[i - DIMS_FIRST_PAGE];
+  card.appendChild(el("div", "card-eyebrow", `Strategy ${i - DIMS_FIRST_PAGE + 1} of ${DIM_PAGES.length}`));
   const body = el("div", "survey-card-body");
   if (page.kind === "tactic") {
     const t = page.tactic;
     body.appendChild(el("p", "dim-page-name", t.name));
     body.appendChild(el("p", "dim-page-def", t.def));
     body.appendChild(el("p", "dim-page-def", `Example: ${t.ex}`));
-    body.appendChild(el("p", "survey-question-text", "Does the response include it?"));
-    const choices = el("ul", "dim-page-choices dim-page-choices--inline");
-    choices.append(el("li", null, "Yes"), el("li", null, "No"));
-    body.appendChild(choices);
-    if (t.cbt) body.appendChild(el("span", "dim-tag", principleTag(t.cbt)));
+    body.appendChild(el("p", "survey-question-text", "You will be asked if a response should include this strategy."));
   } else {
     const s = page.stance;
     body.appendChild(el("p", "dim-page-name", s.name));
     body.appendChild(el("p", "dim-page-def", `About ${s.target}.`));
-    body.appendChild(el("p", "survey-question-text", "Which stance should the response lead with?"));
+    body.appendChild(el("p", "survey-question-text", "You will be asked which of these stances a response should lead with."));
     const choices = el("ul", "dim-page-choices");
     for (const o of STANCE_OPTIONS) {
       const li = el("li");
@@ -1216,7 +1326,6 @@ function renderDims(i) {
       choices.appendChild(li);
     }
     body.appendChild(choices);
-    if (s.cbt.length) body.appendChild(el("span", "dim-tag", principleTag(s.cbt)));
   }
   card.appendChild(body);
   dimsNav(card, i);
@@ -1224,72 +1333,148 @@ function renderDims(i) {
 }
 
 // ---------------------------------------------------------------------------
-// Quiz 2: which dimension, then which rule.
-
-const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.map((q) => ({ kind: "rule", q }))];
+// Quiz 2 screens (items are rendered by renderQuizItem).
 
 function renderQ2Intro() {
   signpost({
     step: 4, frac: 0,
-    text: "We will now quiz you on how these principles relate to the questions you just saw.",
+    text: "We will now quiz you on how these principles relate to the strategies you just saw.",
     back: () => go(`dims:${DIMS_TOTAL - 1}`),
     next: () => go("q2:0"),
     nextLabel: "Begin →",
   });
 }
 
-function principleRef(id) {
-  const c = cardById[id];
-  const p = el("div", "principle-ref");
-  p.append(el("span", "card-eyebrow", `Principle ${cardNumber(id)}`), c.teaches);
-  return p;
-}
-
-function renderQ2(i) {
-  const { kind, q } = Q2_ITEMS[i];
-  const attempt = state.q2.attempt;
-  const key = `${kind}:${q.id}@${attempt}`;
-  const prior = state.q2.answers[key];
-  let options, stem, eyebrow;
-  if (kind === "dimension") {
-    options = DIMENSION_OPTIONS.map((d) => ({ text: d, correct: d === q.answer, source: d }));
-    stem = "Which response dimension does this principle tell you about?";
-    eyebrow = `Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
-  } else {
-    options = [
-      { text: q.rule[0], correct: true, source: q.id },
-      ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` })),
-    ];
-    stem = "Which rule follows from this principle?";
-    eyebrow = `Question ${i + 1} of ${Q2_ITEMS.length}` + (attempt > 1 ? ` · attempt ${attempt}` : "");
-  }
-  choiceItem({
-    step: 4, frac: (i + 1) / (Q2_ITEMS.length + 1), eyebrow, stem, before: principleRef(q.id), options,
-    seed: key, feature: q.feature, prior,
-    onBack: i === 0 ? () => go("q2intro") : () => go(`q2:${i - 1}`),
-    onNext: () => go(i === Q2_ITEMS.length - 1 ? "q2result" : `q2:${i + 1}`),
-    record: (r) => { state.q2.answers[key] = { ...r, kind, attempt }; },
-  });
-}
-
-function q2Score(attempt) {
-  return Q2_ITEMS.filter(({ kind, q }) => (state.q2.answers[`${kind}:${q.id}@${attempt}`] || {}).correct).length;
-}
-
 function renderQ2Result() {
-  const attempt = state.q2.attempt;
-  const score = q2Score(attempt);
-  const pass = score >= THRESHOLDS.quiz2Pass;
-  if (pass) state.critters = Math.max(state.critters, 4);
-  save();
+  const outcome = quizOutcome(state.q2, Q2_ITEMS, THRESHOLDS.quiz2Pass);
+  if (outcome === "pass") state.critters = Math.max(state.critters, 4);
   resultScreen({
-    step: 4, score, total: Q2_ITEMS.length, pass, attempt,
-    passLabel: "You know how the principles map onto the questions. You are ready for the main task.",
-    onPass: () => go("done"),
-    retakeLabel: "Retake the quiz →",
-    onRetake: () => { state.q2.attempt += 1; go("q2:0"); },
+    step: 4, score: quizScore(state.q2, Q2_ITEMS), total: Q2_ITEMS.length, outcome,
+    passLabel: "You know how the principles map onto the strategies. One worked example, and then the main task.",
+    onPass: () => go("exintro"),
+    onRetake: () => { state.q2.attempt = 2; go("q2:0"); },
     onExit: () => go("exit"),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Worked example: one vignette, one answer per strategy, then a critique.
+
+const EXAMPLE_STRATEGIES = [...TACTICS.map((t) => ({ kind: "tactic", name: t.name, def: t.def })), ...STANCES.map((s) => ({ kind: "stance", name: s.name, def: `About ${s.target}.` }))];
+
+function vignetteBox(full) {
+  const box = el("div", "vignette");
+  const msg = el("blockquote", "vignette-message");
+  msg.append(el("span", "card-eyebrow", "The person’s message"), EXAMPLE.message);
+  box.appendChild(msg);
+  const sit = el("details", "vignette-situation");
+  sit.open = Boolean(full);
+  sit.appendChild(el("summary", null, "The full situation"));
+  sit.appendChild(el("p", null, EXAMPLE.situation));
+  box.appendChild(sit);
+  return box;
+}
+
+function renderExampleIntro() {
+  signpost({
+    step: 5, frac: 0,
+    text: "Finally, a worked example. You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of CBT. Then we will go over your answers.",
+    back: () => go("q2result"),
+    next: () => go("exvignette"),
+  });
+}
+
+function renderExampleVignette() {
+  screen({ step: 5, frac: 0.1 });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", "Worked example"));
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox(true));
+  body.appendChild(el("p", "callout", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
+  card.appendChild(body);
+  const back = button("← Back", true); back.addEventListener("click", () => go("exintro"));
+  const next = button("Next →"); next.addEventListener("click", () => go("ex:0"));
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
+}
+
+function renderExampleItem(i) {
+  const st = EXAMPLE_STRATEGIES[i];
+  screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Worked example · Strategy ${i + 1} of ${EXAMPLE_STRATEGIES.length}`));
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox(false));
+  body.appendChild(el("p", "dim-page-name", st.name));
+  body.appendChild(el("p", "dim-page-def", st.def));
+  const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
+  body.appendChild(el("p", "survey-question-text", stem));
+  const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
+  const choices = el("div", "control-choices");
+  let picked = state.example[st.name] || null;
+  for (const opt of options) {
+    const label = el("label", "control-choice");
+    const input = document.createElement("input");
+    input.type = "radio"; input.name = "example"; input.value = opt;
+    if (picked === opt) input.checked = true;
+    input.addEventListener("change", () => { picked = opt; next.disabled = false; warning.hide(); });
+    label.append(input, el("span", null, opt));
+    choices.appendChild(label);
+  }
+  body.appendChild(choices);
+  card.appendChild(body);
+  const warning = luckyWarning();
+  card.appendChild(warning.node);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(i === 0 ? "exvignette" : `ex:${i - 1}`));
+  const next = button(i === EXAMPLE_STRATEGIES.length - 1 ? "See the critique →" : "Next →");
+  next.disabled = !picked;
+  next.addEventListener("click", () => {
+    if (!picked) return warning.show("Please pick an answer.");
+    state.example[st.name] = picked;
+    go(i === EXAMPLE_STRATEGIES.length - 1 ? "excritique" : `ex:${i + 1}`);
+  });
+  const n = nav(back, el("span", "spacer"), next);
+  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", () => go(i === EXAMPLE_STRATEGIES.length - 1 ? "excritique" : `ex:${i + 1}`)); n.insertBefore(skip, next); }
+  card.appendChild(n);
+  bodyEl.appendChild(card);
+}
+
+function renderExampleCritique() {
+  screen({ step: 5, frac: 1 });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", "Worked example · Critique"));
+  const body = el("div", "survey-card-body");
+  const decided = EXAMPLE_STRATEGIES.filter((st) => EXAMPLE.gold[st.name].answer);
+  const right = decided.filter((st) => state.example[st.name] === EXAMPLE.gold[st.name].answer).length;
+  body.appendChild(el("p", "principle-teaches", `The CBT principles decide ${decided.length} of the ${EXAMPLE_STRATEGIES.length} strategies for this situation. You matched them on ${right} of ${decided.length}. The others are left to judgment.`));
+  const list = el("div", "critique-list");
+  for (const st of EXAMPLE_STRATEGIES) {
+    const g = EXAMPLE.gold[st.name];
+    const yours = state.example[st.name] || "no answer";
+    const row = el("div", "critique");
+    let status, note;
+    if (!g.answer) { status = "open"; note = g.why; }
+    else if (yours === g.answer) { status = "ok"; note = g.why; }
+    else if (g.partial && g.partial[yours]) { status = "near"; note = g.partial[yours]; }
+    else { status = "bad"; note = g.why; }
+    row.classList.add(`critique--${status}`);
+    const head = el("div", "critique-head");
+    head.append(el("span", "critique-name", st.name), el("span", "critique-mark", status === "ok" ? "✓" : status === "open" ? "–" : status === "near" ? "~" : "✗"));
+    row.appendChild(head);
+    const line = el("p", "critique-line");
+    line.append(el("b", null, "Your answer: "), yours);
+    if (g.answer) line.append("  ·  ", el("b", null, "CBT: "), g.answer + (g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : ""));
+    row.appendChild(line);
+    row.appendChild(el("p", "critique-note", note));
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+  card.appendChild(body);
+  const back = button("← Back", true); back.addEventListener("click", () => go(`ex:${EXAMPLE_STRATEGIES.length - 1}`));
+  const next = button("Next →"); next.addEventListener("click", () => { state.critters = Math.max(state.critters, 5); go("done"); });
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
 }
 
 // ---------------------------------------------------------------------------
@@ -1297,16 +1482,16 @@ function renderQ2Result() {
 
 function exportText() {
   return JSON.stringify({ school: SCHOOL.key, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
-    q1: state.q1, q2: state.q2 }, null, 1);
+    q1: state.q1, q2: state.q2, example: state.example }, null, 1);
 }
 
 function renderDone() {
-  screen({ step: 5, frac: 1 });
+  screen({ step: 6, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("party"));
   body.appendChild(el("p", "survey-signpost-text", "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
-  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${q1Score(state.q1.attempt)} of ${Q1_ITEMS.length} on attempt ${state.q1.attempt}. Dimensions quiz: ${q2Score(state.q2.attempt)} of ${Q2_ITEMS.length} on attempt ${state.q2.attempt}.`));
+  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${quizScore(state.q1, Q1_ITEMS)} of ${Q1_ITEMS.length}. Strategies quiz: ${quizScore(state.q2, Q2_ITEMS)} of ${Q2_ITEMS.length}.`));
   const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
   body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
   body.appendChild(ta);
@@ -1318,12 +1503,11 @@ function renderDone() {
 }
 
 function renderExit() {
-  screen({ step: 5, frac: 1 });
+  screen({ step: 6, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("sad"));
   body.appendChild(el("p", "survey-signpost-text", "Thank you for your time. The study ends here."));
-  body.appendChild(el("p", "survey-signpost-sub", "You will be paid for the training portion you completed."));
   card.appendChild(body);
   const reset = button("Start over", true); reset.addEventListener("click", resetAll);
   card.appendChild(nav(reset));
@@ -1331,7 +1515,7 @@ function renderExit() {
 }
 
 function resetAll() {
-  state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} };
+  state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} }; state.example = {};
   state.startedAt = new Date().toISOString();
   go("welcome");
 }
@@ -1348,26 +1532,20 @@ function render() {
     case "intro": return renderIntro();
     case "card": return renderCard(i);
     case "q1intro": return renderQ1Intro();
-    case "q1": return renderQ1(i);
+    case "q1": return renderQuizItem("q1", i);
     case "q1result": return renderQ1Result();
     case "dims": return renderDims(i);
     case "q2intro": return renderQ2Intro();
-    case "q2": return renderQ2(i);
+    case "q2": return renderQuizItem("q2", i);
     case "q2result": return renderQ2Result();
+    case "exintro": return renderExampleIntro();
+    case "exvignette": return renderExampleVignette();
+    case "ex": return renderExampleItem(i);
+    case "excritique": return renderExampleCritique();
     case "done": return renderDone();
     case "exit": return renderExit();
     default: state.screen = "welcome"; return renderWelcome();
   }
-}
-
-if (DEBUG) {
-  const bar = el("div", "debug-bar");
-  for (const [label, key] of [["welcome", "welcome"], ["cards", "card:0"], ["quiz 1", "q1intro"], ["dims", "dims:0"], ["quiz 2", "q2intro"], ["done", "done"], ["reset", null]]) {
-    const b = el("button", null, label);
-    b.addEventListener("click", () => (key ? go(key) : resetAll()));
-    bar.appendChild(b);
-  }
-  document.body.appendChild(bar);
 }
 
 render();
