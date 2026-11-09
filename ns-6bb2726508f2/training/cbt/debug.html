@@ -1529,7 +1529,7 @@ function renderExampleItem(i) {
   const card = el("section", "card survey-card");
   const body = el("div", "survey-card-body");
   body.appendChild(vignetteBox());
-  body.appendChild(el("p", "dim-page-name", st.name));
+  body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
   body.appendChild(el("p", "dim-page-def", st.def));
   const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
   body.appendChild(el("p", "survey-question-text", stem));
