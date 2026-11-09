@@ -1029,6 +1029,7 @@ function nav(...buttons) {
   return n;
 }
 function go(key) {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel(); // stop any read-aloud when leaving a screen
   state.screen = key;
   save();
   render();
@@ -1450,13 +1451,11 @@ function speakButton(text) {
     speaking = true; b.classList.add("speak-button--on");
     window.speechSynthesis.speak(u);
   });
-  window.addEventListener("hashchange", stop, { once: true });
   return b;
 }
 
 function renderExampleVignette() {
   screen({ step: 5, frac: 0.1 });
-  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   const card = el("section", "card survey-card");
   const head = el("div", "read-heading-row");
   head.append(el("p", "read-heading", "Read the following"), speakButton(EXAMPLE.situation));
