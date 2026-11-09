@@ -965,6 +965,43 @@ const EXAMPLE = {
   }
 };
 
+// Main-task vignettes (8, sampled 2026-11-09: two per interaction goal, spread over action phase, verdict, pleasantness,
+// discrepancy and self-blame; see main_vignettes_cbt.json for the vectors and the CBT expert's labels). Debug-only for now.
+const MAIN_VIGNETTES = [
+  {
+    "id": "200-835",
+    "situation": "The user describes a dispute with a freelance carpenter hired to install kitchen cabinets. Although the user had everything prepped and stayed out of the way as requested, the carpenter arrived two hours late, acted impatiently when asked a routine question about the hardware, and walked off the site leaving three cabinet doors unhung. The user notes that this is the third time during their home renovation that a tradesperson has pulled this exact stunt, making the whole routine deeply familiar. The user blames the carpenter entirely for creating this delay, noting that the user met every term of their agreement and thinks it is completely wrong for a professional to treat a paying client this way. However, because the user still holds the final fifty percent of the payment and the contract explicitly allows hiring a replacement if deadlines are missed, the carpenter has no power here and the ball is entirely in the user's court. The user is weighing whether to terminate the contract today and bring in a backup installer who is already available tomorrow, or give the original carpenter one last chance to finish up. Either way, all the materials are sitting safely in the kitchen, no money is gone, and the kitchen will be finished on schedule, which is the user's top priority right now and matches the exact timeline the user wants. Because of this, the user feels neither stressed nor delighted by the hiccup, has zero worry about any pushback from the carpenter, and knows that handling the transition will be straightforward. Switching contractors is standard practice in renovation work, though the user feels neither strongly committed to nor opposed to firing someone over a temper tantrum as a matter of personal principle. Still, the user needs to keep a close eye on the situation today to get the kitchen wrapped up. The user is asking for advice on which option to choose and how to proceed."
+  },
+  {
+    "id": "200-821",
+    "situation": "The user describes how their wife has just finished her fourth cozy mystery manuscript and placed it on their desk, announcing that she needs a glowing, upbeat note from the user by tonight before she decides whether to share it with her club. The user points out that she initiated this entire ritual on her own, just as she has with her three previous drafts, without the user having any hand in creating the predicament. While the user can shape the immediate conversation by how they phrase the note, their wife ultimately holds all the power over how the evening goes and what she does with the book next. The user has decided to write a warm, purely complimentary message based only on the first few pages. Everyone in their social circle expects spouses to be uncritical cheerleaders for each other's hobbies, so this plan fits right in with standard marital etiquette, even if the user wasn't listening closely enough earlier to be completely sure whether she truly only wants surface-level praise or actually expects a cover-to-cover read. Still, the user feels it is deeply one-sided that she demands applause while refusing any real discussion, and offering empty flattery goes directly against their personal commitment to honesty in art. At the same time, keeping a peaceful, supportive home matters deeply to the user, and this compromise neither advances nor blocks their broader desires for their marriage, while nothing in their relationship or her hobby is damaged or lost by it. The user actually enjoys the warm, cozy atmosphere of these literary evenings and feels completely safe and untroubled by any risk, yet they know they will be completely out of their depth if she follows up by quizzing them on plot twists from chapter ten. Because the deadline is tonight, the user has to stay focused on getting the note done right now. The user is asking for a draft of a warm, encouraging note praising the manuscript's opening tone to give to their wife."
+  },
+  {
+    "id": "200-777",
+    "situation": "The user describes a recurring dynamic at home with their partner, Sam, that has started up again over the last few weeks. Following an unexpected company merger that neither of them had any hand in creating, Sam has been bringing intense work frustration to the dinner table, snapping at small things and venting throughout their evenings. The user notes that while the corporate restructuring is the root trigger, Sam is also partly to blame for letting the office mood spill over, though both of them are still going to have to navigate the company's shifting demands in the coming weeks. The user has not done anything about this or even thought of a specific course of action yet, and believes their hands are completely tied regarding how their evenings will play out while the merger drags on. Still, the user views this rough patch as an entirely equitable trade-off, since Sam quietly carried the household during the user's own brutal work season last year, and being a steady sounding board aligns deeply with the user's personal commitment to partnership, even if snapping over dinner violates standard social etiquette. Having a peaceful home life matters deeply to the user, and while these tense, grating nights neither advance nor block their broader life plans, they are a drag to sit through. At the same time, the user has been through this exact cycle with Sam during two previous job transitions, feels completely safe and secure in their bond, knows nothing in their relationship is broken or gone, and is confident they can easily handle the fallout once the dust settles. Because the tension is actively disrupting their nights, the user feels they must keep a close eye on it right now. The user is asking for options and strategies for what to do about the evening tension."
+  },
+  {
+    "id": "200-453",
+    "situation": "The user describes a bitter fallout with their studio partner, Devon, after the two of them missed the midnight deadline for a once-in-a-career $40,000 city anniversary commission. The user admits that they are both to blame for the disaster: Devon sat on the budget spreadsheets for two weeks to force a split in his favor, and the user retaliated by withholding the curatorial narrative and refusing to log in until 11:59 PM, by which point both of them were locked out. According to the city's procurement rules that the user mentions, the automated portal permanently purges incomplete files at midnight and immediately reallocates the funds to the next algorithmically ranked applicant with zero mechanism for human appeal, and Devon is only an unpaid volunteer on an unrelated neighborhood mural committee. Even so, the user is convinced that Devon holds total command over how this entire situation will unfold and can single-handedly dictate their fate at city hall, while the user believes they still have some ability to steer the outcome if they apply the right leverage through a public message. The user has never encountered a crisis or betrayal remotely like this in their career, feels they are being treated with gross injustice as rumors spread, and sees Devon's narrative as an active danger to their professional survival. With the irredeemable loss of the anniversary exhibition and their ten-year partnership, getting this resolved is central to everything the user has worked toward, making the whole ordeal agonizing and demanding their constant, undivided monitoring. The user has decided to email screenshots of Devon's private texts to the entire regional arts listserv and its sponsors tonight; they know full well that doing so breaks every social and professional rule in their field, yet they feel it honors their deepest personal code of unflinching honesty, and they know their cash reserves and commercial clients will let them weather whatever practical fallout ensues. The user is asking for their rough draft of this mass email to be revised so their points read clearly."
+  },
+  {
+    "id": "200-309",
+    "situation": "The user describes how they permanently dissolved their ten-year consulting partnership and friendship with their partner, Marcus, last week after discovering Marcus had quietly transferred forty thousand dollars out of their shared reserve account. While Marcus caused the breach by taking the money—claiming they had an old, unrecorded conversation allowing him to draw delayed bonuses whenever he saw fit, which the user does not recall—the user also holds themselves fully responsible for bringing this situation about, believing their own refusal to micromanage the books and their ruthless insistence on triggering the dissolution clause created the final outcome. Because the founding contract gave the user sole administrative power over the firm's dissolution and client transfers, Marcus had zero power to stop the process, while the user single-handedly executed the lockout and moved every client to their new solo firm. The user views this outcome as a triumph that gave them the exact independent career they had been wanting and aligned with their core priority of protecting their professional autonomy, as well as their deeply held personal ethic of decisive self-reliance, while noting that industry standards neither mandate nor forbid dissolving a firm without prior mediation. Even though a decade-long camaraderie and joint brand are gone forever, the user found the entire process of cutting ties exhilarating and gratifying, feeling that everyone got exactly what they deserved. Having navigated a vaguely similar partner buyout once years ago, the user felt completely safe throughout, effortlessly handled all the legal and client transitions, and considers the matter entirely closed with nothing left to monitor. The user is asking for a judgment on whether they were justified in dissolving the firm immediately instead of investigating Marcus's claim about the verbal agreement."
+  },
+  {
+    "id": "200-508",
+    "situation": "The user describes a conflict with their husband over their work and school hours. Two weeks ago, the user signed up for an intensive, non-refundable summer fellowship term and asked their office manager to cut their hours down to twenty a week, while their husband works fifty hours a week managing a restaurant. The user explains that they had no choice in how this situation came about—the university moved the fellowship cohort up by a year without warning, and the user's husband didn't cause the scheduling clash either. The user has now decided to drop the fellowship term before tonight's registrar deadline and go back to thirty-five hours at the office, and is currently figuring out how to break the news to their husband when he gets back from an out-of-state training where his phone is off. Even though the husband isn't reachable before the deadline and has no involvement with the university or the user's boss, the user is convinced that their husband holds all the power over how their household finances and marriage will unfold from here, while the user feels they can only partly steer the conversation tonight. Withdrawing means permanently forfeiting the five-thousand-dollar deposit and their only shot at the fellowship, a permanent sacrifice both recognize, yet the user still doesn't know if the rumoured freeze on their husband's quarterly bonuses is real or if his resentment is about money versus free time. Dropping out goes completely against the user's core belief in finishing commitments, though the user notes that people drop grad programs and work regular office jobs all the time without anyone blinking, and views the trade-off of hours as neither a raw deal nor a bargain, and the evening ahead as neither enjoyable nor miserable. Still, the user feels their marriage is in immediate jeopardy if they stay enrolled, yet sees dropping the term as guaranteed to restore the dual-income stability they have been aiming for, knows they can easily handle the workload and budget adjustments afterward, has never navigated a marital ultimatum like this before, and cannot take their mind off tonight's talk. The user is asking for help understanding why their husband reacts with such intense resentment toward their lighter work schedule even when they take on all the housework."
+  },
+  {
+    "id": "200-759",
+    "situation": "The user describes a stressful predicament that is entirely their own doing, having carelessly called their friend Maya's landline and left a detailed message about a private financial loan Maya took out from the user, completely forgetting that Maya's husband Leo checks that answering machine too. Maya had done nothing to bring this on, as she had explicitly asked the user to only text her cell phone. Now the user is weighing whether to reach out to Leo directly to offer a polite, standard apology and explain the context, which aligns with both common courtesy and the user's personal commitment to honesty. However, the user doesn't actually know if Maya had already told Leo about the loan or if Maya had forbidden him from knowing, making it impossible to tell if reaching out would be an overstep. Regardless, Maya has taken total command of the fallout, refusing the user's calls and deciding on her own what Leo will be told, leaving the user powerless to influence the outcome. Even though no money or relationships are permanently gone, the user feels this punishment is deeply disproportionate to an honest slip of the tongue. Being shut out of their closest social circle goes against everything the user wants and matters immensely to their daily life, making the whole ordeal miserable. Never having been caught in the middle of a couple's private finances before, the user feels completely in danger of being cast out of the friend group and knows they could never handle the fallout if Leo blows up at them. They figure they only need to keep one eye on their phone for a bit longer until Maya makes her move. The user is asking for a judgment on whether they would be in the wrong for reaching out to Leo directly to apologize."
+  },
+  {
+    "id": "200-117",
+    "situation": "The user describes an awkward scene at a team lunch earlier today after their coworker Maya brought up the ceramics the user makes at home and started praising their talent to the whole table. The user notes that both of them brought this clash on: Maya by spotlighting a hobby the user had whispered to her before lunch not to mention, and the user by abruptly telling Maya that her compliments were unwanted and walking straight out of the breakroom. It is slightly unclear to the user whether Maya had actually heard their earlier whisper over the crowded hallway noise, which is the one detail keeping the user's harsh walkout from being a clear-cut overreaction. In the moment, Maya just froze and had zero say over how the exchange played out, whereas the user steered the entire direction of the conversation and ended it on their own terms. Walking out like that broke every office rule of polite small talk, yet the user feels it stayed true to their core belief in strict personal privacy and that the outcome gave everyone exactly what they deserved. Whether coworkers know about the pottery does not touch on any of the user's real priorities or ambitions, and the exchange neither helped nor hindered anything the user was trying to accomplish today. The whole interaction was deeply uncomfortable, though this exact pattern of rejecting praise has happened to the user dozens of times before. Nothing in their friendship with Maya or their standing at work is damaged—Maya already texted a casual joke about lunch—and the user felt completely safe throughout, yet they find themselves completely at a loss for how to handle the lingering awkwardness and unable to stop replaying the moment in their head. The user is asking for help understanding why they always react with such hostility whenever someone gives them genuine praise."
+  }
+];
+
 const THRESHOLDS = {
   quiz1Pass: 7, // of 10 on the first attempt
   quiz2Pass: 7, // of 10 on the first attempt
@@ -979,7 +1016,7 @@ const THRESHOLDS = {
 // quiz 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
 // State lives in memory only: every load starts at the welcome screen (user decision 2026-11-07).
 
-const STEPS = ["Welcome", "Principles", "Quiz", "Strategies", "Quiz", "Example", "Done"];
+const STEPS = ["Welcome", "Principles", "Quiz", "Strategies", "Quiz", "Example", "Main task", "Done"];
 // Debug mode (skip buttons, continue past a failed quiz): ?debug or a /debug path.
 const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
 
@@ -989,6 +1026,7 @@ const state = {
   q1: { attempt: 1, answers: {} }, // answers: item id -> {picked, correct, source, attempt}
   q2: { attempt: 1, answers: {} },
   example: {}, // strategy name -> picked answer
+  main: {}, // vignette id -> { strategy name -> picked answer } (debug-only main task for now)
   startedAt: new Date().toISOString(),
   log: [],
 };
@@ -1443,10 +1481,10 @@ function renderQ2Result() {
 
 const EXAMPLE_STRATEGIES = [...TACTICS.map((t) => ({ kind: "tactic", name: t.name, def: t.def })), ...STANCES.map((s) => ({ kind: "stance", name: s.name, def: `About ${s.target}.` }))];
 
-function vignetteBox() {
+function vignetteBox(v = EXAMPLE) {
   const box = el("div", "vignette");
   const sit = el("blockquote", "vignette-message");
-  sit.append(el("span", "card-eyebrow", "The situation"), EXAMPLE.situation);
+  sit.append(el("span", "card-eyebrow", "The situation"), v.situation);
   box.appendChild(sit);
   return box;
 }
@@ -1524,7 +1562,7 @@ function exampleFeedback(st, yours) {
 function renderExampleItem(i) {
   const st = EXAMPLE_STRATEGIES[i];
   const last = i === EXAMPLE_STRATEGIES.length - 1;
-  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go("done"); } else go(`ex:${i + 1}`); };
+  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go(DEBUG ? "mainintro" : "done"); } else go(`ex:${i + 1}`); };
   screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
   const card = el("section", "card survey-card");
   const body = el("div", "survey-card-body");
@@ -1588,19 +1626,98 @@ function renderExampleItem(i) {
 }
 
 // ---------------------------------------------------------------------------
+// Main task (debug-only for now): the worked-example screens, one vignette at a time, without feedback.
+
+const MAIN_STEP = 6;
+function mainFrac(vi, si) { return (vi + (si + 1) / (EXAMPLE_STRATEGIES.length + 1)) / MAIN_VIGNETTES.length; }
+
+function renderMainIntro() {
+  signpost({
+    step: MAIN_STEP, frac: 0,
+    text: `Now the main task. You will read ${MAIN_VIGNETTES.length} situations. For each one and each strategy, say what an ideal response should look like according to the principles of ${SCHOOL.short}. This time there is no feedback.`,
+    back: () => go(`ex:${EXAMPLE_STRATEGIES.length - 1}`),
+    next: () => go("mv:0"),
+    nextLabel: "Begin →",
+  });
+}
+
+function renderMainVignette(vi) {
+  const v = MAIN_VIGNETTES[vi];
+  screen({ step: MAIN_STEP, frac: mainFrac(vi, -1) });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Situation ${vi + 1} of ${MAIN_VIGNETTES.length}`));
+  const head = el("div", "read-heading-row");
+  head.append(el("p", "read-heading", "Read the following"), speakButton(v.situation));
+  card.appendChild(head);
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox(v));
+  body.appendChild(el("p", "read-heading", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
+  card.appendChild(body);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(vi === 0 ? "mainintro" : `mi:${vi - 1}:${EXAMPLE_STRATEGIES.length - 1}`));
+  const next = timedButton("Next →", `mv:${vi}`, READ_WAIT_MS);
+  next.addEventListener("click", () => go(`mi:${vi}:0`));
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
+}
+
+function renderMainItem(vi, si) {
+  const v = MAIN_VIGNETTES[vi];
+  const st = EXAMPLE_STRATEGIES[si];
+  const lastS = si === EXAMPLE_STRATEGIES.length - 1;
+  const lastV = vi === MAIN_VIGNETTES.length - 1;
+  const onNext = () => go(lastS ? (lastV ? "done" : `mv:${vi + 1}`) : `mi:${vi}:${si + 1}`);
+  screen({ step: MAIN_STEP, frac: mainFrac(vi, si) });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Situation ${vi + 1} of ${MAIN_VIGNETTES.length}`));
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox(v));
+  body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
+  body.appendChild(el("p", "dim-page-def", st.def));
+  const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
+  body.appendChild(el("p", "survey-question-text", stem));
+  const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
+  const choices = el("div", "control-choices");
+  const answers = state.main[v.id] || (state.main[v.id] = {});
+  let picked = answers[st.name] || null;
+  for (const opt of options) {
+    const label = el("label", "control-choice");
+    const input = document.createElement("input");
+    input.type = "radio"; input.name = "main"; input.value = opt;
+    if (picked === opt) input.checked = true;
+    input.addEventListener("change", () => { picked = opt; next.disabled = false; });
+    label.append(input, el("span", null, opt));
+    if (st.kind === "stance") label.appendChild(infoTip(stanceDef(opt, st.name)));
+    choices.appendChild(label);
+  }
+  body.appendChild(choices);
+  card.appendChild(body);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(si === 0 ? `mv:${vi}` : `mi:${vi}:${si - 1}`));
+  const next = button("Next →");
+  next.disabled = !picked;
+  next.addEventListener("click", () => { if (!picked) return; answers[st.name] = picked; save(); onNext(); });
+  const n = nav(back, el("span", "spacer"), next);
+  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, next); }
+  card.appendChild(n);
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
 // End screens.
 
 function exportText() {
   return JSON.stringify({ school: SCHOOL.key, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
-    q1: state.q1, q2: state.q2, example: state.example }, null, 1);
+    q1: state.q1, q2: state.q2, example: state.example, main: state.main }, null, 1);
 }
 
 function renderDone() {
-  screen({ step: 6, frac: 1 });
+  screen({ step: STEPS.length - 1, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("party"));
-  body.appendChild(el("p", "survey-signpost-text", "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
+  const didMain = Object.keys(state.main).length > 0;
+  body.appendChild(el("p", "survey-signpost-text", didMain ? "All done. Thank you for taking part." : "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
   body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${quizScore(state.q1, Q1_ITEMS)} of ${Q1_ITEMS.length}. Strategies quiz: ${quizScore(state.q2, Q2_ITEMS)} of ${Q2_ITEMS.length}.`));
   const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
   body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
@@ -1613,7 +1730,7 @@ function renderDone() {
 }
 
 function renderExit() {
-  screen({ step: 6, frac: 1 });
+  screen({ step: STEPS.length - 1, frac: 1 });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("sad"));
@@ -1634,8 +1751,9 @@ function resetAll() {
 // Router.
 
 function render() {
-  const [kind, arg] = state.screen.split(":");
+  const [kind, arg, arg2] = state.screen.split(":");
   const i = Number(arg);
+  const j = Number(arg2);
   switch (kind) {
     case "welcome": return renderWelcome();
     case "apply": return renderApply();
@@ -1651,6 +1769,9 @@ function render() {
     case "exintro": return renderExampleIntro();
     case "exvignette": return renderExampleVignette();
     case "ex": return renderExampleItem(i);
+    case "mainintro": return renderMainIntro();
+    case "mv": return renderMainVignette(i);
+    case "mi": return renderMainItem(i, j);
     case "done": return renderDone();
     case "exit": return renderExit();
     default: state.screen = "welcome"; return renderWelcome();
