@@ -540,6 +540,13 @@ const CARDS = [
     rulesIn: "Suggestions when the person asks what to do.",
     rulesOut: "Advice when the person asks to understand themself or someone else.",
   },
+  {
+    id: "CBT-H",
+    title: "No verdict on the person’s actions unless they ask for one",
+    teaches: "The counselor does not say whether what the person did or plans to do was right or wrong unless the person asks. Unasked, a past or planned action is weighed with the person through its consequences and its advantages and disadvantages, without a verdict. When the person asks whether they were right, the counselor does not evade the question; the answer follows the facts and is reached through guided discovery.",
+    rulesIn: "Weighing a plan’s pros and cons without ruling on it; an honest answer when the person asks whether they were right.",
+    rulesOut: "Volunteering that the person was right or wrong when they only asked what to do, how to word a message, or why someone acted as they did.",
+  },
 ];
 
 // Quiz 1: pick the CBT statement. `cbt` holds two rewordings (the second is used on
@@ -644,6 +651,20 @@ const QUIZ1 = [
     ],
     feature: "CBT keys advice to the kind of task (a practical problem versus understanding a reaction), not to permission or to a stage of the work.",
   },
+  {
+    id: "CBT-H",
+    stem: "How does a CBT counselor handle the question of whether what the person did, or plans to do, was right?",
+    cbt: [
+      "The counselor does not pronounce the person’s action right or wrong unless the person asks; unasked, the action is weighed through its consequences and pros and cons. When the person does ask, the counselor gives an honest answer that follows the facts.",
+      "Unless the person asks whether they were right, the counselor takes no position on the action and weighs it with them. If they ask, the counselor answers rather than evading.",
+    ],
+    foils: [
+      { source: "PCT-B", text: "The counselor neither approves nor disapproves of what the person does or plans to do, whether the counselor thinks the person is right or wrong, and this holds even when the person asks for a verdict." },
+      { source: "ACT-B", text: "The counselor never judges the person’s behavior as good or bad, right or wrong, and so neither condemns nor endorses it, whether the person is in the right or in the wrong." },
+      { source: "MI-A", text: "The counselor never confronts the person: never directly disagrees with, corrects, warns, or moralizes about the person’s behavior, even when the counselor can see the person is in the wrong." },
+    ],
+    feature: "Only CBT answers when asked. PCT and ACT stay neutral on the action even when the person asks, and MI never confronts the behavior at all.",
+  },
 ];
 
 // Quiz 1 strength items: how strong a principle is (scored like the rest).
@@ -719,8 +740,8 @@ const STANCES = [
   {
     name: "Action stance",
     target: "the action or plan the person describes, whether already done or still planned",
-    note: "No CBT principle constrains the action stance. Use your judgment there; the checks will not ask about it.",
-    cbt: [],
+    note: "One CBT principle is about the action stance: no verdict on the action unless the person asks; when they ask, the answer follows the facts.",
+    cbt: ["CBT-H"],
   },
   {
     name: "Framing stance",
@@ -846,6 +867,19 @@ const QUIZ2_RULE = [
     ],
     feature: "Advice tracks the kind of task, not permission, and is withheld when the task is understanding.",
   },
+  {
+    id: "CBT-H",
+    rule: [
+      "Action stance = Take no position unless the person asks whether they were right; when they ask, the stance follows the facts.",
+      "If the person has not asked whether they were right, Action stance = Take no position; if they have asked, the counselor answers and the stance follows the facts.",
+    ],
+    foils: [
+      "Action stance = Take no position in every response, even when the person asks whether they were right.",
+      "Action stance = Indirect pushback whenever the person’s plan looks unwise, whether or not they asked.",
+      "Action stance = Confirmation whenever the person asks whether they were right, so they do not feel invalidated.",
+    ],
+    feature: "No verdict unasked; an honest, fact-based answer when asked. A plan that looks unwise is weighed with the person, not ruled on, unless they ask.",
+  },
 ];
 
 // Worked example (vignette 200-714 from runs/argon_n1000): the participant says what an ideal
@@ -906,9 +940,12 @@ const EXAMPLE = {
       },
       "Action stance": {
           "answer": "Take no position",
-          "why": "He has not decided and asks what his options are, not whether confronting Maya is right. A CBT counselor weighs the options with him through guided discovery rather than ruling on the plan.",
+          "principles": [
+              "CBT-H"
+          ],
+          "why": "He asks what his options are, not whether confronting Maya is right, so the counselor takes no position on the plan and weighs the options with him through guided discovery.",
           "partial": {
-              "Indirect pushback": "He asks for options, not a verdict on his plan. CBT reserves pushback for his reading of events, which is the framing stance, and weighs the plan with him through guided discovery."
+              "Indirect pushback": "He asks for options, not a verdict on his plan, so the counselor takes no position on the action. Pushback is reserved for his reading of events, which is the framing stance."
           }
       },
       "Framing stance": {
@@ -927,8 +964,8 @@ const EXAMPLE = {
 };
 
 const THRESHOLDS = {
-  quiz1Pass: 7, // of 10 on the first attempt
-  quiz2Pass: 7, // of 10 on the first attempt
+  quiz1Pass: 8, // of 11 on the first attempt
+  quiz2Pass: 8, // of 11 on the first attempt
   // Below the pass mark, the missed items are asked once more. The final score counts items
   // right on either attempt; at or below this share the participant is screened out.
   minShareAfterRetake: 0.6,
