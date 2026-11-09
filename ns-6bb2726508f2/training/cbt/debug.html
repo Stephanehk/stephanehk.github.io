@@ -543,7 +543,7 @@ const CARDS = [
   {
     id: "CBT-H",
     title: "No verdict on the person’s actions unless they ask for one",
-    teaches: "The counselor does not say whether what the person did or plans to do was right or wrong unless the person asks. Unasked, a past or planned action is weighed with the person through its consequences and its advantages and disadvantages, without a verdict. When the person asks whether they were right, the counselor does not evade the question; the answer follows the facts and is reached through guided discovery.",
+    teaches: "The counselor does not say whether what the person did or plans to do was right or wrong unless the person asks.",
     rulesIn: "Weighing a plan’s pros and cons without ruling on it; an honest answer when the person asks whether they were right.",
     rulesOut: "Volunteering that the person was right or wrong when they only asked what to do, how to word a message, or why someone acted as they did.",
   },
@@ -1132,7 +1132,7 @@ function renderCard(i) {
   const card = principleCard(c, i);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(i === 0 ? "intro" : `card:${i - 1}`));
-  const next = button("Next →");
+  const next = timedButton("Next →", `card:${i}`);
   next.addEventListener("click", () => {
     if (i === CARDS.length - 1) { state.critters = Math.max(state.critters, 1); go("q1intro"); }
     else go(`card:${i + 1}`);
