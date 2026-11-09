@@ -1532,7 +1532,7 @@ function renderExampleItem(i) {
 
   function reveal(yours) {
     const gold = EXAMPLE.gold[st.name].answer;
-    const { status, note, basis } = exampleFeedback(st, yours);
+    const { status, note } = exampleFeedback(st, yours);
     for (const { label, input, opt } of inputs) {
       input.disabled = true;
       label.classList.add("control-choice--locked");
@@ -1542,7 +1542,7 @@ function renderExampleItem(i) {
     const row = el("div", "lucky-chat-row");
     row.appendChild(luckyBee("avatar"));
     const bubble = el("p", `lucky-chat-bubble ${status === "ok" ? "lucky-chat-bubble--ok" : status === "near" ? "lucky-chat-bubble--near" : "lucky-chat-bubble--bad"}`);
-    bubble.append(el("b", null, status === "ok" ? "That’s right. " : status === "near" ? "Close. " : "Not quite. "), `CBT: ${gold}${basis}. ${note}`);
+    bubble.append(el("b", null, status === "ok" ? "That’s right. " : status === "near" ? "Close. " : "Not quite. "), note);
     row.appendChild(bubble);
     feedbackHolder.appendChild(row);
     check.hidden = true;
