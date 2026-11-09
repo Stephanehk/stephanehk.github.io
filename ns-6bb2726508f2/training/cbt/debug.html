@@ -656,15 +656,15 @@ const QUIZ1 = [
     id: "CBT-H",
     stem: "How does a CBT counselor handle the question of whether what the person did, or plans to do, was right?",
     cbt: [
-      "The counselor does not pronounce the person’s action right or wrong unless the person asks; unasked, the action is weighed through its consequences and pros and cons. When the person does ask, the counselor gives an honest answer that follows the facts.",
-      "Unless the person asks whether they were right, the counselor takes no position on the action and weighs it with them. If they ask, the counselor answers rather than evading.",
+      "Takes no position on the action unless the person asks whether they were right; if they ask, gives an honest answer based on the facts.",
+      "Says nothing about whether the action was right unless asked; when asked, answers rather than evading.",
     ],
     foils: [
-      { source: "PCT-B", text: "The counselor neither approves nor disapproves of what the person does or plans to do, whether the counselor thinks the person is right or wrong, and this holds even when the person asks for a verdict." },
-      { source: "ACT-B", text: "The counselor never judges the person’s behavior as good or bad, right or wrong, and so neither condemns nor endorses it, whether the person is in the right or in the wrong." },
-      { source: "MI-A", text: "The counselor never confronts the person: never directly disagrees with, corrects, warns, or moralizes about the person’s behavior, even when the counselor can see the person is in the wrong." },
+      { source: "PCT-B", text: "Never says whether the action was right or wrong, even when the person asks." },
+      { source: "written", text: "Always says whether the action was right or wrong, whether or not the person asks." },
+      { source: "written", text: "Tells the person they were wrong whenever the counselor thinks so, and says nothing when they were right." },
     ],
-    feature: "Only CBT answers when asked. PCT and ACT stay neutral on the action even when the person asks, and MI never confronts the behavior at all.",
+    feature: "CBT gives a verdict on the action only when asked. It neither withholds one when asked nor volunteers one unasked.",
   },
 ];
 
@@ -1379,7 +1379,6 @@ function renderDims(i) {
     return signpost({
       step: 3, frac: 1 / DIMS_TOTAL,
       text: `We will now tell you about the ${DIM_PAGES.length} strategies that you will use to label responses. We will quiz you on them later.`,
-      small: true,
       back: () => go("dims:0"),
       next: () => go("dims:2"),
       withBee: false,
