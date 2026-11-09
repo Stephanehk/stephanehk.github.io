@@ -597,6 +597,7 @@ const QUIZ1 = [
   },
   {
     id: "CBT-G",
+    skip: true, // dropped 2026-11-09 to keep Quiz 1 at 10 items after CBT-H was added
     stem: "How does a CBT counselor use questions?",
     cbt: [
       "The counselor asks questions in most responses to guide the person to new perspectives, but also explains, summarizes, and suggests; questions are one tool among several.",
@@ -820,6 +821,7 @@ const QUIZ2_RULE = [
   },
   {
     id: "CBT-G",
+    skip: true, // dropped 2026-11-09 to keep Quiz 2 at 10 items after CBT-H was added
     rule: ["Questioning = yes in most responses.", "Most responses include at least one question."],
     foils: [
       "Questioning = yes in every response, with nothing else.",
@@ -964,8 +966,8 @@ const EXAMPLE = {
 };
 
 const THRESHOLDS = {
-  quiz1Pass: 8, // of 11 on the first attempt
-  quiz2Pass: 8, // of 11 on the first attempt
+  quiz1Pass: 7, // of 10 on the first attempt
+  quiz2Pass: 7, // of 10 on the first attempt
   // Below the pass mark, the missed items are asked once more. The final score counts items
   // right on either attempt; at or below this share the participant is screened out.
   minShareAfterRetake: 0.6,
@@ -1223,8 +1225,8 @@ function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature,
 // asked once more (same wording, different order). The final score counts items right on
 // either attempt; at or below THRESHOLDS.minShareAfterRetake the participant is screened out.
 
-const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.map((q) => ({ kind: "claim", q }))];
-const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.map((q) => ({ kind: "rule", q }))];
+const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.filter((q) => !q.skip).map((q) => ({ kind: "claim", q }))];
+const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.filter((q) => !q.skip).map((q) => ({ kind: "rule", q }))];
 const itemKey = (it) => `${it.kind}:${it.q.id}`;
 
 function quizItems(qstate, all) {
