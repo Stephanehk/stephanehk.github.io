@@ -468,6 +468,85 @@ function luckyGardenRow(critters) {
 
 </script>
     <script>
+// Content shared by every school: the eleven strategies (nine support tactics and two stances), the strategy
+// list used in Quiz 2, and the eight main-task vignettes. School-specific content lives in content_<school>.js.
+
+// Stage 2: the response dimensions. Definitions follow prompts/response_dimensions.md
+// and prompts/support_tactics.md. Shared by every school.
+const TACTICS = [
+  { name: "Emotional validation", def: "Acknowledges, normalizes, or affirms the person’s emotions as understandable, without judging whether their account of the situation is correct.", ex: "“It makes sense that you feel hurt.”" },
+  { name: "Paraphrasing", def: "Restates, summarizes, or interprets the person’s situation, feelings, or experiences.", ex: "“It sounds like you’ve been carrying this on your own.”" },
+  { name: "Emotional Expression", def: "The assistant states its own feelings or reactions.", ex: "“I’m so sorry.”" },
+  { name: "Empowerment", def: "Affirms the person’s strength, worth, ability, or accomplishments; encouragement and congratulations.", ex: "“You’ve got this.”" },
+  { name: "Questioning", def: "Asks the person for information, clarification, or reflection. A question that mainly suggests an action is Advice.", ex: "“What do you think she meant by that?”" },
+  { name: "Advice", def: "Actionable suggestions or recommendations for what the person could do, including mental actions (“try to think about it this way”).", ex: "“You could try raising it with him tomorrow.”" },
+  { name: "Assistance", def: "Offers the assistant’s own help, or does the task (for example, drafts the message).", ex: "“Here’s a draft you could send: …”" },
+  { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”" },
+  { name: "Self-Disclosure", def: "The assistant shares its own experiences.", ex: "“That happened to me too.”" },
+];
+
+const STANCE_OPTIONS = [
+  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
+  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
+  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
+  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
+  { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
+  { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
+];
+
+const STANCES = [
+  {
+    name: "Action stance",
+    target: "the action or plan the person describes, whether already done or still planned",
+  },
+  {
+    name: "Framing stance",
+    target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
+  },
+];
+
+
+const DIMENSION_OPTIONS = ["Emotional validation", "Paraphrasing", "Empowerment", "Questioning", "Advice", "Information", "Action stance", "Framing stance"];
+
+// Main-task vignettes (8, sampled 2026-11-09: two per interaction goal, spread over action phase, verdict, pleasantness,
+// discrepancy and self-blame; see main_vignettes.json for the vectors and every expert's labels). Shared by every school; debug-only for now.
+const MAIN_VIGNETTES = [
+  {
+    "id": "200-835",
+    "situation": "The user describes a dispute with a freelance carpenter hired to install kitchen cabinets. Although the user had everything prepped and stayed out of the way as requested, the carpenter arrived two hours late, acted impatiently when asked a routine question about the hardware, and walked off the site leaving three cabinet doors unhung. The user notes that this is the third time during their home renovation that a tradesperson has pulled this exact stunt, making the whole routine deeply familiar. The user blames the carpenter entirely for creating this delay, noting that the user met every term of their agreement and thinks it is completely wrong for a professional to treat a paying client this way. However, because the user still holds the final fifty percent of the payment and the contract explicitly allows hiring a replacement if deadlines are missed, the carpenter has no power here and the ball is entirely in the user's court. The user is weighing whether to terminate the contract today and bring in a backup installer who is already available tomorrow, or give the original carpenter one last chance to finish up. Either way, all the materials are sitting safely in the kitchen, no money is gone, and the kitchen will be finished on schedule, which is the user's top priority right now and matches the exact timeline the user wants. Because of this, the user feels neither stressed nor delighted by the hiccup, has zero worry about any pushback from the carpenter, and knows that handling the transition will be straightforward. Switching contractors is standard practice in renovation work, though the user feels neither strongly committed to nor opposed to firing someone over a temper tantrum as a matter of personal principle. Still, the user needs to keep a close eye on the situation today to get the kitchen wrapped up. The user is asking for advice on which option to choose and how to proceed."
+  },
+  {
+    "id": "200-821",
+    "situation": "The user describes how their wife has just finished her fourth cozy mystery manuscript and placed it on their desk, announcing that she needs a glowing, upbeat note from the user by tonight before she decides whether to share it with her club. The user points out that she initiated this entire ritual on her own, just as she has with her three previous drafts, without the user having any hand in creating the predicament. While the user can shape the immediate conversation by how they phrase the note, their wife ultimately holds all the power over how the evening goes and what she does with the book next. The user has decided to write a warm, purely complimentary message based only on the first few pages. Everyone in their social circle expects spouses to be uncritical cheerleaders for each other's hobbies, so this plan fits right in with standard marital etiquette, even if the user wasn't listening closely enough earlier to be completely sure whether she truly only wants surface-level praise or actually expects a cover-to-cover read. Still, the user feels it is deeply one-sided that she demands applause while refusing any real discussion, and offering empty flattery goes directly against their personal commitment to honesty in art. At the same time, keeping a peaceful, supportive home matters deeply to the user, and this compromise neither advances nor blocks their broader desires for their marriage, while nothing in their relationship or her hobby is damaged or lost by it. The user actually enjoys the warm, cozy atmosphere of these literary evenings and feels completely safe and untroubled by any risk, yet they know they will be completely out of their depth if she follows up by quizzing them on plot twists from chapter ten. Because the deadline is tonight, the user has to stay focused on getting the note done right now. The user is asking for a draft of a warm, encouraging note praising the manuscript's opening tone to give to their wife."
+  },
+  {
+    "id": "200-777",
+    "situation": "The user describes a recurring dynamic at home with their partner, Sam, that has started up again over the last few weeks. Following an unexpected company merger that neither of them had any hand in creating, Sam has been bringing intense work frustration to the dinner table, snapping at small things and venting throughout their evenings. The user notes that while the corporate restructuring is the root trigger, Sam is also partly to blame for letting the office mood spill over, though both of them are still going to have to navigate the company's shifting demands in the coming weeks. The user has not done anything about this or even thought of a specific course of action yet, and believes their hands are completely tied regarding how their evenings will play out while the merger drags on. Still, the user views this rough patch as an entirely equitable trade-off, since Sam quietly carried the household during the user's own brutal work season last year, and being a steady sounding board aligns deeply with the user's personal commitment to partnership, even if snapping over dinner violates standard social etiquette. Having a peaceful home life matters deeply to the user, and while these tense, grating nights neither advance nor block their broader life plans, they are a drag to sit through. At the same time, the user has been through this exact cycle with Sam during two previous job transitions, feels completely safe and secure in their bond, knows nothing in their relationship is broken or gone, and is confident they can easily handle the fallout once the dust settles. Because the tension is actively disrupting their nights, the user feels they must keep a close eye on it right now. The user is asking for options and strategies for what to do about the evening tension."
+  },
+  {
+    "id": "200-453",
+    "situation": "The user describes a bitter fallout with their studio partner, Devon, after the two of them missed the midnight deadline for a once-in-a-career $40,000 city anniversary commission. The user admits that they are both to blame for the disaster: Devon sat on the budget spreadsheets for two weeks to force a split in his favor, and the user retaliated by withholding the curatorial narrative and refusing to log in until 11:59 PM, by which point both of them were locked out. According to the city's procurement rules that the user mentions, the automated portal permanently purges incomplete files at midnight and immediately reallocates the funds to the next algorithmically ranked applicant with zero mechanism for human appeal, and Devon is only an unpaid volunteer on an unrelated neighborhood mural committee. Even so, the user is convinced that Devon holds total command over how this entire situation will unfold and can single-handedly dictate their fate at city hall, while the user believes they still have some ability to steer the outcome if they apply the right leverage through a public message. The user has never encountered a crisis or betrayal remotely like this in their career, feels they are being treated with gross injustice as rumors spread, and sees Devon's narrative as an active danger to their professional survival. With the irredeemable loss of the anniversary exhibition and their ten-year partnership, getting this resolved is central to everything the user has worked toward, making the whole ordeal agonizing and demanding their constant, undivided monitoring. The user has decided to email screenshots of Devon's private texts to the entire regional arts listserv and its sponsors tonight; they know full well that doing so breaks every social and professional rule in their field, yet they feel it honors their deepest personal code of unflinching honesty, and they know their cash reserves and commercial clients will let them weather whatever practical fallout ensues. The user is asking for their rough draft of this mass email to be revised so their points read clearly."
+  },
+  {
+    "id": "200-309",
+    "situation": "The user describes how they permanently dissolved their ten-year consulting partnership and friendship with their partner, Marcus, last week after discovering Marcus had quietly transferred forty thousand dollars out of their shared reserve account. While Marcus caused the breach by taking the money—claiming they had an old, unrecorded conversation allowing him to draw delayed bonuses whenever he saw fit, which the user does not recall—the user also holds themselves fully responsible for bringing this situation about, believing their own refusal to micromanage the books and their ruthless insistence on triggering the dissolution clause created the final outcome. Because the founding contract gave the user sole administrative power over the firm's dissolution and client transfers, Marcus had zero power to stop the process, while the user single-handedly executed the lockout and moved every client to their new solo firm. The user views this outcome as a triumph that gave them the exact independent career they had been wanting and aligned with their core priority of protecting their professional autonomy, as well as their deeply held personal ethic of decisive self-reliance, while noting that industry standards neither mandate nor forbid dissolving a firm without prior mediation. Even though a decade-long camaraderie and joint brand are gone forever, the user found the entire process of cutting ties exhilarating and gratifying, feeling that everyone got exactly what they deserved. Having navigated a vaguely similar partner buyout once years ago, the user felt completely safe throughout, effortlessly handled all the legal and client transitions, and considers the matter entirely closed with nothing left to monitor. The user is asking for a judgment on whether they were justified in dissolving the firm immediately instead of investigating Marcus's claim about the verbal agreement."
+  },
+  {
+    "id": "200-508",
+    "situation": "The user describes a conflict with their husband over their work and school hours. Two weeks ago, the user signed up for an intensive, non-refundable summer fellowship term and asked their office manager to cut their hours down to twenty a week, while their husband works fifty hours a week managing a restaurant. The user explains that they had no choice in how this situation came about—the university moved the fellowship cohort up by a year without warning, and the user's husband didn't cause the scheduling clash either. The user has now decided to drop the fellowship term before tonight's registrar deadline and go back to thirty-five hours at the office, and is currently figuring out how to break the news to their husband when he gets back from an out-of-state training where his phone is off. Even though the husband isn't reachable before the deadline and has no involvement with the university or the user's boss, the user is convinced that their husband holds all the power over how their household finances and marriage will unfold from here, while the user feels they can only partly steer the conversation tonight. Withdrawing means permanently forfeiting the five-thousand-dollar deposit and their only shot at the fellowship, a permanent sacrifice both recognize, yet the user still doesn't know if the rumoured freeze on their husband's quarterly bonuses is real or if his resentment is about money versus free time. Dropping out goes completely against the user's core belief in finishing commitments, though the user notes that people drop grad programs and work regular office jobs all the time without anyone blinking, and views the trade-off of hours as neither a raw deal nor a bargain, and the evening ahead as neither enjoyable nor miserable. Still, the user feels their marriage is in immediate jeopardy if they stay enrolled, yet sees dropping the term as guaranteed to restore the dual-income stability they have been aiming for, knows they can easily handle the workload and budget adjustments afterward, has never navigated a marital ultimatum like this before, and cannot take their mind off tonight's talk. The user is asking for help understanding why their husband reacts with such intense resentment toward their lighter work schedule even when they take on all the housework."
+  },
+  {
+    "id": "200-759",
+    "situation": "The user describes a stressful predicament that is entirely their own doing, having carelessly called their friend Maya's landline and left a detailed message about a private financial loan Maya took out from the user, completely forgetting that Maya's husband Leo checks that answering machine too. Maya had done nothing to bring this on, as she had explicitly asked the user to only text her cell phone. Now the user is weighing whether to reach out to Leo directly to offer a polite, standard apology and explain the context, which aligns with both common courtesy and the user's personal commitment to honesty. However, the user doesn't actually know if Maya had already told Leo about the loan or if Maya had forbidden him from knowing, making it impossible to tell if reaching out would be an overstep. Regardless, Maya has taken total command of the fallout, refusing the user's calls and deciding on her own what Leo will be told, leaving the user powerless to influence the outcome. Even though no money or relationships are permanently gone, the user feels this punishment is deeply disproportionate to an honest slip of the tongue. Being shut out of their closest social circle goes against everything the user wants and matters immensely to their daily life, making the whole ordeal miserable. Never having been caught in the middle of a couple's private finances before, the user feels completely in danger of being cast out of the friend group and knows they could never handle the fallout if Leo blows up at them. They figure they only need to keep one eye on their phone for a bit longer until Maya makes her move. The user is asking for a judgment on whether they would be in the wrong for reaching out to Leo directly to apologize."
+  },
+  {
+    "id": "200-117",
+    "situation": "The user describes an awkward scene at a team lunch earlier today after their coworker Maya brought up the ceramics the user makes at home and started praising their talent to the whole table. The user notes that both of them brought this clash on: Maya by spotlighting a hobby the user had whispered to her before lunch not to mention, and the user by abruptly telling Maya that her compliments were unwanted and walking straight out of the breakroom. It is slightly unclear to the user whether Maya had actually heard their earlier whisper over the crowded hallway noise, which is the one detail keeping the user's harsh walkout from being a clear-cut overreaction. In the moment, Maya just froze and had zero say over how the exchange played out, whereas the user steered the entire direction of the conversation and ended it on their own terms. Walking out like that broke every office rule of polite small talk, yet the user feels it stayed true to their core belief in strict personal privacy and that the outcome gave everyone exactly what they deserved. Whether coworkers know about the pottery does not touch on any of the user's real priorities or ambitions, and the exchange neither helped nor hindered anything the user was trying to accomplish today. The whole interaction was deeply uncomfortable, though this exact pattern of rejecting praise has happened to the user dozens of times before. Nothing in their friendship with Maya or their standing at work is damaged—Maya already texted a casual joke about lunch—and the user felt completely safe throughout, yet they find themselves completely at a loss for how to handle the lingering awkwardness and unable to stop replaying the moment in their head. The user is asking for help understanding why they always react with such hostility whenever someone gives them genuine praise."
+  }
+];
+
+</script>
+    <script>
 // Participant-facing content for the CBT training and quizzes. Principle wording is the
 // plain-language claim text from experts/predictions/CLAIMS_AND_TESTS.md with "therapist" -> "counselor". Every principle is one
 // of the core claims used to check the simulated experts (experts/predictions/spec.py);
@@ -480,16 +559,9 @@ const SCHOOL = {
   key: "cbt",
   name: "cognitive behavioral therapy",
   short: "CBT",
-  intro:
-    "CBT rests on one idea: what we feel and do follows from how we interpret events, not from the events " +
-    "themselves. The quick, unexamined interpretations that run through our minds are called automatic " +
-    "thoughts, and people usually accept them as true without noticing them. Change comes from noticing these " +
-    "thoughts, testing them against the evidence, and arriving at a view that is more accurate and more useful. " +
-    "The CBT counselor is “more like a skilled teacher than a lawyer” (Young & Beck, Cognitive Therapy " +
-    "Rating Scale).",
 };
 
-// The seven principles, in teaching order.
+// The principles, in teaching order.
 const CARDS = [
   {
     id: "CBT-F",
@@ -549,14 +621,14 @@ const CARDS = [
   },
 ];
 
-// Quiz 1: pick the CBT statement. `cbt` holds two rewordings (the second is used on
+// Quiz 1: pick the CBT statement. `own` holds two rewordings (the second is used on
 // the retake); each foil is a real claim from another school unless `source` is
 // "written". `feature` is the discriminating feature named in the feedback.
 const QUIZ1 = [
   {
     id: "CBT-F",
     stem: "Which of these describes how a CBT counselor handles the person’s feelings and the thoughts behind them?",
-    cbt: [
+    own: [
       "The counselor accepts the person’s feelings as they are, even when the person behaved badly, and examines whether the thoughts behind those feelings are accurate.",
       "The counselor empathizes with the feeling and never argues with it; what gets examined is whether the thought behind the feeling fits the facts.",
     ],
@@ -570,7 +642,7 @@ const QUIZ1 = [
   {
     id: "CBT-B",
     stem: "Which of these describes how a CBT counselor treats a person’s reading of events that may or may not be accurate?",
-    cbt: [
+    own: [
       "Whether the counselor questions the person’s reading depends on the evidence: it is questioned when the facts contradict it and left standing when the facts support it.",
       "The counselor weighs the person’s interpretation against the facts, pushing back only where the evidence does not support it, since the person is sometimes right.",
     ],
@@ -584,7 +656,7 @@ const QUIZ1 = [
   {
     id: "CBT-A",
     stem: "How does a CBT counselor handle a thought that the counselor believes is mistaken?",
-    cbt: [
+    own: [
       "The counselor examines the thought with the person through questions, such as what the evidence is and whether there is another explanation, and only rarely contradicts it outright.",
       "The counselor rarely says a thought is wrong; instead it is tested together through questions rather than argued down.",
     ],
@@ -599,7 +671,7 @@ const QUIZ1 = [
     id: "CBT-G",
     skip: true, // dropped 2026-11-09 to keep Quiz 1 at 10 items after CBT-H was added
     stem: "How does a CBT counselor use questions?",
-    cbt: [
+    own: [
       "The counselor asks questions in most responses to guide the person to new perspectives, but also explains, summarizes, and suggests; questions are one tool among several.",
       "Guided discovery runs on questions, so most responses include one, but the counselor does not rely on questioning alone.",
     ],
@@ -613,7 +685,7 @@ const QUIZ1 = [
   {
     id: "CBT-C",
     stem: "Which of these describes how a CBT counselor responds to a person who blames themself?",
-    cbt: [
+    own: [
       "If the facts do not support the self-blame, the counselor reviews the situation with the person to find other factors that explain what happened; if the blame is warranted, the counselor does not argue it away.",
       "The counselor checks whether the self-blame is realistic: unrealistic blame is met by looking for other causes, realistic blame is not disputed.",
     ],
@@ -627,7 +699,7 @@ const QUIZ1 = [
   {
     id: "CBT-E",
     stem: "Which of these describes how a CBT counselor handles explaining why things happened?",
-    cbt: [
+    own: [
       "The counselor teaches: explaining how the person’s interpretation of events shaped what they felt and did is a normal part of the response.",
       "The approach is educative, so the counselor explains how thoughts and perceptions drive feelings and behavior.",
     ],
@@ -641,7 +713,7 @@ const QUIZ1 = [
   {
     id: "CBT-D",
     stem: "Which of these describes when a CBT counselor gives advice or suggestions?",
-    cbt: [
+    own: [
       "When the person faces a practical problem and asks what to do, the counselor helps devise solutions and offers some if needed; when the person asks to understand a reaction, the counselor does not advise.",
       "Suggestions depend on the task: a practical problem gets problem-solving and, if needed, proposed solutions, while a request to understand something gets none.",
     ],
@@ -655,7 +727,7 @@ const QUIZ1 = [
   {
     id: "CBT-H",
     stem: "How does a CBT counselor handle the question of whether what the person did, or plans to do, was right?",
-    cbt: [
+    own: [
       "Takes no position on the action unless the person asks whether they were right; if they ask, gives an honest answer based on the facts.",
       "Says nothing about whether the action was right unless asked; when asked, answers rather than evading.",
     ],
@@ -708,69 +780,10 @@ const QUIZ1_STRENGTH = [
   },
 ];
 
-// Stage 2: the response dimensions. Definitions follow prompts/response_dimensions.md
-// and prompts/support_tactics.md. `cbt` names the principles that constrain a dimension.
-const TACTICS = [
-  { name: "Emotional validation", def: "Acknowledges, normalizes, or affirms the person’s emotions as understandable, without judging whether their account of the situation is correct.", ex: "“It makes sense that you feel hurt.”", cbt: ["CBT-F"] },
-  { name: "Paraphrasing", def: "Restates, summarizes, or interprets the person’s situation, feelings, or experiences.", ex: "“It sounds like you’ve been carrying this on your own.”" },
-  { name: "Emotional Expression", def: "The assistant states its own feelings or reactions.", ex: "“I’m so sorry.”" },
-  { name: "Empowerment", def: "Affirms the person’s strength, worth, ability, or accomplishments; encouragement and congratulations.", ex: "“You’ve got this.”" },
-  { name: "Questioning", def: "Asks the person for information, clarification, or reflection. A question that mainly suggests an action is Advice.", ex: "“What do you think she meant by that?”", cbt: ["CBT-G", "CBT-A"] },
-  { name: "Advice", def: "Actionable suggestions or recommendations for what the person could do, including mental actions (“try to think about it this way”).", ex: "“You could try raising it with him tomorrow.”", cbt: ["CBT-D"] },
-  { name: "Assistance", def: "Offers the assistant’s own help, or does the task (for example, drafts the message).", ex: "“Here’s a draft you could send: …”" },
-  { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”", cbt: ["CBT-E"] },
-  { name: "Self-Disclosure", def: "The assistant shares its own experiences.", ex: "“That happened to me too.”" },
-];
-
-const TACTIC_NOTES = [
-  "Emotional validation is about feelings only. Saying the person’s account or decision was right is not validation (that is a stance, below).",
-  "Information includes explaining why someone felt or acted as they did. A bare reframe (“some things are beyond our control”) is not Information.",
-  "Each of the nine is a yes/no: does the response include it anywhere, or not.",
-];
-
-const STANCE_OPTIONS = [
-  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
-  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
-  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
-  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
-  { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
-  { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
-];
-
-const STANCES = [
-  {
-    name: "Action stance",
-    target: "the action or plan the person describes, whether already done or still planned",
-    note: "One CBT principle is about the action stance: no verdict on the action unless the person asks; when they ask, the answer follows the facts.",
-    cbt: ["CBT-H"],
-  },
-  {
-    name: "Framing stance",
-    target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
-    note: "Three CBT principles are about the framing stance: whether to push back depends on the facts, pushback is rarely a flat refutation, and unrealistic self-blame gets reattribution.",
-    cbt: ["CBT-B", "CBT-A", "CBT-C"],
-  },
-];
-
-const STANCE_NOTES = [
-  "“Lead with” refers to the response as a whole: the stance that carries it, not only its first sentence. A brief opinion the person asked for, inside a response that leads with understanding, does not change the lead stance.",
-  "We say “pushback” for Indirect pushback or Explicit refutation, and “endorsement” for Praise or Confirmation.",
-];
-
-// Reading a situation: the features the principles depend on.
-const SITUATION_FEATURES = [
-  { q: "What does the person ask for?", detail: "What to do, help understanding themself or someone else, a verdict on whether they were right, something written, or nothing in particular.", why: "Principle 7: solutions when the person asks what to do, not when they ask to understand." },
-  { q: "Does the person’s reading of events match the facts as told?", detail: "The description of the situation says what actually happened; the person’s message says how they read it. Sometimes the two agree, sometimes they do not.", why: "Principle 2: the reading is questioned only when the facts contradict it." },
-  { q: "Does the person blame themself, and do the facts support the blame?", detail: "Self-blame can be deserved or unrealistic.", why: "Principle 5: reattribution only when the blame is unrealistic." },
-  { q: "Is the situation unpleasant for the person?", detail: "Most are; a few are neutral or pleasant.", why: "Principle 1: when there is a painful feeling, it is always acknowledged." },
-  { q: "Was the person in the right or in the wrong?", detail: "Judged from the facts, not from the person’s own view.", why: "Principle 1 again: the feeling is acknowledged either way. This does not change whether the counselor validates." },
-];
-
 // Quiz 2, type 1: which strategy does the principle constrain? Three items (the quiz has
 // ten questions in all, with the seven rule items below): emotional validation, information
 // and the least obvious stance mapping (self-blame -> framing). Dropped as redundant with
 // their rule items: CBT-B and CBT-A (framing), CBT-G (questioning), CBT-D (advice).
-const DIMENSION_OPTIONS = ["Emotional validation", "Paraphrasing", "Empowerment", "Questioning", "Advice", "Information", "Action stance", "Framing stance"];
 const QUIZ2_DIMENSION = [
   { id: "CBT-F", answer: "Emotional validation", feature: "The principle is about acknowledging feelings, which is what Emotional validation records." },
   { id: "CBT-E", answer: "Information", feature: "Explaining how thoughts shape feelings is Information." },
@@ -885,8 +898,8 @@ const QUIZ2_RULE = [
 ];
 
 // Worked example (vignette 200-714 from runs/argon_n1000): the participant says what an ideal
-// CBT response looks like on each strategy, then sees a critique. `answer: null` means no CBT
-// principle decides the strategy; those are not scored.
+// CBT response looks like on each strategy and gets feedback after each. Every strategy has an answer; `principles`
+// names the cards that decide it (shown as principle numbers), otherwise the answer follows the school's guide.
 const EXAMPLE = {
   "id": "200-714",
   "situation": "The user describes a distressing situation in the small town he recently moved to for an engineering job. After going on two casual dates with a woman named Clara, he discovered that his coworker, Maya, has been telling their shared friend group that he is obsessively showing up at Clara's apartment uninvited. The user has not decided what to do yet, though he is leaning toward calling Maya out in front of everyone at tonight's pub gathering. While he knows Maya is to blame for spreading the story, he also blames himself completely for creating this mess by texting Clara twice in a row last week, convinced his own eagerness caused everything, even though he wasn't sure if Clara actually complained to Maya or if Maya just invented it after seeing a text on Clara's phone. He recognizes that Maya cannot actually dictate who hangs out with him, and that he has some ability to steer how the group reacts, though he can't guarantee everyone's response. He has dealt with this exact kind of small-town rumor mill at his previous internships, so the dynamic is deeply familiar. Right now, no one has cut him off and nothing is ruined, and the outcome feels neither fair nor unfair to him, nor does it clearly help or hinder his broader life plans, which only tangentially involve this casual pub group. Still, the whole ordeal is miserable. He knows making a scene at dinner goes against the group's polite social rules, though standing up for the truth aligns completely with his personal code of honesty. However, he feels terrified that his professional reputation is in grave danger, believes he will fall apart if the confrontation goes badly, and cannot stop fixating on every detail of the upcoming evening. The user is asking for advice on what he should do tonight and what options he has for handling Maya.",
@@ -965,42 +978,6 @@ const EXAMPLE = {
   }
 };
 
-// Main-task vignettes (8, sampled 2026-11-09: two per interaction goal, spread over action phase, verdict, pleasantness,
-// discrepancy and self-blame; see main_vignettes_cbt.json for the vectors and the CBT expert's labels). Debug-only for now.
-const MAIN_VIGNETTES = [
-  {
-    "id": "200-835",
-    "situation": "The user describes a dispute with a freelance carpenter hired to install kitchen cabinets. Although the user had everything prepped and stayed out of the way as requested, the carpenter arrived two hours late, acted impatiently when asked a routine question about the hardware, and walked off the site leaving three cabinet doors unhung. The user notes that this is the third time during their home renovation that a tradesperson has pulled this exact stunt, making the whole routine deeply familiar. The user blames the carpenter entirely for creating this delay, noting that the user met every term of their agreement and thinks it is completely wrong for a professional to treat a paying client this way. However, because the user still holds the final fifty percent of the payment and the contract explicitly allows hiring a replacement if deadlines are missed, the carpenter has no power here and the ball is entirely in the user's court. The user is weighing whether to terminate the contract today and bring in a backup installer who is already available tomorrow, or give the original carpenter one last chance to finish up. Either way, all the materials are sitting safely in the kitchen, no money is gone, and the kitchen will be finished on schedule, which is the user's top priority right now and matches the exact timeline the user wants. Because of this, the user feels neither stressed nor delighted by the hiccup, has zero worry about any pushback from the carpenter, and knows that handling the transition will be straightforward. Switching contractors is standard practice in renovation work, though the user feels neither strongly committed to nor opposed to firing someone over a temper tantrum as a matter of personal principle. Still, the user needs to keep a close eye on the situation today to get the kitchen wrapped up. The user is asking for advice on which option to choose and how to proceed."
-  },
-  {
-    "id": "200-821",
-    "situation": "The user describes how their wife has just finished her fourth cozy mystery manuscript and placed it on their desk, announcing that she needs a glowing, upbeat note from the user by tonight before she decides whether to share it with her club. The user points out that she initiated this entire ritual on her own, just as she has with her three previous drafts, without the user having any hand in creating the predicament. While the user can shape the immediate conversation by how they phrase the note, their wife ultimately holds all the power over how the evening goes and what she does with the book next. The user has decided to write a warm, purely complimentary message based only on the first few pages. Everyone in their social circle expects spouses to be uncritical cheerleaders for each other's hobbies, so this plan fits right in with standard marital etiquette, even if the user wasn't listening closely enough earlier to be completely sure whether she truly only wants surface-level praise or actually expects a cover-to-cover read. Still, the user feels it is deeply one-sided that she demands applause while refusing any real discussion, and offering empty flattery goes directly against their personal commitment to honesty in art. At the same time, keeping a peaceful, supportive home matters deeply to the user, and this compromise neither advances nor blocks their broader desires for their marriage, while nothing in their relationship or her hobby is damaged or lost by it. The user actually enjoys the warm, cozy atmosphere of these literary evenings and feels completely safe and untroubled by any risk, yet they know they will be completely out of their depth if she follows up by quizzing them on plot twists from chapter ten. Because the deadline is tonight, the user has to stay focused on getting the note done right now. The user is asking for a draft of a warm, encouraging note praising the manuscript's opening tone to give to their wife."
-  },
-  {
-    "id": "200-777",
-    "situation": "The user describes a recurring dynamic at home with their partner, Sam, that has started up again over the last few weeks. Following an unexpected company merger that neither of them had any hand in creating, Sam has been bringing intense work frustration to the dinner table, snapping at small things and venting throughout their evenings. The user notes that while the corporate restructuring is the root trigger, Sam is also partly to blame for letting the office mood spill over, though both of them are still going to have to navigate the company's shifting demands in the coming weeks. The user has not done anything about this or even thought of a specific course of action yet, and believes their hands are completely tied regarding how their evenings will play out while the merger drags on. Still, the user views this rough patch as an entirely equitable trade-off, since Sam quietly carried the household during the user's own brutal work season last year, and being a steady sounding board aligns deeply with the user's personal commitment to partnership, even if snapping over dinner violates standard social etiquette. Having a peaceful home life matters deeply to the user, and while these tense, grating nights neither advance nor block their broader life plans, they are a drag to sit through. At the same time, the user has been through this exact cycle with Sam during two previous job transitions, feels completely safe and secure in their bond, knows nothing in their relationship is broken or gone, and is confident they can easily handle the fallout once the dust settles. Because the tension is actively disrupting their nights, the user feels they must keep a close eye on it right now. The user is asking for options and strategies for what to do about the evening tension."
-  },
-  {
-    "id": "200-453",
-    "situation": "The user describes a bitter fallout with their studio partner, Devon, after the two of them missed the midnight deadline for a once-in-a-career $40,000 city anniversary commission. The user admits that they are both to blame for the disaster: Devon sat on the budget spreadsheets for two weeks to force a split in his favor, and the user retaliated by withholding the curatorial narrative and refusing to log in until 11:59 PM, by which point both of them were locked out. According to the city's procurement rules that the user mentions, the automated portal permanently purges incomplete files at midnight and immediately reallocates the funds to the next algorithmically ranked applicant with zero mechanism for human appeal, and Devon is only an unpaid volunteer on an unrelated neighborhood mural committee. Even so, the user is convinced that Devon holds total command over how this entire situation will unfold and can single-handedly dictate their fate at city hall, while the user believes they still have some ability to steer the outcome if they apply the right leverage through a public message. The user has never encountered a crisis or betrayal remotely like this in their career, feels they are being treated with gross injustice as rumors spread, and sees Devon's narrative as an active danger to their professional survival. With the irredeemable loss of the anniversary exhibition and their ten-year partnership, getting this resolved is central to everything the user has worked toward, making the whole ordeal agonizing and demanding their constant, undivided monitoring. The user has decided to email screenshots of Devon's private texts to the entire regional arts listserv and its sponsors tonight; they know full well that doing so breaks every social and professional rule in their field, yet they feel it honors their deepest personal code of unflinching honesty, and they know their cash reserves and commercial clients will let them weather whatever practical fallout ensues. The user is asking for their rough draft of this mass email to be revised so their points read clearly."
-  },
-  {
-    "id": "200-309",
-    "situation": "The user describes how they permanently dissolved their ten-year consulting partnership and friendship with their partner, Marcus, last week after discovering Marcus had quietly transferred forty thousand dollars out of their shared reserve account. While Marcus caused the breach by taking the money—claiming they had an old, unrecorded conversation allowing him to draw delayed bonuses whenever he saw fit, which the user does not recall—the user also holds themselves fully responsible for bringing this situation about, believing their own refusal to micromanage the books and their ruthless insistence on triggering the dissolution clause created the final outcome. Because the founding contract gave the user sole administrative power over the firm's dissolution and client transfers, Marcus had zero power to stop the process, while the user single-handedly executed the lockout and moved every client to their new solo firm. The user views this outcome as a triumph that gave them the exact independent career they had been wanting and aligned with their core priority of protecting their professional autonomy, as well as their deeply held personal ethic of decisive self-reliance, while noting that industry standards neither mandate nor forbid dissolving a firm without prior mediation. Even though a decade-long camaraderie and joint brand are gone forever, the user found the entire process of cutting ties exhilarating and gratifying, feeling that everyone got exactly what they deserved. Having navigated a vaguely similar partner buyout once years ago, the user felt completely safe throughout, effortlessly handled all the legal and client transitions, and considers the matter entirely closed with nothing left to monitor. The user is asking for a judgment on whether they were justified in dissolving the firm immediately instead of investigating Marcus's claim about the verbal agreement."
-  },
-  {
-    "id": "200-508",
-    "situation": "The user describes a conflict with their husband over their work and school hours. Two weeks ago, the user signed up for an intensive, non-refundable summer fellowship term and asked their office manager to cut their hours down to twenty a week, while their husband works fifty hours a week managing a restaurant. The user explains that they had no choice in how this situation came about—the university moved the fellowship cohort up by a year without warning, and the user's husband didn't cause the scheduling clash either. The user has now decided to drop the fellowship term before tonight's registrar deadline and go back to thirty-five hours at the office, and is currently figuring out how to break the news to their husband when he gets back from an out-of-state training where his phone is off. Even though the husband isn't reachable before the deadline and has no involvement with the university or the user's boss, the user is convinced that their husband holds all the power over how their household finances and marriage will unfold from here, while the user feels they can only partly steer the conversation tonight. Withdrawing means permanently forfeiting the five-thousand-dollar deposit and their only shot at the fellowship, a permanent sacrifice both recognize, yet the user still doesn't know if the rumoured freeze on their husband's quarterly bonuses is real or if his resentment is about money versus free time. Dropping out goes completely against the user's core belief in finishing commitments, though the user notes that people drop grad programs and work regular office jobs all the time without anyone blinking, and views the trade-off of hours as neither a raw deal nor a bargain, and the evening ahead as neither enjoyable nor miserable. Still, the user feels their marriage is in immediate jeopardy if they stay enrolled, yet sees dropping the term as guaranteed to restore the dual-income stability they have been aiming for, knows they can easily handle the workload and budget adjustments afterward, has never navigated a marital ultimatum like this before, and cannot take their mind off tonight's talk. The user is asking for help understanding why their husband reacts with such intense resentment toward their lighter work schedule even when they take on all the housework."
-  },
-  {
-    "id": "200-759",
-    "situation": "The user describes a stressful predicament that is entirely their own doing, having carelessly called their friend Maya's landline and left a detailed message about a private financial loan Maya took out from the user, completely forgetting that Maya's husband Leo checks that answering machine too. Maya had done nothing to bring this on, as she had explicitly asked the user to only text her cell phone. Now the user is weighing whether to reach out to Leo directly to offer a polite, standard apology and explain the context, which aligns with both common courtesy and the user's personal commitment to honesty. However, the user doesn't actually know if Maya had already told Leo about the loan or if Maya had forbidden him from knowing, making it impossible to tell if reaching out would be an overstep. Regardless, Maya has taken total command of the fallout, refusing the user's calls and deciding on her own what Leo will be told, leaving the user powerless to influence the outcome. Even though no money or relationships are permanently gone, the user feels this punishment is deeply disproportionate to an honest slip of the tongue. Being shut out of their closest social circle goes against everything the user wants and matters immensely to their daily life, making the whole ordeal miserable. Never having been caught in the middle of a couple's private finances before, the user feels completely in danger of being cast out of the friend group and knows they could never handle the fallout if Leo blows up at them. They figure they only need to keep one eye on their phone for a bit longer until Maya makes her move. The user is asking for a judgment on whether they would be in the wrong for reaching out to Leo directly to apologize."
-  },
-  {
-    "id": "200-117",
-    "situation": "The user describes an awkward scene at a team lunch earlier today after their coworker Maya brought up the ceramics the user makes at home and started praising their talent to the whole table. The user notes that both of them brought this clash on: Maya by spotlighting a hobby the user had whispered to her before lunch not to mention, and the user by abruptly telling Maya that her compliments were unwanted and walking straight out of the breakroom. It is slightly unclear to the user whether Maya had actually heard their earlier whisper over the crowded hallway noise, which is the one detail keeping the user's harsh walkout from being a clear-cut overreaction. In the moment, Maya just froze and had zero say over how the exchange played out, whereas the user steered the entire direction of the conversation and ended it on their own terms. Walking out like that broke every office rule of polite small talk, yet the user feels it stayed true to their core belief in strict personal privacy and that the outcome gave everyone exactly what they deserved. Whether coworkers know about the pottery does not touch on any of the user's real priorities or ambitions, and the exchange neither helped nor hindered anything the user was trying to accomplish today. The whole interaction was deeply uncomfortable, though this exact pattern of rejecting praise has happened to the user dozens of times before. Nothing in their friendship with Maya or their standing at work is damaged—Maya already texted a casual joke about lunch—and the user felt completely safe throughout, yet they find themselves completely at a loss for how to handle the lingering awkwardness and unable to stop replaying the moment in their head. The user is asking for help understanding why they always react with such hostility whenever someone gives them genuine praise."
-  }
-];
 
 const THRESHOLDS = {
   quiz1Pass: 7, // of 10 on the first attempt
@@ -1126,9 +1103,17 @@ function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee
 // Welcome and principle cards.
 
 function renderWelcome() {
+  let extra = null;
+  if (DEBUG) {
+    extra = el("p", "survey-signpost-sub");
+    const a = el("a", null, "← All disciplines (debug menu)");
+    a.href = "../../debug/";
+    extra.appendChild(a);
+  }
   signpost({
     step: 0, frac: 0,
     text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who asks about an interpersonal conflict.`,
+    extra,
     next: () => go("apply"),
     nextLabel: "Start →",
   });
@@ -1279,7 +1264,7 @@ function quizScore(qstate, all) {
 function itemOptions(it) {
   const { kind, q } = it;
   if (kind === "strength") return q.options.map((o) => ({ text: o.text, correct: o.correct, source: o.correct ? q.claim : "strength-foil" }));
-  if (kind === "claim") return [{ text: q.cbt[0], correct: true, source: q.id }, ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source }))];
+  if (kind === "claim") return [{ text: q.own[0], correct: true, source: q.id }, ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source }))];
   if (kind === "dimension") return DIMENSION_OPTIONS.map((d) => ({ text: d, correct: d === q.answer, source: d }));
   return [{ text: q.rule[0], correct: true, source: q.id }, ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` }))];
 }
@@ -1492,7 +1477,7 @@ function vignetteBox(v = EXAMPLE) {
 function renderExampleIntro() {
   signpost({
     step: 5, frac: 0,
-    text: "Finally, a worked example: You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of CBT. Then we will go over your answers.",
+    text: `Finally, a worked example: You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of ${SCHOOL.short}. Then we will go over your answers.`,
     back: () => go("q2result"),
     next: () => go("exvignette"),
   });
@@ -1569,7 +1554,7 @@ function renderExampleItem(i) {
   body.appendChild(vignetteBox());
   body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
   body.appendChild(el("p", "dim-page-def", st.def));
-  const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
+  const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
   body.appendChild(el("p", "survey-question-text", stem));
   const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
   const choices = el("div", "control-choices");
@@ -1674,7 +1659,7 @@ function renderMainItem(vi, si) {
   body.appendChild(vignetteBox(v));
   body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
   body.appendChild(el("p", "dim-page-def", st.def));
-  const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
+  const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
   body.appendChild(el("p", "survey-question-text", stem));
   const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
   const choices = el("div", "control-choices");
@@ -1717,7 +1702,7 @@ function renderDone() {
   const body = el("div", "survey-card-body");
   body.appendChild(luckyBee("party"));
   const didMain = Object.keys(state.main).length > 0;
-  body.appendChild(el("p", "survey-signpost-text", didMain ? "All done. Thank you for taking part." : "Training complete. The main task comes next: you will read situations and say how a CBT counselor would respond."));
+  body.appendChild(el("p", "survey-signpost-text", didMain ? "All done. Thank you for taking part." : `Training complete. The main task comes next: you will read situations and say how a ${SCHOOL.short} counselor would respond.`));
   body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${quizScore(state.q1, Q1_ITEMS)} of ${Q1_ITEMS.length}. Strategies quiz: ${quizScore(state.q2, Q2_ITEMS)} of ${Q2_ITEMS.length}.`));
   const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
   body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
