@@ -2,7 +2,8 @@
 sitemap: false
 layout: null
 ---
-{% raw %}<!doctype html>
+{% raw %}
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -247,9 +248,6 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .vignette { display: grid; gap: 8px; }
 .vignette-message { margin: 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px; background: rgba(122, 111, 159, 0.08); font-size: 16px; line-height: 1.5; }
 .vignette-message .card-eyebrow { display: block; margin-bottom: 4px; }
-.vignette-situation { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface-strong); padding: 8px 14px; font-size: 15px; line-height: 1.5; color: var(--ink-soft); }
-.vignette-situation summary { cursor: pointer; font-weight: 600; color: var(--ink); }
-.vignette-situation p { margin: 8px 0 4px; }
 .critique-list { display: grid; gap: 8px; }
 .critique { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); }
 .critique--ok { border-color: var(--ok); box-shadow: inset 3px 0 0 var(--ok); }
@@ -264,6 +262,18 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .critique--near .critique-mark { color: #c98a1a; }
 .critique-line { margin: 4px 0 0; font-size: 14.5px; color: var(--ink); }
 .critique-note { margin: 4px 0 0; font-size: 14.5px; color: var(--ink-soft); line-height: 1.45; }
+
+/* Timed Next button on strategy pages. */
+.submit-button--timed { position: relative; overflow: hidden; }
+.submit-button--timed .button-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(122, 111, 159, 0.22); transition: width 0ms linear; pointer-events: none; }
+.submit-button--timed:disabled { opacity: 0.7; }
+
+/* Info icon with hover description. */
+.control-choice { position: relative; }
+.info-tip { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: auto; border-radius: 50%; border: 1px solid var(--ink-soft); color: var(--ink-soft); font-size: 11px; font-weight: 700; font-style: italic; font-family: Georgia, serif; line-height: 1; cursor: help; flex: 0 0 auto; }
+.info-tip:hover, .info-tip:focus-visible { border-color: var(--ink); color: var(--ink); outline: none; }
+.info-tip::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 6px); width: min(360px, 90vw); padding: 8px 12px; border-radius: 8px; background: var(--ink); color: #fff; font: 400 13px/1.45 var(--sans); font-style: normal; text-align: left; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); opacity: 0; visibility: hidden; transition: opacity 120ms ease; z-index: 5; pointer-events: none; }
+.info-tip:hover::after, .info-tip:focus-visible::after { opacity: 1; visibility: visible; }
 
 </style>
   </head>
@@ -835,70 +845,82 @@ const EXAMPLE = {
   "situation": "The user describes a distressing situation in the small town he recently moved to for an engineering job. After going on two casual dates with a woman named Clara, he discovered that his coworker, Maya, has been telling their shared friend group that he is obsessively showing up at Clara's apartment uninvited. The user has not decided what to do yet, though he is leaning toward calling Maya out in front of everyone at tonight's pub gathering. While he knows Maya is to blame for spreading the story, he also blames himself completely for creating this mess by texting Clara twice in a row last week, convinced his own eagerness caused everything, even though he wasn't sure if Clara actually complained to Maya or if Maya just invented it after seeing a text on Clara's phone. He recognizes that Maya cannot actually dictate who hangs out with him, and that he has some ability to steer how the group reacts, though he can't guarantee everyone's response. He has dealt with this exact kind of small-town rumor mill at his previous internships, so the dynamic is deeply familiar. Right now, no one has cut him off and nothing is ruined, and the outcome feels neither fair nor unfair to him, nor does it clearly help or hinder his broader life plans, which only tangentially involve this casual pub group. Still, the whole ordeal is miserable. He knows making a scene at dinner goes against the group's polite social rules, though standing up for the truth aligns completely with his personal code of honesty. However, he feels terrified that his professional reputation is in grave danger, believes he will fall apart if the confrontation goes badly, and cannot stop fixating on every detail of the upcoming evening. The user is asking for advice on what he should do tonight and what options he has for handling Maya.",
   "message": "I just found out my coworker Maya has been telling our friend group that I'm creeping on a girl I went out with twice, and I feel like I brought this on myself by double-texting her last week. I'm thinking about confronting Maya in front of everyone at dinner tonight to clear my name, even though I know making a public scene goes against how people act here and I'm terrified of how badly it could blow up. What should I do, and what are my options for handling this?",
   "gold": {
-    "Emotional validation": {
-      "answer": "Yes",
-      "principles": [
-        "CBT-F"
-      ],
-      "why": "The situation is miserable for him, so the counselor acknowledges the feeling, whatever he did or did not do."
-    },
-    "Paraphrasing": {
-      "answer": null,
-      "why": "No CBT principle decides this one."
-    },
-    "Emotional Expression": {
-      "answer": null,
-      "why": "No CBT principle decides this one."
-    },
-    "Empowerment": {
-      "answer": null,
-      "why": "No CBT principle decides this one."
-    },
-    "Questioning": {
-      "answer": "Yes",
-      "principles": [
-        "CBT-G"
-      ],
-      "why": "Guided discovery: the counselor asks questions, for example what the evidence is that two texts caused the rumor."
-    },
-    "Advice": {
-      "answer": "Yes",
-      "principles": [
-        "CBT-D"
-      ],
-      "why": "He asks what to do and what his options are, a practical problem, so the counselor helps devise solutions."
-    },
-    "Assistance": {
-      "answer": null,
-      "why": "No CBT principle decides this one."
-    },
-    "Information": {
-      "answer": "Yes",
-      "principles": [
-        "CBT-E"
-      ],
-      "why": "CBT is educative: the counselor explains how the thought “I brought this on myself” and “I will fall apart” feed the terror he feels."
-    },
-    "Self-Disclosure": {
-      "answer": null,
-      "why": "No CBT principle decides this one."
-    },
-    "Action stance": {
-      "answer": null,
-      "why": "No CBT principle constrains the stance toward his plan to confront Maya."
-    },
-    "Framing stance": {
-      "answer": "Indirect pushback",
-      "principles": [
-        "CBT-B",
-        "CBT-A",
-        "CBT-C"
-      ],
-      "why": "He blames himself completely for a rumor Maya spread; the evidence does not support that reading, so the counselor questions it (principle 2), through questions and reattribution rather than a flat refutation (principles 3 and 5).",
-      "partial": {
-        "Explicit refutation": "Pushing back is right, but CBT rarely challenges a thought head-on; it is examined through questions."
+      "Emotional validation": {
+          "answer": "Yes",
+          "principles": [
+              "CBT-F"
+          ],
+          "why": "The situation is miserable for him, so the counselor acknowledges the feeling, whatever he did or did not do."
+      },
+      "Paraphrasing": {
+          "answer": "Yes",
+          "basis": "sources",
+          "why": "The CBT sources ask the counselor to summarize regularly what the person seems to be saying and feeling, so the response restates his situation before working on it."
+      },
+      "Emotional Expression": {
+          "answer": "No",
+          "basis": "sources",
+          "why": "The sources carry warmth through understanding what the person said, not through the counselor stating their own feelings about it."
+      },
+      "Empowerment": {
+          "answer": "Yes",
+          "basis": "sources",
+          "why": "He has handled this exact rumor mill before yet believes he will fall apart. The sources affirm ability by pointing to evidence the person is discounting, so the response names that evidence.",
+          "partial": {
+              "No": "Defensible: the sources rule out praise for its own sake. But here he is discounting real evidence of his competence, and pointing to it is Empowerment."
+          }
+      },
+      "Questioning": {
+          "answer": "Yes",
+          "principles": [
+              "CBT-G"
+          ],
+          "why": "Guided discovery: the counselor asks questions, for example what the evidence is that two texts caused the rumor."
+      },
+      "Advice": {
+          "answer": "Yes",
+          "principles": [
+              "CBT-D"
+          ],
+          "why": "He asks what to do and what his options are, a practical problem, so the counselor helps devise solutions."
+      },
+      "Assistance": {
+          "answer": "No",
+          "basis": "sources",
+          "why": "The sources model or rehearse a behavior when the person needs help doing something. He asks for options, not for a script or a message to send."
+      },
+      "Information": {
+          "answer": "Yes",
+          "principles": [
+              "CBT-E"
+          ],
+          "why": "CBT is educative: the counselor explains how the thought “I brought this on myself” and “I will fall apart” feed the terror he feels."
+      },
+      "Self-Disclosure": {
+          "answer": "No",
+          "basis": "sources",
+          "why": "The sources allow a therapist rare self-disclosure of their own changed thoughts. An AI assistant has no such experience to share."
+      },
+      "Action stance": {
+          "answer": "Take no position",
+          "basis": "sources",
+          "why": "He has not decided and asks what his options are, not whether confronting Maya is right. The sources weigh options with him through guided discovery rather than ruling on the plan.",
+          "partial": {
+              "Indirect pushback": "Tempting, since the plan clashes with the group’s norms and his own fear. But he asks for options, not a verdict, and CBT reserves pushback for his reading of events (framing), not his plan."
+          }
+      },
+      "Framing stance": {
+          "answer": "Indirect pushback",
+          "principles": [
+              "CBT-B",
+              "CBT-A",
+              "CBT-C"
+          ],
+          "why": "He blames himself completely for a rumor Maya spread; the evidence does not support that reading, so the counselor questions it (principle 2), through questions and reattribution rather than a flat refutation (principles 3 and 5).",
+          "partial": {
+              "Explicit refutation": "Pushing back is right, but CBT rarely challenges a thought head-on; it is examined through questions."
+          }
       }
-    }
   }
 };
 
@@ -1274,10 +1296,25 @@ const DIM_PAGES = [
 const DIMS_TOTAL = DIM_PAGES.length + 2; // two intro sentences + one page per strategy
 const DIMS_FIRST_PAGE = 2;
 
+const DIM_WAIT_MS = 8000;
+const dimsWaited = new Set();
+// Next is disabled for DIM_WAIT_MS on a strategy page the first time it is seen; a fill bar shows the wait.
+function timedButton(text, key) {
+  const b = button(text);
+  if (dimsWaited.has(key)) return b;
+  b.classList.add("submit-button--timed");
+  const fill = el("span", "button-fill");
+  b.appendChild(fill);
+  b.disabled = !DEBUG;
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.transitionDuration = `${DIM_WAIT_MS}ms`; fill.style.width = "100%"; }));
+  setTimeout(() => { dimsWaited.add(key); b.disabled = false; b.classList.remove("submit-button--timed"); fill.remove(); }, DIM_WAIT_MS);
+  return b;
+}
+
 function dimsNav(card, i) {
   const back = button("← Back", true);
   back.addEventListener("click", () => go(i === 0 ? "q1result" : `dims:${i - 1}`));
-  const next = button("Next →");
+  const next = timedButton("Next →", `dims:${i}`);
   next.addEventListener("click", () => {
     if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("q2intro"); }
     else go(`dims:${i + 1}`);
@@ -1363,15 +1400,10 @@ function renderQ2Result() {
 
 const EXAMPLE_STRATEGIES = [...TACTICS.map((t) => ({ kind: "tactic", name: t.name, def: t.def })), ...STANCES.map((s) => ({ kind: "stance", name: s.name, def: `About ${s.target}.` }))];
 
-function vignetteBox(full) {
+function vignetteBox() {
   const box = el("div", "vignette");
-  const msg = el("blockquote", "vignette-message");
-  msg.append(el("span", "card-eyebrow", "The person’s message"), EXAMPLE.message);
-  box.appendChild(msg);
-  const sit = el("details", "vignette-situation");
-  sit.open = Boolean(full);
-  sit.appendChild(el("summary", null, "The full situation"));
-  sit.appendChild(el("p", null, EXAMPLE.situation));
+  const sit = el("blockquote", "vignette-message");
+  sit.append(el("span", "card-eyebrow", "The situation"), EXAMPLE.situation);
   box.appendChild(sit);
   return box;
 }
@@ -1390,7 +1422,7 @@ function renderExampleVignette() {
   const card = el("section", "card survey-card");
   card.appendChild(el("div", "card-eyebrow", "Worked example"));
   const body = el("div", "survey-card-body");
-  body.appendChild(vignetteBox(true));
+  body.appendChild(vignetteBox());
   body.appendChild(el("p", "callout", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
   card.appendChild(body);
   const back = button("← Back", true); back.addEventListener("click", () => go("exintro"));
@@ -1399,13 +1431,28 @@ function renderExampleVignette() {
   bodyEl.appendChild(card);
 }
 
+function stanceDef(optName, stanceName) {
+  const o = STANCE_OPTIONS.find((x) => x.name === optName);
+  return o.def.replace(/\[target\]/g, stanceName === "Action stance" ? "action" : "framing");
+}
+// Small ⓘ icon; the description appears on hover or focus.
+function infoTip(text) {
+  const tip = el("span", "info-tip", "i");
+  tip.tabIndex = 0;
+  tip.setAttribute("role", "img");
+  tip.setAttribute("aria-label", text);
+  tip.dataset.tip = text;
+  tip.addEventListener("click", (e) => e.preventDefault());
+  return tip;
+}
+
 function renderExampleItem(i) {
   const st = EXAMPLE_STRATEGIES[i];
   screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
   const card = el("section", "card survey-card");
   card.appendChild(el("div", "card-eyebrow", `Worked example · Strategy ${i + 1} of ${EXAMPLE_STRATEGIES.length}`));
   const body = el("div", "survey-card-body");
-  body.appendChild(vignetteBox(false));
+  body.appendChild(vignetteBox());
   body.appendChild(el("p", "dim-page-name", st.name));
   body.appendChild(el("p", "dim-page-def", st.def));
   const stem = st.kind === "tactic" ? "Should an ideal CBT response include this strategy?" : "Which stance should an ideal CBT response lead with?";
@@ -1420,6 +1467,7 @@ function renderExampleItem(i) {
     if (picked === opt) input.checked = true;
     input.addEventListener("change", () => { picked = opt; next.disabled = false; warning.hide(); });
     label.append(input, el("span", null, opt));
+    if (st.kind === "stance") label.appendChild(infoTip(stanceDef(opt, st.name)));
     choices.appendChild(label);
   }
   body.appendChild(choices);
@@ -1446,9 +1494,8 @@ function renderExampleCritique() {
   const card = el("section", "card survey-card");
   card.appendChild(el("div", "card-eyebrow", "Worked example · Critique"));
   const body = el("div", "survey-card-body");
-  const decided = EXAMPLE_STRATEGIES.filter((st) => EXAMPLE.gold[st.name].answer);
-  const right = decided.filter((st) => state.example[st.name] === EXAMPLE.gold[st.name].answer).length;
-  body.appendChild(el("p", "principle-teaches", `The CBT principles decide ${decided.length} of the ${EXAMPLE_STRATEGIES.length} strategies for this situation. You matched them on ${right} of ${decided.length}. The others are left to judgment.`));
+  const right = EXAMPLE_STRATEGIES.filter((st) => state.example[st.name] === EXAMPLE.gold[st.name].answer).length;
+  body.appendChild(el("p", "principle-teaches", `You matched the CBT answer on ${right} of ${EXAMPLE_STRATEGIES.length} strategies. Where a principle you learned decides the answer, it is named; otherwise the answer follows from the CBT sources.`));
   const list = el("div", "critique-list");
   for (const st of EXAMPLE_STRATEGIES) {
     const g = EXAMPLE.gold[st.name];
@@ -1465,7 +1512,7 @@ function renderExampleCritique() {
     row.appendChild(head);
     const line = el("p", "critique-line");
     line.append(el("b", null, "Your answer: "), yours);
-    if (g.answer) line.append("  ·  ", el("b", null, "CBT: "), g.answer + (g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : ""));
+    line.append("  ·  ", el("b", null, "CBT: "), g.answer + (g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : " (from the CBT sources)"));
     row.appendChild(line);
     row.appendChild(el("p", "critique-note", note));
     list.appendChild(row);
@@ -1554,4 +1601,5 @@ render();
 </script>
   </body>
 </html>
+
 {% endraw %}
