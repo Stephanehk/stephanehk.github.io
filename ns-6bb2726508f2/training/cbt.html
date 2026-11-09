@@ -865,21 +865,15 @@ const EXAMPLE = {
       },
       "Paraphrasing": {
           "answer": "Yes",
-          "basis": "sources",
-          "why": "The CBT sources ask the counselor to summarize regularly what the person seems to be saying and feeling, so the response restates his situation before working on it."
+          "why": "A CBT counselor regularly summarizes what the person seems to be saying and feeling, so the response restates his situation before working on it."
       },
       "Emotional Expression": {
           "answer": "No",
-          "basis": "sources",
-          "why": "The sources carry warmth through understanding what the person said, not through the counselor stating their own feelings about it."
+          "why": "A CBT counselor shows warmth by understanding what the person said, not by stating their own feelings about it."
       },
       "Empowerment": {
           "answer": "Yes",
-          "basis": "sources",
-          "why": "He has handled this exact rumor mill before yet believes he will fall apart. The sources affirm ability by pointing to evidence the person is discounting, so the response names that evidence.",
-          "partial": {
-              "No": "Defensible: the sources rule out praise for its own sake. But here he is discounting real evidence of his competence, and pointing to it is Empowerment."
-          }
+          "why": "He has handled this exact rumor mill before, yet believes he will fall apart. A CBT counselor affirms ability by pointing to evidence the person is discounting, so the response names that evidence."
       },
       "Questioning": {
           "answer": "Yes",
@@ -897,8 +891,7 @@ const EXAMPLE = {
       },
       "Assistance": {
           "answer": "No",
-          "basis": "sources",
-          "why": "The sources model or rehearse a behavior when the person needs help doing something. He asks for options, not for a script or a message to send."
+          "why": "A CBT counselor models or rehearses a behavior when the person needs help doing something. He asks for options, not for a script or a message to send."
       },
       "Information": {
           "answer": "Yes",
@@ -909,15 +902,13 @@ const EXAMPLE = {
       },
       "Self-Disclosure": {
           "answer": "No",
-          "basis": "sources",
-          "why": "The sources allow a therapist rare self-disclosure of their own changed thoughts. An AI assistant has no such experience to share."
+          "why": "CBT allows a counselor rare self-disclosure of how they changed similar thoughts of their own. An AI assistant has no such experience to share."
       },
       "Action stance": {
           "answer": "Take no position",
-          "basis": "sources",
-          "why": "He has not decided and asks what his options are, not whether confronting Maya is right. The sources weigh options with him through guided discovery rather than ruling on the plan.",
+          "why": "He has not decided and asks what his options are, not whether confronting Maya is right. A CBT counselor weighs the options with him through guided discovery rather than ruling on the plan.",
           "partial": {
-              "Indirect pushback": "Tempting, since the plan clashes with the group’s norms and his own fear. But he asks for options, not a verdict, and CBT reserves pushback for his reading of events (framing), not his plan."
+              "Indirect pushback": "He asks for options, not a verdict on his plan. CBT reserves pushback for his reading of events, which is the framing stance, and weighs the plan with him through guided discovery."
           }
       },
       "Framing stance": {
@@ -1487,18 +1478,15 @@ function infoTip(text) {
 
 function exampleFeedback(st, yours) {
   const g = EXAMPLE.gold[st.name];
-  let status, note;
-  if (yours === g.answer) { status = "ok"; note = g.why; }
-  else if (g.partial && g.partial[yours]) { status = "near"; note = g.partial[yours]; }
-  else { status = "bad"; note = g.why; }
-  const basis = g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : " (from the CBT sources)";
-  return { status, note, basis };
+  const status = yours === g.answer ? "ok" : "bad";
+  const note = status === "bad" && g.partial && g.partial[yours] ? g.partial[yours] : g.why;
+  return { status, note };
 }
 
 function renderExampleItem(i) {
   const st = EXAMPLE_STRATEGIES[i];
   const last = i === EXAMPLE_STRATEGIES.length - 1;
-  const onNext = () => go(last ? "excritique" : `ex:${i + 1}`);
+  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go("done"); } else go(`ex:${i + 1}`); };
   screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
   const card = el("section", "card survey-card");
   const body = el("div", "survey-card-body");
@@ -1527,7 +1515,7 @@ function renderExampleItem(i) {
   card.appendChild(body);
   const check = button("Check answer");
   check.disabled = true;
-  const next = button(last ? "See the summary →" : "Next →");
+  const next = button("Next →");
   next.hidden = true;
 
   function reveal(yours) {
@@ -1541,8 +1529,8 @@ function renderExampleItem(i) {
     }
     const row = el("div", "lucky-chat-row");
     row.appendChild(luckyBee("avatar"));
-    const bubble = el("p", `lucky-chat-bubble ${status === "ok" ? "lucky-chat-bubble--ok" : status === "near" ? "lucky-chat-bubble--near" : "lucky-chat-bubble--bad"}`);
-    bubble.append(el("b", null, status === "ok" ? "That’s right. " : status === "near" ? "Close. " : "Not quite. "), note);
+    const bubble = el("p", `lucky-chat-bubble ${status === "ok" ? "lucky-chat-bubble--ok" : "lucky-chat-bubble--bad"}`);
+    bubble.append(el("b", null, status === "ok" ? "That’s right. " : "Not quite. "), note);
     row.appendChild(bubble);
     feedbackHolder.appendChild(row);
     check.hidden = true;
@@ -1558,42 +1546,6 @@ function renderExampleItem(i) {
   const n = nav(back, el("span", "spacer"), check, next);
   if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, check); }
   card.appendChild(n);
-  bodyEl.appendChild(card);
-}
-
-function renderExampleCritique() {
-  screen({ step: 5, frac: 1 });
-  const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Worked example · Summary"));
-  const body = el("div", "survey-card-body");
-  const right = EXAMPLE_STRATEGIES.filter((st) => state.example[st.name] === EXAMPLE.gold[st.name].answer).length;
-  body.appendChild(el("p", "principle-teaches", `You matched the CBT answer on ${right} of ${EXAMPLE_STRATEGIES.length} strategies. Where a principle you learned decides the answer, it is named; otherwise the answer follows from the CBT sources.`));
-  const list = el("div", "critique-list");
-  for (const st of EXAMPLE_STRATEGIES) {
-    const g = EXAMPLE.gold[st.name];
-    const yours = state.example[st.name] || "no answer";
-    const row = el("div", "critique");
-    let status, note;
-    if (!g.answer) { status = "open"; note = g.why; }
-    else if (yours === g.answer) { status = "ok"; note = g.why; }
-    else if (g.partial && g.partial[yours]) { status = "near"; note = g.partial[yours]; }
-    else { status = "bad"; note = g.why; }
-    row.classList.add(`critique--${status}`);
-    const head = el("div", "critique-head");
-    head.append(el("span", "critique-name", st.name), el("span", "critique-mark", status === "ok" ? "✓" : status === "open" ? "–" : status === "near" ? "~" : "✗"));
-    row.appendChild(head);
-    const line = el("p", "critique-line");
-    line.append(el("b", null, "Your answer: "), yours);
-    line.append("  ·  ", el("b", null, "CBT: "), g.answer + (g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : " (from the CBT sources)"));
-    row.appendChild(line);
-    row.appendChild(el("p", "critique-note", note));
-    list.appendChild(row);
-  }
-  body.appendChild(list);
-  card.appendChild(body);
-  const back = button("← Back", true); back.addEventListener("click", () => go(`ex:${EXAMPLE_STRATEGIES.length - 1}`));
-  const next = button("Next →"); next.addEventListener("click", () => { state.critters = Math.max(state.critters, 5); go("done"); });
-  card.appendChild(nav(back, next));
   bodyEl.appendChild(card);
 }
 
@@ -1661,7 +1613,6 @@ function render() {
     case "exintro": return renderExampleIntro();
     case "exvignette": return renderExampleVignette();
     case "ex": return renderExampleItem(i);
-    case "excritique": return renderExampleCritique();
     case "done": return renderDone();
     case "exit": return renderExit();
     default: state.screen = "welcome"; return renderWelcome();
