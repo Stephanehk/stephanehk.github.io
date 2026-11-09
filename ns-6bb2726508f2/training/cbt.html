@@ -275,6 +275,17 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .info-tip::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 6px); width: min(360px, 90vw); padding: 8px 12px; border-radius: 8px; background: var(--ink); color: #fff; font: 400 13px/1.45 var(--sans); font-style: normal; text-align: left; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); opacity: 0; visibility: hidden; transition: opacity 120ms ease; z-index: 5; pointer-events: none; }
 .info-tip:hover::after, .info-tip:focus-visible::after { opacity: 1; visibility: visible; }
 
+/* Worked example: reading heading, microphone, two-line signpost. */
+.survey-signpost-text--small { font-size: clamp(17px, 2vw, 21px); max-width: 720px; }
+.read-heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.read-heading { margin: 0; font-size: clamp(19px, 2.2vw, 24px); font-weight: 700; line-height: 1.35; color: var(--ink); }
+.speak-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--surface-strong); color: var(--ink); cursor: pointer; padding: 0; flex: 0 0 auto; }
+.speak-button:hover { background: #f3eadf; }
+.speak-button--on { background: var(--accent); border-color: var(--accent); color: #fff; animation: speak-pulse 1.2s ease-in-out infinite; }
+@keyframes speak-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(122, 111, 159, 0.35); } 50% { box-shadow: 0 0 0 8px rgba(122, 111, 159, 0); } }
+.lucky-chat-bubble--near b { color: #c98a1a; }
+.speak-button:disabled { opacity: 0.4; cursor: not-allowed; }
+
 </style>
   </head>
   <body>
@@ -1024,12 +1035,12 @@ function go(key) {
 }
 
 // A one-sentence page with the waving bee.
-function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee = true }) {
+function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee = true, small = false }) {
   screen({ step, frac });
   const card = el("section", "card survey-card survey-card--signpost");
   const body = el("div", "survey-card-body");
   if (withBee) body.appendChild(luckyBee("hello"));
-  body.appendChild(el("p", "survey-signpost-text", text));
+  body.appendChild(el("p", small ? "survey-signpost-text survey-signpost-text--small" : "survey-signpost-text", text));
   if (sub) body.appendChild(el("p", "survey-signpost-sub", sub));
   if (extra) body.appendChild(extra);
   card.appendChild(body);
@@ -1297,17 +1308,18 @@ const DIMS_TOTAL = DIM_PAGES.length + 2; // two intro sentences + one page per s
 const DIMS_FIRST_PAGE = 2;
 
 const DIM_WAIT_MS = 8000;
-const dimsWaited = new Set();
-// Next is disabled for DIM_WAIT_MS on a strategy page the first time it is seen; a fill bar shows the wait.
-function timedButton(text, key) {
+const READ_WAIT_MS = 15000;
+const waited = new Set();
+// Next is disabled for `ms` the first time a page is seen; a fill bar inside the button shows the wait.
+function timedButton(text, key, ms = DIM_WAIT_MS) {
   const b = button(text);
-  if (dimsWaited.has(key)) return b;
+  if (waited.has(key)) return b;
   b.classList.add("submit-button--timed");
   const fill = el("span", "button-fill");
   b.appendChild(fill);
   b.disabled = !DEBUG;
-  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.transitionDuration = `${DIM_WAIT_MS}ms`; fill.style.width = "100%"; }));
-  setTimeout(() => { dimsWaited.add(key); b.disabled = false; b.classList.remove("submit-button--timed"); fill.remove(); }, DIM_WAIT_MS);
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.transitionDuration = `${ms}ms`; fill.style.width = "100%"; }));
+  setTimeout(() => { waited.add(key); b.disabled = false; b.classList.remove("submit-button--timed"); fill.remove(); }, ms);
   return b;
 }
 
@@ -1326,7 +1338,7 @@ function renderDims(i) {
   if (i === 0) {
     return signpost({
       step: 3, frac: 0,
-      text: `In the main task you will read a person’s situation and their message to an AI assistant, then say how a ${SCHOOL.short} counselor would respond, using eleven questions about the response.`,
+      text: `In the main task you will read a person’s situation as summarized by their AI assistant, then say how a ${SCHOOL.short} counselor would respond using eleven questions about the response.`,
       back: () => go("q1result"),
       next: () => go("dims:1"),
       withBee: false,
@@ -1336,6 +1348,7 @@ function renderDims(i) {
     return signpost({
       step: 3, frac: 1 / DIMS_TOTAL,
       text: `We will now tell you about the ${DIM_PAGES.length} strategies that you will use to label responses. We will quiz you on them later.`,
+      small: true,
       back: () => go("dims:0"),
       next: () => go("dims:2"),
       withBee: false,
@@ -1411,22 +1424,49 @@ function vignetteBox() {
 function renderExampleIntro() {
   signpost({
     step: 5, frac: 0,
-    text: "Finally, a worked example. You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of CBT. Then we will go over your answers.",
+    text: "Finally, a worked example: You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of CBT. Then we will go over your answers.",
     back: () => go("q2result"),
     next: () => go("exvignette"),
   });
 }
 
+// Microphone button that reads `text` aloud with the browser's speech synthesis; click again to stop.
+function speakButton(text) {
+  const b = el("button", "speak-button");
+  b.type = "button";
+  b.title = "Listen to the situation";
+  b.setAttribute("aria-label", "Listen to the situation");
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z" fill="currentColor"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  if (!("speechSynthesis" in window)) { b.hidden = true; return b; }
+  let speaking = false;
+  const stop = () => { window.speechSynthesis.cancel(); speaking = false; b.classList.remove("speak-button--on"); };
+  b.addEventListener("click", () => {
+    if (speaking) return stop();
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.onend = stop;
+    u.onerror = () => { stop(); b.disabled = true; b.title = "Speech is not available in this browser"; b.setAttribute("aria-label", b.title); };
+    speaking = true; b.classList.add("speak-button--on");
+    window.speechSynthesis.speak(u);
+  });
+  window.addEventListener("hashchange", stop, { once: true });
+  return b;
+}
+
 function renderExampleVignette() {
   screen({ step: 5, frac: 0.1 });
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Worked example"));
+  const head = el("div", "read-heading-row");
+  head.append(el("p", "read-heading", "Read the following"), speakButton(EXAMPLE.situation));
+  card.appendChild(head);
   const body = el("div", "survey-card-body");
   body.appendChild(vignetteBox());
-  body.appendChild(el("p", "callout", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
+  body.appendChild(el("p", "read-heading", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
   card.appendChild(body);
   const back = button("← Back", true); back.addEventListener("click", () => go("exintro"));
-  const next = button("Next →"); next.addEventListener("click", () => go("ex:0"));
+  const next = timedButton("Next →", "exvignette", READ_WAIT_MS); next.addEventListener("click", () => go("ex:0"));
   card.appendChild(nav(back, next));
   bodyEl.appendChild(card);
 }
@@ -1446,11 +1486,22 @@ function infoTip(text) {
   return tip;
 }
 
+function exampleFeedback(st, yours) {
+  const g = EXAMPLE.gold[st.name];
+  let status, note;
+  if (yours === g.answer) { status = "ok"; note = g.why; }
+  else if (g.partial && g.partial[yours]) { status = "near"; note = g.partial[yours]; }
+  else { status = "bad"; note = g.why; }
+  const basis = g.principles ? ` (principle${g.principles.length > 1 ? "s" : ""} ${g.principles.map(cardNumber).join(", ")})` : " (from the CBT sources)";
+  return { status, note, basis };
+}
+
 function renderExampleItem(i) {
   const st = EXAMPLE_STRATEGIES[i];
+  const last = i === EXAMPLE_STRATEGIES.length - 1;
+  const onNext = () => go(last ? "excritique" : `ex:${i + 1}`);
   screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
   const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", `Worked example · Strategy ${i + 1} of ${EXAMPLE_STRATEGIES.length}`));
   const body = el("div", "survey-card-body");
   body.appendChild(vignetteBox());
   body.appendChild(el("p", "dim-page-name", st.name));
@@ -1459,32 +1510,54 @@ function renderExampleItem(i) {
   body.appendChild(el("p", "survey-question-text", stem));
   const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
   const choices = el("div", "control-choices");
-  let picked = state.example[st.name] || null;
+  const inputs = [];
+  let picked = null;
   for (const opt of options) {
     const label = el("label", "control-choice");
     const input = document.createElement("input");
     input.type = "radio"; input.name = "example"; input.value = opt;
-    if (picked === opt) input.checked = true;
-    input.addEventListener("change", () => { picked = opt; next.disabled = false; warning.hide(); });
+    input.addEventListener("change", () => { picked = opt; check.disabled = false; });
     label.append(input, el("span", null, opt));
     if (st.kind === "stance") label.appendChild(infoTip(stanceDef(opt, st.name)));
     choices.appendChild(label);
+    inputs.push({ label, input, opt });
   }
   body.appendChild(choices);
+  const feedbackHolder = el("div");
+  body.appendChild(feedbackHolder);
   card.appendChild(body);
-  const warning = luckyWarning();
-  card.appendChild(warning.node);
+  const check = button("Check answer");
+  check.disabled = true;
+  const next = button(last ? "See the summary →" : "Next →");
+  next.hidden = true;
+
+  function reveal(yours) {
+    const gold = EXAMPLE.gold[st.name].answer;
+    const { status, note, basis } = exampleFeedback(st, yours);
+    for (const { label, input, opt } of inputs) {
+      input.disabled = true;
+      label.classList.add("control-choice--locked");
+      if (opt === gold) { label.classList.add("control-choice--correct"); label.insertBefore(el("span", "choice-tag", SCHOOL.short), label.querySelector(".info-tip")); }
+      else if (opt === yours) { label.classList.add("control-choice--wrong"); label.insertBefore(el("span", "choice-tag", "your pick"), label.querySelector(".info-tip")); }
+    }
+    const row = el("div", "lucky-chat-row");
+    row.appendChild(luckyBee("avatar"));
+    const bubble = el("p", `lucky-chat-bubble ${status === "ok" ? "lucky-chat-bubble--ok" : status === "near" ? "lucky-chat-bubble--near" : "lucky-chat-bubble--bad"}`);
+    bubble.append(el("b", null, status === "ok" ? "That’s right. " : status === "near" ? "Close. " : "Not quite. "), `CBT: ${gold}${basis}. ${note}`);
+    row.appendChild(bubble);
+    feedbackHolder.appendChild(row);
+    check.hidden = true;
+    next.hidden = false;
+  }
+
+  const prior = state.example[st.name];
+  if (prior) { const hit = inputs.find((x) => x.opt === prior); if (hit) hit.input.checked = true; reveal(prior); }
+  check.addEventListener("click", () => { if (!picked) return; state.example[st.name] = picked; reveal(picked); });
+  next.addEventListener("click", onNext);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(i === 0 ? "exvignette" : `ex:${i - 1}`));
-  const next = button(i === EXAMPLE_STRATEGIES.length - 1 ? "See the critique →" : "Next →");
-  next.disabled = !picked;
-  next.addEventListener("click", () => {
-    if (!picked) return warning.show("Please pick an answer.");
-    state.example[st.name] = picked;
-    go(i === EXAMPLE_STRATEGIES.length - 1 ? "excritique" : `ex:${i + 1}`);
-  });
-  const n = nav(back, el("span", "spacer"), next);
-  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", () => go(i === EXAMPLE_STRATEGIES.length - 1 ? "excritique" : `ex:${i + 1}`)); n.insertBefore(skip, next); }
+  const n = nav(back, el("span", "spacer"), check, next);
+  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, check); }
   card.appendChild(n);
   bodyEl.appendChild(card);
 }
@@ -1492,7 +1565,7 @@ function renderExampleItem(i) {
 function renderExampleCritique() {
   screen({ step: 5, frac: 1 });
   const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", "Worked example · Critique"));
+  card.appendChild(el("div", "card-eyebrow", "Worked example · Summary"));
   const body = el("div", "survey-card-body");
   const right = EXAMPLE_STRATEGIES.filter((st) => state.example[st.name] === EXAMPLE.gold[st.name].answer).length;
   body.appendChild(el("p", "principle-teaches", `You matched the CBT answer on ${right} of ${EXAMPLE_STRATEGIES.length} strategies. Where a principle you learned decides the answer, it is named; otherwise the answer follows from the CBT sources.`));
