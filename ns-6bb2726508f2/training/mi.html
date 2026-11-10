@@ -743,9 +743,11 @@ const QUIZ1_STRENGTH = [
 // tests in spec.py constrain (check all that apply; scored right only when the set matches exactly).
 const QUIZ2_DIMENSION = [
   { id: "MI-A", answer: ["Action stance", "Framing stance"], feature: "Confronting means pushing back, whether on what the person did or plans (the Action stance) or on how they see things (the Framing stance); the principle rules out pushback on both." },
-  { id: "MI-E", answer: ["Action stance"], feature: "Developing discrepancy is about the person’s behavior and when to push back on it, so it is the Action stance alone." },
   { id: "MI-B", answer: ["Paraphrasing"], feature: "Reflective listening restates what the person said and seemed to feel, which is Paraphrasing; the principle fixes nothing else." },
+  { id: "MI-D", answer: ["Action stance"], feature: "Taking sides for or against a course of action is a stance on the action, so this principle is about the Action stance alone." },
   { id: "MI-C", answer: ["Advice"], feature: "The principle is about when advice is given and in what form, which is what Advice records; it sets no rule for any other strategy." },
+  { id: "MI-E", answer: ["Action stance"], feature: "Developing discrepancy is about the person’s behavior and when to push back on it, so it is the Action stance alone." },
+  { id: "MI-F", answer: ["Action stance"], feature: "Approving of or praising what the person did is an endorsement of the action, so the principle is about the Action stance alone; accepting the person is not a strategy." },
 ];
 
 // Quiz 2, type 2: which rule follows? `rule` holds two wordings of the correct rule
@@ -753,6 +755,7 @@ const QUIZ2_DIMENSION = [
 const QUIZ2_RULE = [
   {
     id: "MI-B",
+    skip: true, // tested by the mapping item and the Quiz 1 strength item; skipped to keep Quiz 2 at ten (user, 2026-11-09)
     rule: [
       "Paraphrasing = yes in every response, from the first one on.",
       "Every response includes Paraphrasing; reflecting is never skipped.",
@@ -766,6 +769,7 @@ const QUIZ2_RULE = [
   },
   {
     id: "MI-A",
+    skip: true, // tested by the mapping item and the Quiz 1 strength item; skipped to keep Quiz 2 at ten (user, 2026-11-09)
     rule: [
       "Action stance and Framing stance = never Explicit refutation, even when the person is clearly in the wrong.",
       "Explicit refutation is never the stance on the action or on the framing, whatever the counselor thinks of them.",
