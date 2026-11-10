@@ -272,7 +272,10 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 
 /* Worked example: reading heading, microphone, two-line signpost. */
 .survey-signpost-text--small { font-size: clamp(17px, 2vw, 21px); max-width: 720px; }
-.read-heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.read-heading-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.speak-control { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; }
+.speak-caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+.speak-control:has(.speak-button:disabled) .speak-caption { visibility: hidden; }
 .read-heading { margin: 0; font-size: clamp(19px, 2.2vw, 24px); font-weight: 700; line-height: 1.35; color: var(--ink); }
 .speak-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--surface-strong); color: var(--ink); cursor: pointer; padding: 0; flex: 0 0 auto; }
 .speak-button:hover { background: #f3eadf; }

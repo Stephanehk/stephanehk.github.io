@@ -277,7 +277,10 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 
 /* Worked example: reading heading, microphone, two-line signpost. */
 .survey-signpost-text--small { font-size: clamp(17px, 2vw, 21px); max-width: 720px; }
-.read-heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.read-heading-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.speak-control { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; }
+.speak-caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+.speak-control:has(.speak-button:disabled) .speak-caption { visibility: hidden; }
 .read-heading { margin: 0; font-size: clamp(19px, 2.2vw, 24px); font-weight: 700; line-height: 1.35; color: var(--ink); }
 .speak-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--surface-strong); color: var(--ink); cursor: pointer; padding: 0; flex: 0 0 auto; }
 .speak-button:hover { background: #f3eadf; }
@@ -690,7 +693,7 @@ const QUIZ1_STRENGTH = [
     stem: "How often does an SFBT counselor include at least one question in a response?",
     options: [
       { text: "Nearly always: questions are the primary tool", correct: true },
-      { text: "Usually, alongside explanation as the main tool", correct: false },
+      { text: "About half the time, when reflection alone is not enough", correct: false },
       { text: "Rarely; the counselor mostly reflects", correct: false },
       { text: "Only when the person asks a question first", correct: false },
     ],
@@ -1422,6 +1425,12 @@ function renderExampleIntro() {
   });
 }
 
+// Microphone button with a "Click to listen" caption.
+function speakControl(text) {
+  const wrap = el("div", "speak-control");
+  wrap.append(speakButton(text), el("span", "speak-caption", "Click to listen"));
+  return wrap;
+}
 // Microphone button that reads `text` aloud with the browser's speech synthesis; click again to stop.
 function speakButton(text) {
   const b = el("button", "speak-button");
@@ -1449,7 +1458,7 @@ function renderExampleVignette() {
   screen({ step: 5, frac: 0.1 });
   const card = el("section", "card survey-card");
   const head = el("div", "read-heading-row");
-  head.append(el("p", "read-heading", "Read the following"), speakButton(EXAMPLE.situation));
+  head.append(el("p", "read-heading", "Read the following"), speakControl(EXAMPLE.situation));
   card.appendChild(head);
   const body = el("div", "survey-card-body");
   body.appendChild(vignetteBox());
@@ -1582,7 +1591,7 @@ function renderMainVignette(vi) {
   const card = el("section", "card survey-card");
   card.appendChild(el("div", "card-eyebrow", `Situation ${vi + 1} of ${MAIN_N}`));
   const head = el("div", "read-heading-row");
-  head.append(el("p", "read-heading", "Read the following"), speakButton(v.situation));
+  head.append(el("p", "read-heading", "Read the following"), speakControl(v.situation));
   card.appendChild(head);
   const body = el("div", "survey-card-body");
   body.appendChild(vignetteBox(v));
