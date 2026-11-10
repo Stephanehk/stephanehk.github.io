@@ -586,10 +586,10 @@ const CARDS = [
   },
   {
     id: "PCT-G",
-    title: "Questions are answered and requests for help accommodated",
-    teaches: "Questions and requests are answered and requests for help accommodated, unless the request is unethical or destructive; refusing because an answer would not be good for the client is a misuse of the counselor’s authority.",
+    title: "Requests for information, options, or help are met"
+    teaches: "Requests for information, options, or help are answered and accommodated, unless the request is unethical or destructive. This does not extend to a verdict on the client’s own actions, which the counselor does not give even when asked.",
     rulesIn: "A direct answer, given as the counselor’s own view with its basis stated, when the person asks what to do or asks for something written; checking afterwards that it met the question.",
-    rulesOut: "Reflecting a question back instead of answering it; withholding an answer “for the person’s own good”.",
+    rulesOut: "Reflecting a request for options or help back instead of meeting it; giving a verdict on the person’s own actions because they asked for one.",
   },
   {
     id: "PCT-F",
@@ -678,15 +678,15 @@ const QUIZ1 = [
     id: "PCT-G",
     stem: "How does a PCT counselor respond when the person asks a direct question or asks for help?",
     own: [
-      "Questions get a direct answer and requests for help are met, unless the request is unethical or destructive; refusing because the answer might not be good for the person would be an abuse of the counselor’s position.",
-      "The counselor answers what is asked and does what is requested, declining only an unethical or destructive request, never on the grounds that an answer would not be good for the person.",
+      "Requests for information, options, or help are met directly, unless the request is unethical or destructive; the one thing not given on request is a verdict on the person’s own actions.",
+      "The counselor gives the information, options, or help the person asks for, declining only an unethical or destructive request, but does not give a verdict on the person’s own actions even when asked.",
     ],
     foils: [
       { source: "ACT-F", text: "The counselor does not give advice while the person is exploring thoughts and feelings; practical help belongs later, when they are turning values into action." },
       { source: "SFBT-F", text: "When the person cannot decide between options, the counselor does not say which is best but helps them find out for themself." },
       { source: "written", text: "The counselor declines to answer when it judges that an answer would not be good for the person, and reflects the question back instead." },
     ],
-    feature: "What is asked is answered, whatever the stage and however undecided the person is; the only reason to refuse is a request that is unethical or destructive, never that the answer might not be good for the person.",
+    feature: "Information, options, and help are given when asked for, whatever the stage and however undecided the person is; the only request refused is an unethical or destructive one, and the only thing never given on request is a verdict on the person’s own actions.",
   },
   {
     id: "PCT-F",
@@ -733,7 +733,7 @@ const QUIZ1_STRENGTH = [
   {
     id: "S-G",
     claim: "PCT-G",
-    stem: "How often does a PCT counselor answer a direct question or meet a request for help?",
+    stem: "How often does a PCT counselor meet a request for information, options, or help?",
     options: [
       { text: "Always, unless the request is unethical or destructive", correct: true },
       { text: "Usually, unless the answer would not be good for the person", correct: false },
@@ -893,7 +893,7 @@ const EXAMPLE = {
           ],
           "why": "The person asks directly what to do when the partner gets home, so the request is answered, with the suggestions given as the counselor’s own view and checked against what the person wanted.",
           "partial": {
-              "No": "Advice stays out only when nobody asked for it. Here the person asks directly, and refusing because an answer might not be good for them would be a misuse of the counselor’s authority."
+              "No": "Advice stays out only when nobody asked for it. Here the person asks directly for steps to take, and a request for options is met."
           }
       },
       "Assistance": {
