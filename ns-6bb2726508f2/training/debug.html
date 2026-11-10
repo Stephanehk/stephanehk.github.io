@@ -44,7 +44,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-.page { position: relative; z-index: 1; width: min(880px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 80px; }
+.page { position: relative; z-index: 1; width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 18px 0 40px; }
 h1, h2, h3, p { margin-top: 0; }
 .hero { display: grid; gap: 10px; margin-bottom: 8px; }
 .eyebrow, .card-eyebrow {
@@ -122,7 +122,7 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
   cursor: pointer; transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 .control-choice:focus-within { border-color: var(--ink); color: var(--ink); }
-.control-choice input[type="radio"] { margin: 2px 0 0; accent-color: var(--accent); width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; }
+.control-choice input[type="radio"], .control-choice input[type="checkbox"] { margin: 2px 0 0; accent-color: var(--accent); width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; }
 .control-choice:has(input:checked) { border-color: var(--ink); background: #f3eadf; color: var(--ink); font-weight: 600; }
 .control-choice--locked { cursor: default; }
 .control-choice--correct { border-color: var(--ok); background: var(--ok-bg); color: var(--ink); font-weight: 600; }
@@ -280,6 +280,21 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 @keyframes speak-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(122, 111, 159, 0.35); } 50% { box-shadow: 0 0 0 8px rgba(122, 111, 159, 0); } }
 .lucky-chat-bubble--near b { color: #c98a1a; }
 .speak-button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Labeling screens: situation on the left, question and buttons on the right, so Next needs no scrolling. */
+.survey-card-body--split { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.survey-card-body--split > .vignette { position: sticky; top: 12px; }
+/* If the situation is longer than the window, the box scrolls on its own; the page never has to. */
+.survey-card-body--split > .vignette .vignette-message { max-height: calc(100vh - 190px); overflow-y: auto; }
+.split-question { align-content: start; gap: 10px; }
+.survey-card:has(.survey-card-body--split) { padding-top: 22px; padding-bottom: 22px; margin-top: 12px; }
+.split-question .lucky-nav { margin-top: 10px; }
+.split-question .control-choices { margin-top: 4px; }
+@media (max-width: 900px) { .survey-card-body--split { grid-template-columns: 1fr; } .survey-card-body--split > .vignette { position: static; } }
+/* Check-all-that-apply: two columns of checkboxes. */
+.control-choices--multi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .control-choices--multi { grid-template-columns: 1fr; } }
+.control-choice--correct .choice-tag:where(:not(:empty)) { color: var(--ok); }
 
 .menu { display: grid; gap: 12px; margin-top: 18px; }
 .menu a { display: block; padding: 16px 18px; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface-strong); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 17px; }
