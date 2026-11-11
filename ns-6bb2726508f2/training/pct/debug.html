@@ -1099,13 +1099,6 @@ function renderConsent() {
   frame.src = INFO_SHEET_URL + "#toolbar=1";
   frame.title = "Information sheet (PDF)";
   body.appendChild(frame);
-  const link = el("p", "survey-signpost-sub consent-links");
-  const dl = el("a", null, "Download the information sheet (PDF)");
-  dl.href = INFO_SHEET_URL; dl.download = INFO_SHEET_FILE;
-  const a = el("a", null, "Open it in a new tab");
-  a.href = INFO_SHEET_URL; a.target = "_blank"; a.rel = "noopener";
-  link.append(dl, " · ", a);
-  body.appendChild(link);
   card.appendChild(body);
   const next = button("Next →");
   const sync = () => { state.prolificId = input.value.trim(); next.disabled = state.prolificId.length === 0; };
