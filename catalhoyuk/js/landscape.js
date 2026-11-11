@@ -533,7 +533,7 @@ export function buildMoundCap(tex) {
     const inside = m > 0.25 ? 1 : 0;
     pos.setXYZ(i, x, terrainHeight(x, z) + (inside ? 0.06 : -2.0), z);
     const n = fbm(nC, x * 0.03, z * 0.03, 3);
-    tmp.setHSL(0.08 + (n - 0.5) * 0.02, 0.12 + n * 0.1, 0.86 + (n - 0.5) * 0.2, THREE.SRGBColorSpace);
+    tmp.setHSL(0.08 + (n - 0.5) * 0.02, 0.12 + n * 0.1, 0.96 + (n - 0.5) * 0.2, THREE.SRGBColorSpace);
     col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));

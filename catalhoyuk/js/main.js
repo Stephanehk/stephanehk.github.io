@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 import { makeTextureSet, mulberry32 } from './textures.js';
 import { buildMoundCap, buildTerrain, buildWater, buildSky, buildMountains, buildReeds, buildTrees, buildShrubs, Herds, Birds, terrainHeight, moundHeight, channelInfo, MOUND } from './landscape.js';
-import { generateTown, placeLadders, buildTown, buildRoofClutter, buildMiddens, buildPens, worldPt, sectorMatrix } from './town.js';
+import { generateTown, placeLadders, buildTown, buildRoofClutter, buildMiddens, buildPens, worldPt, sectorMatrix, clearPlot } from './town.js';
+import { buildB52, ASSET_V } from './b52.js';
 import { makePaintings } from './paintings.js';
 import { makeInteriorBuilder, updateShafts, disposeInterior } from './interiors.js';
 import { Player, CollisionWorld } from './player.js';
@@ -83,8 +84,29 @@ let hemiBase = 1.0, exposureBase = 1.0;
 const hemiSkyCol = new THREE.Color(0x8fb4e4), warmBounce = new THREE.Color(0xd9c4a0);
 
 // ---------------- loading helpers ----------------
+// straw-tempered loam, trampled earth and timber photographed for the Building 52 model (Alicia Walsh, CC BY 4.0)
+async function loadPhotoTextures(tex) {
+  const loader = new THREE.TextureLoader();
+  const load = (f, srgb) => loader.loadAsync('./assets/b52/' + f + '?v=' + ASSET_V).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }).catch(() => null);
+  // the photographs are of a reddish loam; Çatalhöyük's bricks and plasters were a paler buff marl, so re-tone them
+  const tone = (t, hue, lift) => {
+    if (!t) return t;
+    const img = t.image, c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
+    ctx.globalCompositeOperation = 'color'; ctx.fillStyle = hue; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = lift; ctx.fillStyle = hue; ctx.fillRect(0, 0, c.width, c.height);
+    const out = new THREE.CanvasTexture(c); out.wrapS = out.wrapT = THREE.RepeatWrapping; out.colorSpace = THREE.SRGBColorSpace; out.anisotropy = 4;
+    t.dispose(); return out;
+  };
+  let [loam, loamN, dirt, dirtN, timber, timberN] = await Promise.all([load('loam.jpg', true), load('loam_N.jpg'), load('dirt.jpg', true), load('dirt_N.jpg'), load('wood.jpg', true), load('wood_N.jpg')]);
+  loam = tone(loam, '#c9b48e', 0.18); dirt = tone(dirt, '#bca682', 0.3);
+  if (loam && loamN) { tex.loam = loam; tex.loamN = loamN; }
+  if (dirt && dirtN) { tex.dirt = dirt; tex.dirtN = dirtN; }
+  if (timber && timberN) { tex.timber = timber; tex.timberN = timberN; }
+}
+let b52plot = null;
 const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
-async function stage(msg, fn) { $('loadmsg').textContent = msg; await nextFrame(); await nextFrame(); const t = performance.now(); const out = fn(); console.log(`[catalhoyuk] ${msg} ${(performance.now() - t).toFixed(0)} ms`); return out; }
+async function stage(msg, fn) { $('loadmsg').textContent = msg; await nextFrame(); await nextFrame(); const t = performance.now(); const out = await fn(); console.log(`[catalhoyuk] ${msg} ${(performance.now() - t).toFixed(0)} ms`); return out; }
 
 // ---------------- world ----------------
 const world = new CollisionWorld(8);
@@ -126,6 +148,7 @@ function fieldMask(x, z) {
 
 async function build() {
   tex = await stage('Mixing plaster and mudbrick…', () => makeTextureSet());
+  await stage('Fetching the loam…', () => loadPhotoTextures(tex));
   const paintings = makePaintings(tex.white.image, 11);
 
   await stage('Laying out the Konya Plain…', () => {
@@ -166,14 +189,21 @@ async function build() {
         h.kind = k; used.add(h); break;
       }
     }
+    // Building 52 itself stands two houses north of the start, on a plot cleared for it
+    {
+      const p0 = worldPt(start.sector, (start.x0 + start.x1) / 2 - 2.0, 0, start.z0 - 7.5);
+      b52plot = clearPlot(town, p0.x, p0.z, 8.6, 10.7);
+      if (b52plot && b52plot.floorY === undefined) b52plot.floorY = start.floorY;
+    }
     placeLadders(town, rnd);
   });
 
-  await stage('Plastering the interiors…', () => {
+  await stage('Plastering the interiors…', async () => {
     interiors.builder = makeInteriorBuilder(tex, paintings, rnd, registry);
     scene.add(interiors.group);
     const { group, smokeSources } = buildTown(town, tex, world, rnd);
     scene.add(group);
+    if (b52plot) await buildB52(b52plot, tex, world, group, rnd, registry).catch((e) => console.warn('Building 52 not built', e));
     smoke = new Puffs(tex.puff, smokeSources.slice(0, 70), { rise: 5.5, spread: 3.0, jitter: 0.5, size: 2.2, alpha: 0.26, speed: 0.07, color: new THREE.Color(0xd8d4cc) });
     scene.add(smoke.points);
     const dustSrc = town.houses.map((h) => worldPt(h.sector, (h.hatch.x0 + h.hatch.x1) / 2, h.roofY - 1.6, (h.hatch.z0 + h.hatch.z1) / 2));
@@ -384,5 +414,5 @@ build().then(() => {
     $('overlay').classList.add('hidden');
     if (params.get('t')) { presetIdx = parseInt(params.get('t'), 10) % PRESETS.length; applyPreset(PRESETS[presetIdx]); }
   }
-  window.__cat = { scene, player, town, registry, startPos, renderer, camera, PRESETS, applyPreset, updateInteriors, interiors };
+  window.__cat = { scene, player, town, registry, startPos, renderer, camera, PRESETS, applyPreset, updateInteriors, interiors, b52plot, worldPt };
 }).catch((err) => { console.error(err); window.__err = String(err.stack || err); $("loadmsg").textContent = 'Something went wrong: ' + err.message; });

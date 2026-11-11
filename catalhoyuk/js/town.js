@@ -118,22 +118,28 @@ function makeHouse(rnd, sector, cell, rowBias) {
     ground = Math.max(ground, terrainHeight(p.x, p.z));
   }
   const floorY = ground + 0.3 + Math.abs(rowBias) + rnd() * 0.45;
-  const wallH = 2.65 + rnd() * 0.45;            // floor to ceiling
+  const wallH = 2.3 + rnd() * 0.5;              // floor to ceiling (Building 52 reconstruction: ~2 m walls plus roof)
   const roofY = floorY + wallH + ROOF_T;
-  // interior plan
+  // interior plan, after Building 52: a large central room with a strip of small store rooms along one long
+  // side, the strip itself divided in two; smaller houses get a single room across the north end or none.
   const ix0 = x0 + WALL_T, ix1 = x1 - WALL_T, iz0 = z0 + WALL_T, iz1 = z1 - WALL_T;
   const side = [];
   let main = { x0: ix0, x1: ix1, z0: iz0, z1: iz1 };
   const roll = rnd();
-  if (w > 5.6 && roll < 0.45) {
-    // side room strip along W or E
-    const sw = 1.4 + rnd() * 0.8;
+  if (w > 5.4 && roll < 0.62) {
+    const sw = 1.4 + rnd() * 0.7;
     const west = rnd() < 0.5;
-    if (west) { side.push({ x0: ix0, x1: ix0 + sw, z0: iz0, z1: iz1, wall: 'W' }); main.x0 = ix0 + sw + WALL_T; }
-    else { side.push({ x0: ix1 - sw, x1: ix1, z0: iz0, z1: iz1, wall: 'E' }); main.x1 = ix1 - sw - WALL_T; }
-    if (l > 7.2 && rnd() < 0.4) { const sd = 1.5 + rnd() * 0.6; side.push({ x0: main.x0, x1: main.x1, z0: iz0, z1: iz0 + sd, wall: 'N' }); main.z0 = iz0 + sd + WALL_T; }
-  } else if (l > 6.4 && roll < 0.85) {
-    const sd = 1.5 + rnd() * 0.9;
+    const sx0 = west ? ix0 : ix1 - sw, sx1 = west ? ix0 + sw : ix1, wall = west ? 'W' : 'E';
+    if (l > 5.8) {
+      // two compartments, the partition between them a little north of the middle
+      const zc = iz0 + (iz1 - iz0) * (0.42 + rnd() * 0.16);
+      side.push({ x0: sx0, x1: sx1, z0: iz0, z1: zc - WALL_T / 2, wall });
+      side.push({ x0: sx0, x1: sx1, z0: zc + WALL_T / 2, z1: iz1, wall });
+    } else side.push({ x0: sx0, x1: sx1, z0: iz0, z1: iz1, wall });
+    if (west) main.x0 = ix0 + sw + WALL_T; else main.x1 = ix1 - sw - WALL_T;
+    if (l > 7.4 && rnd() < 0.35) { const sd = 1.5 + rnd() * 0.5; side.push({ x0: main.x0, x1: main.x1, z0: iz0, z1: iz0 + sd, wall: 'N' }); main.z0 = iz0 + sd + WALL_T; }
+  } else if (l > 6.2 && roll < 0.9) {
+    const sd = 1.5 + rnd() * 0.8;
     side.push({ x0: ix0, x1: ix1, z0: iz0, z1: iz0 + sd, wall: 'N' }); main.z0 = iz0 + sd + WALL_T;
   }
   // hatch in the SE corner of the main room, against the south wall
@@ -293,14 +299,14 @@ export function ladderGeo(bx, by, bz, tx, ty, tz, over = 0.7) {
   dir.normalize();
   const total = len + over;
   const parts = [];
-  const width = 0.46;
+  const width = 0.44;
   // local ladder frame: y along the ladder, x across
-  const stringer = (sx) => { const g = new THREE.BoxGeometry(0.07, total, 0.09); g.translate(sx, total / 2, 0); return g; };
+  const stringer = (sx) => { const g = new THREE.CylinderGeometry(0.038, 0.045, total, 7); g.translate(sx, total / 2, 0); scaleUV(g, 0.3, total / 0.6); return g; };
   parts.push(stringer(-width / 2), stringer(width / 2));
-  const nR = Math.floor(total / 0.32);
+  const nR = Math.floor(total / 0.34);
   for (let i = 1; i <= nR; i++) {
-    const g = new THREE.CylinderGeometry(0.026, 0.026, width, 6);
-    g.rotateZ(Math.PI / 2); g.translate(0, i * 0.32 - 0.05, 0);
+    const g = new THREE.CylinderGeometry(0.024, 0.024, width + 0.14, 6);
+    g.rotateZ(Math.PI / 2); g.translate((i % 2 ? 0.01 : -0.01), i * 0.34 - 0.06, 0.055);
     parts.push(g);
   }
   const g = mergeGeometries(parts);
@@ -322,7 +328,7 @@ export function ladderGeo(bx, by, bz, tx, ty, tz, over = 0.7) {
 export function buildTown(town, tex, world, rnd) {
   const group = new THREE.Group();
   group.name = 'town';
-  const wallGeos = [], roofGeos = [], woodGeos = [], darkGeos = [], matGeos = [];
+  const wallGeos = [], roofGeos = [], woodGeos = [], darkGeos = [], matGeos = [], strawGeos = [];
   const cWall = new THREE.Color(), cRoof = new THREE.Color();
   const smokeSources = [], ladderZones = [];
   const nTint = makeValueNoise(401, 32);
@@ -333,8 +339,8 @@ export function buildTown(town, tex, world, rnd) {
     for (const h of s.houses) {
       const w = h.x1 - h.x0, l = h.z1 - h.z0, cx = (h.x0 + h.x1) / 2, cz = (h.z0 + h.z1) / 2;
       const tn = fbm(nTint, h.wx * 0.05, h.wz * 0.05, 2);
-      cWall.setHSL(0.078 + (tn - 0.5) * 0.02, 0.22 + (tn - 0.5) * 0.08, 0.72 * h.tint, THREE.SRGBColorSpace);
-      cRoof.setHSL(0.085 + (tn - 0.5) * 0.02, 0.2, 0.7 * h.tint, THREE.SRGBColorSpace);
+      cWall.setHSL(0.08 + (tn - 0.5) * 0.02, 0.18 + (tn - 0.5) * 0.08, (tex.loam ? 0.86 : 0.72) * h.tint, THREE.SRGBColorSpace);
+      cRoof.setHSL(0.085 + (tn - 0.5) * 0.02, 0.2, (tex.dirt ? 0.84 : 0.7) * h.tint, THREE.SRGBColorSpace);
       const base = h.floorY - 1.4;
       {
         // hollow shell: four walls, roof slabs around the hatch; the interior is built on demand
@@ -349,8 +355,9 @@ export function buildTown(town, tex, world, rnd) {
         }
         // solid fill below the floor so the player stands on it
         world.addBox(s.fi, h.x0, base, h.z0, h.x1, h.floorY, h.z1, h);
-        const fg = boxGeo(w - 2 * WALL_T + 0.02, h.floorY - base, l - 2 * WALL_T + 0.02, 2.5, cWall);
-        placed(fg, cx, (base + h.floorY) / 2, cz); wallGeos.push(fg);
+        const fillTop = h.floorY - 0.6;   // the room floors are drawn by the interior; below them only earth, so graves can be cut into it
+        const fg = boxGeo(w - 2 * WALL_T + 0.02, fillTop - base, l - 2 * WALL_T + 0.02, 2.5, cWall);
+        placed(fg, cx, (base + fillTop) / 2, cz); wallGeos.push(fg);
         // roof slabs with hatch hole
         const ceilY = h.roofY - ROOF_T;
         const ht = h.hatch;
@@ -406,6 +413,21 @@ export function buildTown(town, tex, world, rnd) {
           }
         }
         if (h.smoke || rnd() < 0.5) smokeSources.push(worldPt(s, lx, h.roofY + 0.1, (ht.z0 + ht.z1) / 2));
+        // shade canopy: four poles carrying a mat of reeds and straw, over the north part of the roof
+        if (!h.upper && rnd() < 0.22 && w > 4.6 && l > 5.4) {
+          const cw = Math.min(2.4, w - 1.6), cd = Math.min(2.2, l * 0.35);
+          const cx0 = h.x0 + 0.6 + rnd() * (w - 1.2 - cw), cz0 = h.z0 + 0.5 + rnd() * 0.4;
+          const ph = 1.75 + rnd() * 0.25;
+          for (const [px, pz] of [[cx0 + 0.1, cz0 + 0.1], [cx0 + cw - 0.1, cz0 + 0.1], [cx0 + 0.1, cz0 + cd - 0.1], [cx0 + cw - 0.1, cz0 + cd - 0.1]]) {
+            const g = new THREE.CylinderGeometry(0.045, 0.055, ph, 6); g.translate(px, h.roofY + ph / 2, pz); woodGeos.push(g);
+            world.addBox(s.fi, px - 0.06, h.roofY, pz - 0.06, px + 0.06, h.roofY + ph, pz + 0.06, 'post');
+          }
+          for (const [a, b, c, d] of [[cx0, cx0 + cw, cz0 + 0.1, cz0 + 0.1], [cx0, cx0 + cw, cz0 + cd - 0.1, cz0 + cd - 0.1]]) {
+            const g = new THREE.CylinderGeometry(0.035, 0.035, b - a + 0.2, 5); g.rotateZ(Math.PI / 2); g.translate((a + b) / 2, h.roofY + ph + 0.03, c); woodGeos.push(g);
+          }
+          const top = new THREE.BoxGeometry(cw + 0.3, 0.09, cd + 0.3); top.translate(cx0 + cw / 2, h.roofY + ph + 0.11, cz0 + cd / 2);
+          scaleUV(top, 1, 1); strawGeos.push(top);
+        }
       }
       // upper room
       if (h.upper) {
@@ -453,18 +475,25 @@ export function buildTown(town, tex, world, rnd) {
       }
     }
     // transform this sector's geometry into world space
-    for (const arr of [wallGeos, roofGeos, woodGeos, darkGeos, matGeos]) for (const g of arr) if (!g.userData.placed) { g.applyMatrix4(M); g.userData.placed = true; }
+    for (const arr of [wallGeos, roofGeos, woodGeos, darkGeos, matGeos, strawGeos]) for (const g of arr) if (!g.userData.placed) { g.applyMatrix4(M); g.userData.placed = true; }
   }
 
-  const wallMat = new THREE.MeshStandardMaterial({ map: tex.mud, vertexColors: true, roughness: 1 });
-  const roofMat = new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1 });
-  const woodMat = new THREE.MeshStandardMaterial({ map: tex.wood, roughness: 0.85, color: 0xb59a78 });
+  const wallMat = tex.loam
+    ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, normalScale: new THREE.Vector2(0.6, 0.6), vertexColors: true, roughness: 1 })
+    : new THREE.MeshStandardMaterial({ map: tex.mud, vertexColors: true, roughness: 1 });
+  const roofMat = tex.dirt
+    ? new THREE.MeshStandardMaterial({ map: tex.dirt, normalMap: tex.dirtN, normalScale: new THREE.Vector2(0.5, 0.5), vertexColors: true, roughness: 1 })
+    : new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1 });
+  const woodMat = tex.timber
+    ? new THREE.MeshStandardMaterial({ map: tex.timber, normalMap: tex.timberN, roughness: 0.9 })
+    : new THREE.MeshStandardMaterial({ map: tex.wood, roughness: 0.85, color: 0xb59a78 });
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1512, roughness: 1 });
   const walls = new THREE.Mesh(mergeGeometries(wallGeos), wallMat); walls.castShadow = true; walls.receiveShadow = true; walls.name = 'walls';
   const roofs = new THREE.Mesh(mergeGeometries(roofGeos), roofMat); roofs.castShadow = true; roofs.receiveShadow = true; roofs.name = 'roofs';
   const wood = new THREE.Mesh(mergeGeometries(woodGeos), woodMat); wood.castShadow = true; wood.receiveShadow = true; wood.name = 'ladders';
   const dark = new THREE.Mesh(mergeGeometries(darkGeos), darkMat); dark.name = 'hatches';
   group.add(walls, roofs, wood, dark);
+  if (strawGeos.length) { const straw = new THREE.Mesh(mergeGeometries(strawGeos), new THREE.MeshStandardMaterial({ map: tex.reed, color: 0xd8c488, roughness: 1 })); straw.castShadow = true; straw.receiveShadow = true; straw.name = 'canopies'; group.add(straw); }
   if (matGeos.length) { const covers = new THREE.Mesh(mergeGeometries(matGeos), new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb8ab90, roughness: 1, side: THREE.DoubleSide })); covers.castShadow = true; covers.receiveShadow = true; covers.name = 'covers'; group.add(covers); }
   return { group, smokeSources };
 }
@@ -550,7 +579,7 @@ export function buildMiddens(town, tex, rnd) {
       const p = localToWorld(s, lx, lz);
       const heap = 0.12 * Math.max(0, 1 - Math.hypot(pos.getX(i), pos.getZ(i)) / (Math.min(w, l) * 0.6));
       pos.setXYZ(i, lx, terrainHeight(p.x, p.z) + 0.07 + heap + (rnd() - 0.5) * 0.04, lz);
-      c.setHSL(0.08, 0.1 + rnd() * 0.1, 0.72 * tint + rnd() * 0.08, THREE.SRGBColorSpace);
+      c.setHSL(0.08, 0.1 + rnd() * 0.1, 0.86 * tint + rnd() * 0.08, THREE.SRGBColorSpace);
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -604,4 +633,26 @@ export function buildPens(town, tex, world, rnd, max = 5) {
   const mesh = geos.length ? new THREE.Mesh(mergeGeometries(geos), mat) : null;
   if (mesh) { mesh.castShadow = true; mesh.name = 'pens'; }
   return { mesh, herds };
+}
+
+// Remove the houses under a rectangular plot (sector-local, in the sector nearest to the world point)
+// so the Building 52 model can stand there. Returns the plot or null.
+export function clearPlot(town, wx, wz, pw, pl) {
+  let best = null, bd = Infinity;
+  for (const s of town.sectors) { const d = Math.hypot(s.cx - wx, s.cz - wz); if (d < bd) { bd = d; best = s; } }
+  if (!best) return null;
+  const s = best;
+  const dx = wx - s.cx, dz = wz - s.cz;
+  const lx = s.c * dx + s.s * dz, lz = -s.s * dx + s.c * dz;
+  const plot = { sector: s, x0: lx - pw / 2, x1: lx + pw / 2, z0: lz - pl / 2, z1: lz + pl / 2 };
+  const gone = new Set();
+  for (const h of s.houses) {
+    if (h.x1 > plot.x0 - 0.05 && h.x0 < plot.x1 + 0.05 && h.z1 > plot.z0 - 0.05 && h.z0 < plot.z1 + 0.05) gone.add(h);
+  }
+  if (!gone.size) return plot;
+  s.houses = s.houses.filter((h) => !gone.has(h));
+  town.houses = town.houses.filter((h) => !gone.has(h));
+  for (const h of town.houses) h.adj = h.adj.filter((e) => !gone.has(e.h));
+  plot.floorY = Math.max(...[...gone].map((h) => h.floorY));
+  return plot;
 }
