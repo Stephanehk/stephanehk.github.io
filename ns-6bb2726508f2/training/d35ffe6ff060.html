@@ -1117,7 +1117,7 @@ function renderPrior() {
 function renderApply() {
   signpost({
     step: 0, frac: 0.5,
-    text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like under this counseling discipline.",
+    text: `We will review the principles of ${SCHOOL.short} and ask you to apply them to label what ideal responses to interpersonal conflicts look like under this counseling discipline.`,
     back: () => go("prior"),
     next: () => go("intro"),
   });
