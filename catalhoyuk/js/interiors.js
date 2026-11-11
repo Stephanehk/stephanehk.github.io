@@ -431,11 +431,47 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       const mm = new THREE.Mesh(new THREE.PlaneGeometry((p.x1 - p.x0) * 0.8, (p.z1 - p.z0) * 0.75), kind === 'map' && p.name === 'NE' ? M.redMat : M.mat);
       mm.rotation.x = -Math.PI / 2; mm.position.set((p.x0 + p.x1) / 2, p.h + 0.006, (p.z0 + p.z1) / 2 + 0.03); mm.receiveShadow = true; G.add(mm);
     }
+    // what already takes up floor space in the central room, so loose objects find clear spots
+    const occ = [];
+    const block = (x0, z0, x1, z1) => occ.push({ x0, z0, x1, z1 });
+    const freeRect = (x0, z0, x1, z1) => x0 > R.x0 + 0.05 && x1 < R.x1 - 0.05 && z0 > R.z0 + 0.05 && z1 < R.z1 - 0.05 && !occ.some((o) => x0 < o.x1 && x1 > o.x0 && z0 < o.z1 && z1 > o.z0);
+    // try the preferred spot, then spots nearby, then anywhere along the walls; null if the room is full
+    const findSpot = (w, d, px, pz) => {
+      const tryAt = (x, z) => (freeRect(x - w / 2, z - d / 2, x + w / 2, z + d / 2) ? { x, z } : null);
+      let r = tryAt(px, pz); if (r) return r;
+      for (let ring = 1; ring <= 4; ring++) for (let k = 0; k < 8; k++) {
+        const a = k / 8 * Math.PI * 2; r = tryAt(px + Math.cos(a) * ring * 0.3, pz + Math.sin(a) * ring * 0.3); if (r) return r;
+      }
+      for (let t = 0; t < 30; t++) { r = tryAt(R.x0 + 0.1 + w / 2 + rnd() * (W - 0.2 - w), R.z0 + 0.1 + d / 2 + rnd() * (L - 0.2 - d)); if (r) return r; }
+      return null;
+    };
+    const take = (w, d, px, pz) => { const sp = findSpot(w, d, px, pz); if (sp) block(sp.x - w / 2, sp.z - d / 2, sp.x + w / 2, sp.z + d / 2); return sp; };
+    for (const p of plats) block(p.x0 - 0.05, p.z0 - 0.05, p.x1 + 0.05, p.z1 + 0.05);
+    block(ovenX - 0.65, R.z1 - 1.0, ovenX + 0.65, R.z1);                      // oven and its sill
+    block(hearth.x - 0.5, hearth.z - 0.5, hearth.x + 0.5, hearth.z + 0.5);     // hearth
+    block(hatch.x0 - 0.5, R.z1 - 1.75, R.x1, R.z1);                            // ladder foot and step
+    if (ovenX - 0.6 - R.x0 > 1.1) block(R.x0, R.z1 - 0.55, R.x0 + 1.05, R.z1);  // basin
+    for (const d of doors) {                                                    // keep the way to each crawl-hole clear
+      if (d.wall === 'W') block(R.x0 - 0.1, d.z0 - 0.3, R.x0 + 0.95, d.z1 + 0.3);
+      else if (d.wall === 'E') block(R.x1 - 0.95, d.z0 - 0.3, R.x1 + 0.1, d.z1 + 0.3);
+      else block(d.x0 - 0.3, R.z0 - 0.1, d.x1 + 0.3, R.z0 + 0.95);
+    }
     // the central room's white plaster floor, cut where a grave is open
     {
       const fl = new THREE.Mesh(panel(W, L, graveHole ? [graveHole] : []), M.floor);
       fl.rotation.x = -Math.PI / 2; fl.position.set(R.x0, 0.002, R.z1); fl.receiveShadow = true; G.add(fl);
     }
+    // stretches of each wall already taken by doors, posts and niches (measured from z0 on E/W, from x0 on N)
+    const wallUsed = { N: [], E: [], W: [], S: [] };
+    for (const d of doors) { if (d.wall === 'N') wallUsed.N.push([d.x0 - R.x0 - 0.15, d.x1 - R.x0 + 0.15]); else wallUsed[d.wall].push([d.z0 - R.z0 - 0.15, d.z1 - R.z0 + 0.15]); }
+    const wallFree = (side, a, b) => a >= 0 && b <= wallLen(side, R) && !wallUsed[side].some(([c, d]) => a < d && b > c);
+    // find a free stretch of length len on a wall, preferring position a0; null if none
+    const wallSpot = (side, len, a0) => {
+      const span = wallLen(side, R);
+      if (wallFree(side, a0, a0 + len)) return a0;
+      for (let t = 0; t < 24; t++) { const a = 0.15 + rnd() * Math.max(0.01, span - len - 0.3); if (wallFree(side, a, a + len)) return a; }
+      return null;
+    };
     // engaged posts on the E and W walls flanking the platforms, with pillow capitals; tie-beam groove at 1.95 m
     const postH = Math.min(1.95, H - 0.5);
     const postZ = [R.z0 + nwD + 0.15, Math.min(R.z1 - 1.6, R.z0 + nwD + 2.2)];
@@ -446,6 +482,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
         box(G, M.plaster, x0, 0, z - 0.15, x1, postH, z + 0.15);
         box(G, M.plaster, x0 - (side === 'W' ? 0 : 0.08), postH, z - 0.22, x1 + (side === 'W' ? 0.08 : 0), postH + 0.12, z + 0.22);
         addSolid(x0, 0, z - 0.15, x1, postH, z + 0.15);
+        block(x0 - 0.1, z - 0.25, x1 + 0.1, z + 0.25); wallUsed[side].push([z - R.z0 - 0.25, z - R.z0 + 0.25]);
       }
     }
     for (const side of ['N', 'E', 'W']) {
@@ -467,10 +504,11 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       nicheList.push(['E', L * 0.5 - 0.2, 1.05, 0.4, 0.5, 0.22]);                  // red-painted central niche
       nicheList.push(['W', 0.4, 0.15, 0.3, 0.3, 0.2]);                             // floor-level niche
     } else {
-      if (rnd() < 0.8) nicheList.push([rnd() < 0.5 ? 'E' : 'W', 0.6 + rnd() * (L - 2.2), 1.0 + rnd() * 0.3, 0.3, 0.35, 0.2]);
-      if (rnd() < 0.4) nicheList.push(['N', 0.4 + rnd() * (W - 1.2), 0.9 + rnd() * 0.5, 0.28, 0.3, 0.2]);
+      if (rnd() < 0.8) { const side = rnd() < 0.5 ? 'E' : 'W'; const a = wallSpot(side, 0.5, 0.6 + rnd() * (L - 2.2)); if (a !== null) nicheList.push([side, side === 'W' ? L - a - 0.5 + 0.1 : a + 0.1, 1.0 + rnd() * 0.3, 0.3, 0.35, 0.2]); }
+      if (rnd() < 0.4) { const a = wallSpot('N', 0.5, 0.4 + rnd() * (W - 1.2)); if (a !== null) nicheList.push(['N', a + 0.1, 0.9 + rnd() * 0.5, 0.28, 0.3, 0.2]); }
     }
-    for (const [side, u, v, w, hh, d] of nicheList) mainHoles[side].push(niche(G, side, R, 0, u, v, w, hh, d));
+    const usedOf = (side, u, w) => side === 'W' ? [L - u - w, L - u] : [u, u + w];
+    for (const [side, u, v, w, hh, d] of nicheList) { mainHoles[side].push(niche(G, side, R, 0, u, v, w, hh, d)); wallUsed[side].push(usedOf(side, u - 0.1, w + 0.2)); }
     // red frames around niches in b77/b80
     if (kind === 'b77') { const n = nicheList[1]; hang(G, 'N', R, 0, n[1] - 0.08, n[2] - 0.08, n[3] + 0.16, n[4] + 0.16, M.red, 0.006); }
     if (kind === 'b80') { const n = nicheList[0]; hang(G, 'E', R, 0, n[1] - 0.12, n[2] - 0.12, n[3] + 0.24, n[4] + 0.24, M.red, 0.006); }
@@ -502,29 +540,40 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       for (let i = 0; i < 2; i++) { const b = basket(0.2 + rnd() * 0.1, 0.35 + rnd() * 0.2); b.position.set(r.x0 + 0.4 + rnd() * (rw - 0.8), 0, r.z0 + 0.4 + rnd() * (rl - 0.8)); G.add(b); }
     }
 
-    // --- everyday objects in the main room ---
+    // --- everyday objects in the main room, each given a clear spot ---
     const nw = pNW || { x0: R.x0, x1: R.x0 + 1.5, z0: R.z0, z1: R.z0 + 0.6, h: 0 }, ne = pNE || { x0: R.x1 - 1.5, x1: R.x1, z0: R.z0, z1: R.z0 + 0.6, h: 0 };
-    if (!grave) {
-      { const b = basket(0.26, 0.42); b.position.set(nw.x0 + 0.45, nw.h, nw.z0 + 0.45); G.add(b); }
-      { const b = basket(0.18, 0.3); b.position.set(nw.x1 - 0.4, nw.h, nw.z0 + 0.35); G.add(b); }
-      { const bw = bowl(0.18); bw.position.set(nw.x0 + 1.2, nw.h, nw.z0 + 0.5); G.add(bw); }
-    } else { const b = basket(0.22, 0.4); b.position.set(nw.x0 + 0.3, 0, nw.z1 + 0.35); G.add(b); }
-    { const q = quern(); q.position.set(hearth.x + 1.0, 0, hearth.z + 0.2); q.rotation.y = rnd(); G.add(q); }
-    { const cb = clayBalls(9); cb.position.set(ovenX + 0.75, 0, R.z1 - 1.0); G.add(cb); }
-    { const ob = obsidianBlades(7); ob.position.set(hearth.x - 0.5, 0.012, hearth.z - 0.6); G.add(ob); const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.4), M.mat); sm.rotation.x = -Math.PI / 2; sm.position.set(hearth.x - 0.5, 0.008, hearth.z - 0.6); G.add(sm); }
-    { const hd = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), M.hide); hd.rotation.x = -Math.PI / 2; hd.rotation.z = 0.3; hd.position.set((ne.x0 + ne.x1) / 2, ne.h + 0.01, (ne.z0 + ne.z1) / 2 + 0.1); G.add(hd); }
-    if (rnd() < 0.6) { const a = antler(); a.position.set(R.x0 + 0.1, 1.3, R.z0 + L * 0.65); a.rotation.z = -0.9; G.add(a); }
-    // a hide on its stretching frame leaning on the wall near the ladder, and a rope from the rafters
-    if (rnd() < 0.7) {
-      const hf = hideFrame();
-      const eastFree = !nearDoor('E', Math.max(R.z0 + 1.9, R.z1 - 2.1), 0.9);
-      if (eastFree) { hf.position.set(R.x1 - 0.34, 0, Math.max(R.z0 + 1.9, R.z1 - 2.1)); hf.rotation.y = -Math.PI / 2; hf.rotateOnAxis(new THREE.Vector3(1, 0, 0), -0.2); }
-      else { hf.position.set(ovenX - 0.95, 0, R.z1 - 0.34); hf.rotation.y = Math.PI; hf.rotateOnAxis(new THREE.Vector3(1, 0, 0), -0.2); }
-      G.add(hf);
+    if (pNW && !grave && nw.x1 - nw.x0 > 1.1) {
+      { const b = basket(0.26, 0.42); b.position.set(nw.x0 + 0.4, nw.h, nw.z0 + 0.4); G.add(b); }
+      { const b = basket(0.18, 0.3); b.position.set(nw.x1 - 0.35, nw.h, nw.z0 + 0.35); G.add(b); }
+      if (nw.x1 - nw.x0 > 1.7) { const bw = bowl(0.18); bw.position.set(nw.x0 + 1.0, nw.h, nw.z0 + 0.5); G.add(bw); }
     }
-    { const tall = basket(0.24, 0.62); tall.position.set(R.x1 - 0.45, 0, Math.max(R.z0 + 1.0, R.z1 - 2.9)); if (!nearDoor('E', tall.position.z, 0.8)) G.add(tall); }
-    // a few bone tools on the east platform
-    for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.012, 0.16 + rnd() * 0.08, 5), M.bone); t.rotation.set(Math.PI / 2, 0, rnd() * 3); t.position.set(ne.x1 - 0.4 - rnd() * 0.3, ne.h + 0.012, ne.z0 + 0.3 + rnd() * 0.5); G.add(t); }
+    if (grave) { const sp = take(0.5, 0.5, nw.x0 + 0.35, nw.z1 + 0.4); if (sp) { const b = basket(0.22, 0.4); b.position.set(sp.x, 0, sp.z); G.add(b); } }
+    { const sp = take(0.6, 0.45, hearth.x + 1.0, hearth.z + 0.1); if (sp) { const q = quern(); q.position.set(sp.x, 0, sp.z); q.rotation.y = rnd(); G.add(q); } }
+    { const sp = take(0.5, 0.4, ovenX - 1.1, R.z1 - 1.25); if (sp) { const cb = clayBalls(9); cb.position.set(sp.x, 0, sp.z); G.add(cb); } }
+    { const sp = take(0.6, 0.5, hearth.x - 0.3, hearth.z - 0.9); if (sp) { const ob = obsidianBlades(7); ob.position.set(sp.x, 0.012, sp.z); G.add(ob); const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.4), M.mat); sm.rotation.x = -Math.PI / 2; sm.position.set(sp.x, 0.008, sp.z); G.add(sm); } }
+    if (pNE && ne.x1 - ne.x0 > 1.0 && ne.z1 - ne.z0 > 0.9) {
+      const hw = Math.min(1.1, ne.x1 - ne.x0 - 0.4), hdp = Math.min(0.8, ne.z1 - ne.z0 - 0.35);
+      const hd = new THREE.Mesh(new THREE.PlaneGeometry(hw, hdp), M.hide); hd.rotation.x = -Math.PI / 2; hd.rotation.z = 0.15; hd.position.set((ne.x0 + ne.x1) / 2, ne.h + 0.01, (ne.z0 + ne.z1) / 2); G.add(hd);
+      for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.012, 0.16 + rnd() * 0.08, 5), M.bone); t.rotation.set(Math.PI / 2, 0, rnd() * 3); t.position.set(ne.x1 - 0.3 - rnd() * 0.2, ne.h + 0.012, ne.z1 - 0.25 - rnd() * 0.1); G.add(t); }
+    }
+    if (rnd() < 0.6) { const a = wallSpot('W', 0.5, L * 0.65 - 0.25); if (a !== null) { const an = antler(); an.position.set(R.x0 + 0.1, 1.3, R.z0 + a + 0.25); an.rotation.z = -0.9; G.add(an); wallUsed.W.push([a, a + 0.5]); } }
+    // a hide on its stretching frame leaning on a wall
+    if (rnd() < 0.7) {
+      let placed = false;
+      const aE = wallSpot('E', 0.8, Math.max(1.9, L - 2.1) - 0.4);
+      if (aE !== null && freeRect(R.x1 - 0.5, R.z0 + aE, R.x1 - 0.02, R.z0 + aE + 0.8)) {
+        const hf = hideFrame(); hf.position.set(R.x1 - 0.34, 0, R.z0 + aE + 0.4); hf.rotation.y = -Math.PI / 2; hf.rotateOnAxis(new THREE.Vector3(1, 0, 0), -0.2); G.add(hf);
+        block(R.x1 - 0.5, R.z0 + aE, R.x1, R.z0 + aE + 0.8); wallUsed.E.push([aE, aE + 0.8]); placed = true;
+      }
+      if (!placed) {
+        const aW = wallSpot('W', 0.8, L * 0.5);
+        if (aW !== null && freeRect(R.x0 + 0.02, R.z0 + aW, R.x0 + 0.5, R.z0 + aW + 0.8)) {
+          const hf = hideFrame(); hf.position.set(R.x0 + 0.34, 0, R.z0 + aW + 0.4); hf.rotation.y = Math.PI / 2; hf.rotateOnAxis(new THREE.Vector3(1, 0, 0), -0.2); G.add(hf);
+          block(R.x0, R.z0 + aW, R.x0 + 0.5, R.z0 + aW + 0.8); wallUsed.W.push([aW, aW + 0.8]);
+        }
+      }
+    }
+    { const aE = wallSpot('E', 0.6, Math.max(1.0, L - 2.9) - 0.3); if (aE !== null && freeRect(R.x1 - 0.7, R.z0 + aE, R.x1 - 0.02, R.z0 + aE + 0.6)) { const tall = basket(0.24, 0.62); tall.position.set(R.x1 - 0.4, 0, R.z0 + aE + 0.3); G.add(tall); block(R.x1 - 0.7, R.z0 + aE, R.x1, R.z0 + aE + 0.6); wallUsed.E.push([aE, aE + 0.6]); } }
 
     // --- decoration by kind ---
     const red = M.red;
@@ -532,10 +581,10 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       if (rnd() < 0.45) { const side = rnd() < 0.6 ? 'N' : 'E'; const len = wallLen(side, R); hang(G, side, R, 0, 0.0, 0.0, len, 0.2 + rnd() * 0.15, red, 0.006); }
       // red-and-white geometric panel over a platform (as in the Killackey cutaway)
       const pr = rnd();
-      if (pr < 0.3) hang(G, 'N', R, 0, 0.3, nw.h + 0.5, Math.min(1.6, W - 0.6), 0.5, paintMat(P.kilim(Math.min(1.6, W - 0.6), 0.5, Math.floor(rnd() * 3))));
-      else if (pr < 0.55) { const pw = Math.min(1.8, L - 1.5); hang(G, 'E', R, 0, 0.2, ne.h + 0.45, pw, 0.55, paintMat(P.kilim(pw, 0.55, Math.floor(rnd() * 3)))); }
+      if (pr < 0.3) { const pw = Math.min(1.6, W - 0.6); const a = wallSpot('N', pw, (W - pw) / 2); if (a !== null) { hang(G, 'N', R, 0, a, nw.h + 0.5, pw, 0.5, paintMat(P.kilim(pw, 0.5, Math.floor(rnd() * 3)))); wallUsed.N.push([a, a + pw]); } }
+      else if (pr < 0.55) { const pw = Math.min(1.5, L - 1.5); const a = wallSpot('E', pw, nwD + 0.45); if (a !== null) { hang(G, 'E', R, 0, a, ne.h + 0.45, pw, 0.55, paintMat(P.kilim(pw, 0.55, Math.floor(rnd() * 3)))); wallUsed.E.push([a, a + pw]); } }
       // small red hunters and animals on the wall by the ladder (as in the Grant Cox model)
-      if (rnd() < 0.3) { const pw = Math.min(1.3, L - 2.6); if (pw > 0.7 && (!doorW || doorW.z1 < R.z1 - 2.6)) hang(G, 'W', R, 0, 0.3, 0.9, pw, 0.5, paintMat(P.huntDeer(pw, 0.5))); }
+      if (rnd() < 0.3) { const pw = Math.min(1.3, L - 2.6); if (pw > 0.7) { const a = wallSpot('W', pw, L - 1.4 - pw); if (a !== null) { hang(G, 'W', R, 0, L - a - pw, 0.9, pw, 0.5, paintMat(P.huntDeer(pw, 0.5))); wallUsed.W.push([a, a + pw]); } } }
       if (rnd() < 0.15) { const b = bucranium(1.0); b.position.set(R.x0 + 0.05, 1.3, R.z0 + L * 0.5); b.rotation.y = Math.PI / 2; G.add(b); }
     } else if (kind === 'b77') {
       // red dado on N and E walls, continuing over the NE platform faces
@@ -559,9 +608,12 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       const stub = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.3, 7), M.plaster); stub.rotation.z = Math.PI / 2; stub.position.set(R.x1 - 0.15, 1.7, R.z0 + 1.5); G.add(stub);
     } else if (kind === 'b80') {
       // bench on the south part of the E wall with a pair of horn cores
+      const pE80 = plats.find((p) => p.name === 'E');
       let bz0 = Math.min(R.z1 - 3.2, R.z0 + L * 0.55);
       if (doorsE.some((d) => bz0 + 1.1 > d.z0 - 0.1 && bz0 < d.z1 + 0.1)) bz0 = Math.max(R.z0 + neD + 0.1, Math.min(...doorsE.map((d) => d.z0)) - 1.3);
-      bz0 = Math.max(bz0, R.z0 + neD + 0.1);
+      bz0 = Math.max(bz0, (pE80 ? pE80.z1 : R.z0 + neD) + 0.1);
+      { const a = wallSpot('E', 1.1, bz0 - R.z0); if (a !== null) bz0 = R.z0 + a; }
+      block(R.x1 - 0.5, bz0, R.x1, bz0 + 1.1); wallUsed.E.push([bz0 - R.z0, bz0 - R.z0 + 1.1]);
       box(G, M.plaster, R.x1 - 0.42, 0, bz0, R.x1, 0.45, bz0 + 1.1); addSolid(R.x1 - 0.42, 0, bz0, R.x1, 0.45, bz0 + 1.1);
       const hp = hornPair(0.3); hp.position.set(R.x1 - 0.21, 0.45, bz0 + 0.55); hp.rotation.y = Math.PI / 2; G.add(hp);
       hang(G, 'E', R, 0, uOf('E', R, 0, bz0), 0, 1.1, 0.45, red, 0.006);
@@ -585,7 +637,8 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       hang(G, 'W', R, 0, 0.05, 0.3, L - 0.1, ph, paintMat(P.huntDeer(L - 0.1, ph)));
       hang(G, 'E', R, 0, 0.05, 0.3, L - 0.1, ph, paintMat(P.huntDeer(L - 0.1, ph)));
       // bench on E wall (kept clear of the ladder foot in the south-east corner)
-      { const bz1 = Math.min(R.z0 + neD + 1.4, R.z1 - 2.1); if (bz1 - (R.z0 + neD + 0.2) > 0.6) { box(G, M.plaster, R.x1 - 0.4, 0, R.z0 + neD + 0.2, R.x1, 0.4, bz1); addSolid(R.x1 - 0.4, 0, R.z0 + neD + 0.2, R.x1, 0.4, bz1); } }
+      { const pE = plats.find((p) => p.name === 'E'); const start = (pE ? pE.z1 : R.z0 + neD) + 0.2; const bz1 = Math.min(start + 1.2, R.z1 - 2.1);
+        if (bz1 - start > 0.6 && freeRect(R.x1 - 0.45, start, R.x1 - 0.02, bz1)) { box(G, M.plaster, R.x1 - 0.4, 0, start, R.x1, 0.4, bz1); addSolid(R.x1 - 0.4, 0, start, R.x1, 0.4, bz1); block(R.x1 - 0.5, start, R.x1, bz1); } }
     } else if (kind === 'vultures') {
       hang(G, 'E', R, 0, 0.05, 0.55, L - 0.1, 1.4, paintMat(P.vultures(L - 0.1, 1.4, Math.max(2, Math.round((L - 0.1) / 1.6)))));
       hang(G, 'N', R, 0, 0.05, nw.h + 0.35, W - 0.1, 1.3, paintMat(P.vultures(W - 0.1, 1.3, Math.max(2, Math.round((W - 0.1) / 1.6)))));
@@ -600,8 +653,9 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       // splayed figure on the west wall
       const sf = splayedFigure(); sf.rotation.y = Math.PI / 2; sf.position.set(R.x0 + 0.002, 1.25, R.z0 + L * 0.5); G.add(sf);
       // bull's head on a low pedestal below it
-      const bz = nearDoor('W', R.z0 + L * 0.5, 0.7) ? R.z0 + nwD + 0.5 : R.z0 + L * 0.5;
-      sf.position.z = bz;
+      let bz = R.z0 + L * 0.5;
+      { const a = wallSpot('W', 0.7, bz - 0.35 - R.z0); if (a !== null) bz = R.z0 + a + 0.35; }
+      sf.position.z = bz; block(R.x0, bz - 0.35, R.x0 + 0.4, bz + 0.35);
       box(G, M.plaster, R.x0, 0, bz - 0.3, R.x0 + 0.35, 0.35, bz + 0.3); addSolid(R.x0, 0, bz - 0.3, R.x0 + 0.35, 0.35, bz + 0.3);
       const bh = bucranium(1.1); bh.position.set(R.x0 + 0.05, 0.55, bz); bh.rotation.y = Math.PI / 2; G.add(bh);
       // goats and tree below, east wall

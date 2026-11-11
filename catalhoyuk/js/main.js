@@ -381,13 +381,14 @@ function frame() {
     else { $('loc').textContent = 'On the roofs'; }
   }
   if (!inside && player.pos.y < terrainHeight(player.pos.x, player.pos.z) + 1.2 && moundHeight(player.pos.x, player.pos.z) > 0.3) $('loc').textContent = 'In a midden between the houses';
-  // lights: fire + skylight at the nearest hearth / hatch
-  let nearest = null, nd = Infinity;
-  for (const e of registry) { const d = e.hearth.distanceToSquared(player.pos); if (d < nd) { nd = d; nearest = e; } }
+  // lights: the hearth and the hatch of the house we are in (never a neighbour's, which would shine through the walls)
+  let nearest = inside;
+  if (!nearest) { let nd = Infinity; for (const e of registry) { const d = e.hearth.distanceToSquared(player.pos); if (d < nd) { nd = d; nearest = e; } } }
   if (nearest) {
     const flick = 1.6 + Math.sin(time * 5.3) * 0.12 + Math.sin(time * 8.9) * 0.08;   // a slow breathing glow, not a strobe
-    fire.position.copy(nearest.hearth); fire.intensity = flick * Math.min(1, insideAmt + 0.15);
-    skyFill.position.copy(nearest.hatchWorld).add(tmpV.set(0, -0.9, 0)); skyFill.intensity = 7.0 * insideAmt;
+    if (inside) { fire.position.copy(nearest.hearth); skyFill.position.copy(nearest.hatchWorld).add(tmpV.set(0, -0.9, 0)); }
+    fire.intensity = flick * insideAmt; fire.distance = 7;
+    skyFill.intensity = 7.0 * insideAmt;
   }
   // caption timer
   if (captionTimer > 0) { captionTimer -= dt; if (captionTimer <= 0) $('caption').classList.remove('show'); }
