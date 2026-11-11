@@ -1350,7 +1350,7 @@ function renderQ1Result() {
   if (outcome === "pass") state.critters = Math.max(state.critters, 2);
   resultScreen({
     step: 2, score: quizScore(state.q1, Q1_ITEMS), total: Q1_ITEMS.length, outcome,
-    passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the strategies we ask about.`,
+    passLabel: "Great job! Let’s continue.",
     onPass: () => go("dims:0"),
     onRetake: () => { state.q1.attempt = 2; go("q1:0"); },
     onExit: () => go("exit"),
@@ -1461,7 +1461,7 @@ function renderQ2Result() {
   if (outcome === "pass") state.critters = Math.max(state.critters, 4);
   resultScreen({
     step: 4, score: quizScore(state.q2, Q2_ITEMS), total: Q2_ITEMS.length, outcome,
-    passLabel: "You know how the principles map onto the strategies. One worked example, and then the main task.",
+    passLabel: "Great job! Let’s continue.",
     onPass: () => go("exintro"),
     onRetake: () => { state.q2.attempt = 2; go("q2:0"); },
     onExit: () => go("exit"),
