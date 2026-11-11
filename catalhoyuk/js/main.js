@@ -105,6 +105,7 @@ async function loadPhotoTextures(tex) {
   if (timber && timberN) { tex.timber = timber; tex.timberN = timberN; }
 }
 let b52plot = null;
+const SHOW_B52_MODEL = false;
 const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
 async function stage(msg, fn) { $('loadmsg').textContent = msg; await nextFrame(); await nextFrame(); const t = performance.now(); const out = await fn(); console.log(`[catalhoyuk] ${msg} ${(performance.now() - t).toFixed(0)} ms`); return out; }
 
@@ -189,8 +190,9 @@ async function build() {
         h.kind = k; used.add(h); break;
       }
     }
-    // Building 52 itself stands two houses north of the start, on a plot cleared for it
-    {
+    // Building 52 itself (open-topped reconstruction model) can stand two houses north of the start; off by
+    // default, since its single-surface walls read as unfinished among the solid houses
+    if (SHOW_B52_MODEL) {
       const p0 = worldPt(start.sector, (start.x0 + start.x1) / 2 - 2.0, 0, start.z0 - 7.5);
       b52plot = clearPlot(town, p0.x, p0.z, 8.6, 10.7);
       if (b52plot && b52plot.floorY === undefined) b52plot.floorY = start.floorY;
