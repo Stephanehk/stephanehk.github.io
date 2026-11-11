@@ -33,17 +33,17 @@ They serve as a millennium-long counterexample to Hobbes's claim that social ord
   .masthead .greedy-nav a:hover { color: #9b3a28 !important; }
   .page__footer, .page__footer footer { background: #e6d8bc !important; color: #5a4634 !important; }
   .page__footer a { color: #8c3b2a !important; }
-  #main { padding-left: 0; padding-right: 0; }
+  #main { padding-left: 0; padding-right: 0; max-width: none; }
   #main .page { float: none; width: 100%; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
   #main .page__inner-wrap { float: none; width: 100%; }
-  .page__inner-wrap > header, .page__content > p { max-width: 44em; margin-left: auto; margin-right: auto; padding-left: 1em; padding-right: 1em; box-sizing: border-box; }
-  .page__inner-wrap > header { margin-top: 0.75em; padding-left: 1em; padding-right: 1em; }
+  .page__inner-wrap > header, .page__content > p { max-width: 48rem; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; box-sizing: border-box; }
+  .page__inner-wrap > header { margin-top: 0.75em; }
   .page__title { margin-left: 0; padding-left: 0; }
   .page__title { color: #2b221b; font-weight: 600; }
   .page__content > p { font-size: 1.05em; line-height: 1.65; color: #3a2e24; }
   .page__content a { color: #8c3b2a; }
   .page__date, .page__meta, .pagination, .page__related, .sidebar, #hz-stage, .hz-skater { display: none !important; }
-  .catalhoyuk-open { position: relative; display: block; width: min(100vw - 2em, 1400px); margin: 2em auto 2.5em; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; box-shadow: 0 18px 50px rgba(43, 34, 27, 0.28); text-decoration: none; }
+  .catalhoyuk-open { position: relative; display: block; width: min(100vw - 2rem, 1400px); margin: 2em auto 2.5em; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; box-shadow: 0 18px 50px rgba(43, 34, 27, 0.28); text-decoration: none; }
   .catalhoyuk-open img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
   .catalhoyuk-open:hover img { transform: scale(1.025); }
   .catalhoyuk-open span { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 0.55em 1.3em; font-size: clamp(1.2em, 2.6vw, 2em); font-weight: 600; letter-spacing: 0.02em; color: #f6ecd8; background: rgba(43, 34, 27, 0.62); border: 1px solid rgba(246, 236, 216, 0.5); border-radius: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); backdrop-filter: blur(3px); transition: background 0.25s ease; white-space: nowrap; }
