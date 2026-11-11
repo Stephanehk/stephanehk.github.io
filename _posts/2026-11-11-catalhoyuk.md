@@ -18,10 +18,12 @@ They had no known public buildings, streets, or formal institutions; houses were
 
 They serve as a millennium-long counterexample to Hobbes's claim that social order requires a Leviathan, and potentially to what "human nature" means.
 
+<div class="catalhoyuk-figure">
 <a class="catalhoyuk-open" href="https://stephanehk.github.io/catalhoyuk/" target="_blank" rel="noopener" aria-label="Open the Çatalhöyük simulation in a new tab">
   <img src="/images/catalhoyuk-roofs.jpg" alt="The roofs of Çatalhöyük at midday: ladders, shade canopies and people at work on the rooftops, the Konya Plain beyond" width="1920" height="1080">
   <span>Open simulation.</span>
 </a>
+</div>
 
 <style>
   /* this page: Çatalhöyük palette (lime plaster, loam, soot), no sidebar, no date or read time, no pager */
@@ -35,7 +37,8 @@ They serve as a millennium-long counterexample to Hobbes's claim that social ord
   #main .page { float: none; width: 100%; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
   #main .page__inner-wrap { float: none; width: 100%; }
   .page__inner-wrap > header, .page__content > p { max-width: 44em; margin-left: auto; margin-right: auto; padding-left: 1em; padding-right: 1em; box-sizing: border-box; }
-  .page__inner-wrap > header { margin-top: 0.75em; }
+  .page__inner-wrap > header { margin-top: 0.75em; padding-left: 1em; padding-right: 1em; }
+  .page__title { margin-left: 0; padding-left: 0; }
   .page__title { color: #2b221b; font-weight: 600; }
   .page__content > p { font-size: 1.05em; line-height: 1.65; color: #3a2e24; }
   .page__content a { color: #8c3b2a; }

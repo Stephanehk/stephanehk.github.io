@@ -10,6 +10,15 @@ author_profile: true
 <div class="list__item">
   <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
     <h2 class="archive__item-title" itemprop="headline">
+      <a href="{{ base_path }}/posts/2026/11/catalhoyuk/" rel="permalink">Çatalhöyük</a>
+    </h2>
+    <p class="archive__item-excerpt" itemprop="description">A Neolithic town of ~1,100 years with no hierarchy, streets or government, and a first-person simulation of it to walk through.</p>
+  </article>
+</div>
+
+<div class="list__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    <h2 class="archive__item-title" itemprop="headline">
       <a href="{{ base_path }}/files/promptpo_blog_post_exact.html" rel="permalink">When are LLM’s sufficient policy optimizers for sequential RL tasks?</a>
     </h2>
     <p class="archive__item-excerpt" itemprop="description">Inspired by AutoResearch, we ask when are LLM’s sufficient policy optimizers for sequential RL tasks? I.e., when can we replace classic RL algorithms like PPO or SAC with an LLM?</p>
