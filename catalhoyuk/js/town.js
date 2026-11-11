@@ -30,7 +30,7 @@ export function generateTown(rnd) {
   const houses = [];
   const openCells = [];
   const SECT = 34;            // sector pitch (m)
-  const GAP = 3.2;            // midden strip between sectors (m)
+  const GAP = 2.0;            // midden strip between sectors (m)
   const baseRot = MOUND.rot * 0.35;
 
   // tile the mound with sectors
@@ -50,7 +50,7 @@ export function generateTown(rnd) {
       while (x < half - 3.5) {
         const rw = Math.min(5.0 + rnd() * 2.6, half - x);
         if (rw < 3.8) break;
-        const bias = (rnd() - 0.5) * 0.9;
+        const bias = (rnd() - 0.5) * 1.3;
         rowBias.push(bias);
         let z = -half + (rnd() - 0.5) * 1.2;
         while (z < half - 3.5) {
@@ -67,8 +67,8 @@ export function generateTown(rnd) {
             // thinning out towards the edge of the mound
             const n = fbm(nOpen, wx * 0.035 + 3, wz * 0.035 + 3, 3);
             const edge = Math.max(0, (r - 0.72) / 0.21);
-            if (n < 0.345) keep = false;
-            if (rnd() < 0.10 + edge * 0.55) keep = false;
+            if (n < 0.29) keep = false;
+            if (rnd() < 0.04 + edge * 0.5) keep = false;
           }
           if (keep) {
             const h = makeHouse(rnd, sector, cell, rowBias[rowIdx]);
@@ -117,7 +117,7 @@ function makeHouse(rnd, sector, cell, rowBias) {
     const p = { x: sector.cx + sector.c * lx - sector.s * lz, z: sector.cz + sector.s * lx + sector.c * lz };
     ground = Math.max(ground, terrainHeight(p.x, p.z));
   }
-  const floorY = ground + 0.3 + Math.abs(rowBias) + rnd() * 0.45;
+  const floorY = ground + 0.3 + Math.abs(rowBias) + rnd() * 0.9;   // houses rebuilt at different times stand at different heights
   // the walls must reach the ground on the downhill side too: sample the footprint for its lowest point
   let low = ground;
   for (let i = 0; i <= 3; i++) for (let j = 0; j <= 3; j++) {
@@ -126,7 +126,7 @@ function makeHouse(rnd, sector, cell, rowBias) {
     low = Math.min(low, terrainHeight(p.x, p.z));
   }
   const baseY = Math.min(low - 0.9, floorY - 1.4);
-  const wallH = 2.3 + rnd() * 0.5;              // floor to ceiling (Building 52 reconstruction: ~2 m walls plus roof)
+  const wallH = 2.2 + rnd() * 0.7;              // floor to ceiling (Building 52 reconstruction: ~2 m walls plus roof)
   const roofY = floorY + wallH + ROOF_T;
   // interior plan, after Building 52: a large central room with a strip of small store rooms along one long
   // side, the strip itself divided in two; smaller houses get a single room across the north end or none.
