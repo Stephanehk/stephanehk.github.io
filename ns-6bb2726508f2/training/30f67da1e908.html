@@ -966,6 +966,7 @@ const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/deb
 
 const state = {
   screen: "consent",
+  priorKnowledge: null, // screener answer: "yes" or "no"
   prolificId: new URLSearchParams(window.location.search).get("PROLIFIC_PID") || "", // Prolific can pass it in the study URL
   critters: 0,
   q1: { attempt: 1, answers: {} }, // answers: item id -> {picked, correct, source, attempt}
@@ -1124,16 +1125,31 @@ function renderWelcome() {
     text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who asks about an interpersonal conflict.`,
     extra,
     back: () => go("consent"),
-    next: () => go("apply"),
+    next: () => go("prior"),
     nextLabel: "Start →",
   });
+}
+
+// Screener (user, 2026-11-11): participants who have not learned about the discipline before are screened out.
+function renderPrior() {
+  screen({ step: 0, frac: 0.25 });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(el("p", "survey-signpost-text", `Have you learned about ${SCHOOL.name} (${SCHOOL.short}) before?`));
+  card.appendChild(body);
+  const back = button("← Back", true); back.addEventListener("click", () => go("welcome"));
+  const answer = (yes) => () => { state.priorKnowledge = yes ? "yes" : "no"; state.log.push({ priorKnowledge: state.priorKnowledge, at: new Date().toISOString() }); go(yes ? "apply" : "exit"); };
+  const no = button("No", true); no.addEventListener("click", answer(false));
+  const yes = button("Yes"); yes.addEventListener("click", answer(true));
+  card.appendChild(nav(back, el("span", "spacer"), no, yes));
+  bodyEl.appendChild(card);
 }
 
 function renderApply() {
   signpost({
     step: 0, frac: 0.5,
     text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like under this counseling discipline.",
-    back: () => go("welcome"),
+    back: () => go("prior"),
     next: () => go("intro"),
   });
 }
@@ -1736,7 +1752,7 @@ function renderMainItem(vi, si) {
 // End screens.
 
 function exportText() {
-  return JSON.stringify({ school: SCHOOL.key, assignment: ASSIGNED ? { hash: ASSIGNMENT.hash, group: ASSIGNMENT.group } : null, prolificId: state.prolificId, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
+  return JSON.stringify({ school: SCHOOL.key, assignment: ASSIGNED ? { hash: ASSIGNMENT.hash, group: ASSIGNMENT.group } : null, prolificId: state.prolificId, priorKnowledge: state.priorKnowledge, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
     q1: state.q1, q2: state.q2, example: state.example, mainIds: state.mainIds, main: state.main }, null, 1);
 }
 
@@ -1765,13 +1781,13 @@ function renderExit() {
   body.appendChild(luckyBee("sad"));
   body.appendChild(el("p", "survey-signpost-text", "Thank you for your time. The study ends here."));
   card.appendChild(body);
-  const reset = button("Start over", true); reset.addEventListener("click", resetAll);
-  card.appendChild(nav(reset));
+  // Start over only in debug: otherwise a screened-out participant could go back and answer differently.
+  if (DEBUG) { const reset = button("Start over (debug)", true); reset.addEventListener("click", resetAll); card.appendChild(nav(reset)); }
   bodyEl.appendChild(card);
 }
 
 function resetAll() {
-  state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} }; state.example = {}; state.main = {}; state.mainIds = [];
+  state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} }; state.example = {}; state.main = {}; state.mainIds = []; state.priorKnowledge = null;
   state.startedAt = new Date().toISOString();
   go("consent");
 }
@@ -1786,6 +1802,7 @@ function render() {
   switch (kind) {
     case "consent": return renderConsent();
     case "welcome": return renderWelcome();
+    case "prior": return renderPrior();
     case "apply": return renderApply();
     case "intro": return renderIntro();
     case "card": return renderCard(i);
