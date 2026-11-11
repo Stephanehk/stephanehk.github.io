@@ -378,7 +378,7 @@ export function buildTown(town, tex, world, rnd) {
           if (b - a < 0.01 || d - c < 0.01) continue;
           const p = new THREE.PlaneGeometry(b - a - 0.02, d - c - 0.02); p.rotateX(-Math.PI / 2);
           scaleUV(p, (b - a) / 2.5, (d - c) / 2.5); addColor(p, cRoof);
-          placed(p, (a + b) / 2, h.roofY + 0.01, (c + d) / 2); roofGeos.push(p);
+          placed(p, (a + b) / 2, h.roofY + 0.015, (c + d) / 2); roofGeos.push(p);
         }
         // interior ladder: leans on the south wall, protrudes through the hatch
         const lx = (ht.x0 + ht.x1) / 2;
@@ -436,7 +436,7 @@ export function buildTown(town, tex, world, rnd) {
         placed(g, (u.x0 + u.x1) / 2, (h.roofY - 0.05 + u.roofY) / 2, (u.z0 + u.z1) / 2); wallGeos.push(g);
         world.addBox(s.fi, u.x0, h.roofY, u.z0, u.x1, u.roofY, u.z1, h);
         const r = new THREE.PlaneGeometry(u.x1 - u.x0 - 0.02, u.z1 - u.z0 - 0.02); r.rotateX(-Math.PI / 2);
-        scaleUV(r, (u.x1 - u.x0) / 2.5, (u.z1 - u.z0) / 2.5); addColor(r, cRoof); placed(r, (u.x0 + u.x1) / 2, u.roofY + 0.01, (u.z0 + u.z1) / 2); roofGeos.push(r);
+        scaleUV(r, (u.x1 - u.x0) / 2.5, (u.z1 - u.z0) / 2.5); addColor(r, cRoof); placed(r, (u.x0 + u.x1) / 2, u.roofY + 0.015, (u.z0 + u.z1) / 2); roofGeos.push(r);
         const uh = { x0: u.x1 - 1.0, x1: u.x1 - 0.2, z0: u.z1 - 1.0, z1: u.z1 - 0.1 };
         const hd = new THREE.PlaneGeometry(0.8, 0.9); hd.rotateX(-Math.PI / 2); placed(hd, (uh.x0 + uh.x1) / 2, u.roofY + 0.02, (uh.z0 + uh.z1) / 2); darkGeos.push(hd);
       }
@@ -482,8 +482,8 @@ export function buildTown(town, tex, world, rnd) {
     ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, normalScale: new THREE.Vector2(0.6, 0.6), vertexColors: true, roughness: 1 })
     : new THREE.MeshStandardMaterial({ map: tex.mud, vertexColors: true, roughness: 1 });
   const roofMat = tex.dirt
-    ? new THREE.MeshStandardMaterial({ map: tex.dirt, normalMap: tex.dirtN, normalScale: new THREE.Vector2(0.5, 0.5), vertexColors: true, roughness: 1 })
-    : new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1 });
+    ? new THREE.MeshStandardMaterial({ map: tex.dirt, normalMap: tex.dirtN, normalScale: new THREE.Vector2(0.5, 0.5), vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
+    : new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
   const woodMat = tex.timber
     ? new THREE.MeshStandardMaterial({ map: tex.timber, normalMap: tex.timberN, roughness: 0.9 })
     : new THREE.MeshStandardMaterial({ map: tex.wood, roughness: 0.85, color: 0xb59a78 });
@@ -569,7 +569,7 @@ export function buildMiddens(town, tex, rnd) {
   const c = new THREE.Color();
   for (const { sector: s, cell } of town.openCells) {
     const w = cell.x1 - cell.x0, l = cell.z1 - cell.z0;
-    const nx = Math.max(2, Math.round(w / 1.5)), nz = Math.max(2, Math.round(l / 1.5));
+    const nx = Math.max(3, Math.round(w / 0.7)), nz = Math.max(3, Math.round(l / 0.7));
     const g = new THREE.PlaneGeometry(w + 0.6, l + 0.6, nx, nz); g.rotateX(-Math.PI / 2);
     const pos = g.attributes.position;
     const col = new Float32Array(pos.count * 3);
@@ -577,9 +577,12 @@ export function buildMiddens(town, tex, rnd) {
     for (let i = 0; i < pos.count; i++) {
       const lx = pos.getX(i) + (cell.x0 + cell.x1) / 2, lz = pos.getZ(i) + (cell.z0 + cell.z1) / 2;
       const p = localToWorld(s, lx, lz);
-      const heap = 0.12 * Math.max(0, 1 - Math.hypot(pos.getX(i), pos.getZ(i)) / (Math.min(w, l) * 0.6));
-      pos.setXYZ(i, lx, terrainHeight(p.x, p.z) + 0.07 + heap + (rnd() - 0.5) * 0.04, lz);
-      c.setHSL(0.08, 0.1 + rnd() * 0.1, 0.86 * tint + rnd() * 0.08, THREE.SRGBColorSpace);
+      // flush with the trampled ground at the edge of the patch, heaped a little towards the middle
+      const ex = Math.abs(pos.getX(i)) / ((w + 0.6) / 2), ez = Math.abs(pos.getZ(i)) / ((l + 0.6) / 2);
+      const edge = Math.max(ex, ez);
+      const heap = edge > 0.85 ? 0 : 0.14 * Math.max(0, 1 - Math.hypot(pos.getX(i), pos.getZ(i)) / (Math.min(w, l) * 0.6)) + (rnd() - 0.5) * 0.03;
+      pos.setXYZ(i, lx, terrainHeight(p.x, p.z) + 0.035 + heap, lz);
+      c.setHSL(0.08, 0.12 + rnd() * 0.06, 0.93 * (0.95 + (tint - 1) * 0.3) + rnd() * 0.04, THREE.SRGBColorSpace);
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -589,7 +592,7 @@ export function buildMiddens(town, tex, rnd) {
     geos.push(g);
   }
   if (!geos.length) return null;
-  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
   const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
   mesh.receiveShadow = true; mesh.name = 'middens';
   return mesh;

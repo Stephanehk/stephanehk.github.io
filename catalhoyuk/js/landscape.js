@@ -122,12 +122,14 @@ export function buildTerrain(tex, townMask) {
   for (let iz = 0; iz <= N; iz++) {
     for (let ix = 0; ix <= N; ix++) {
       const x = warp(ix / N * 2 - 1), z = warp(iz / N * 2 - 1);
-      const h = terrainHeight(x, z);
+      const m = moundHeight(x, z);
+      // under the mound the trampled cap mesh is the visible ground; sink the coarse terrain beneath it
+      const sink = 0.7 * Math.min(1, Math.max(0, (m - 0.15) / 0.3));
+      const h = terrainHeight(x, z) - sink;
       pos[i * 3] = x; pos[i * 3 + 1] = h; pos[i * 3 + 2] = z;
       uv[i * 2] = x / 5; uv[i * 2 + 1] = z / 5;
       // colour
       const ci = channelInfo(x, z);
-      const m = moundHeight(x, z);
       const n = fbm(nCol, x * 0.01, z * 0.01, 3);
       tmp.copy(cTan).lerp(cGreen, Math.pow(ci.wet, 1.6) * 0.85);
       if (ci.water > 0) tmp.copy(cWetMud);
@@ -517,7 +519,7 @@ export class Birds {
 
 // Trampled midden surface over the whole mound: ash, bone and refuse between the houses.
 export function buildMoundCap(tex) {
-  const res = 2.2;
+  const res = 1.1;
   const geos = [];
   const c = Math.cos(MOUND.rot), sn = Math.sin(MOUND.rot);
   const nx = Math.ceil(MOUND.a * 2.1 / res), nz = Math.ceil(MOUND.b * 2.1 / res);
@@ -530,8 +532,8 @@ export function buildMoundCap(tex) {
     const lx = pos.getX(i), lz = pos.getZ(i);
     const x = MOUND.cx + lx * c - lz * sn, z = MOUND.cz + lx * sn + lz * c;
     const m = moundHeight(x, z);
-    const inside = m > 0.25 ? 1 : 0;
-    pos.setXYZ(i, x, terrainHeight(x, z) + (inside ? 0.06 : -2.0), z);
+    const inside = m > 0.15 ? 1 : 0;
+    pos.setXYZ(i, x, terrainHeight(x, z) + (inside ? 0.03 : -3.0), z);
     const n = fbm(nC, x * 0.03, z * 0.03, 3);
     tmp.setHSL(0.08 + (n - 0.5) * 0.02, 0.12 + n * 0.1, 0.96 + (n - 0.5) * 0.2, THREE.SRGBColorSpace);
     col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;

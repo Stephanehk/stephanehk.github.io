@@ -65,6 +65,14 @@ export async function buildB52(plot, tex, world, parent, rnd, registry) {
   const fl = new THREE.Mesh(new THREE.PlaneGeometry(b.max[0] - b.min[0], b.max[2] - b.min[2]), floorMat);
   scaleUV(fl.geometry, (b.max[0] - b.min[0]) / 2.5, (b.max[2] - b.min[2]) / 2.5);
   fl.rotation.x = -Math.PI / 2; fl.position.set(cx, 0.003, cz); fl.receiveShadow = true; G.add(fl);
+  // the house stands on the stubs of earlier walls, like its neighbours: a plinth down to the midden
+  {
+    const plinthMat = tex.loam ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, color: 0xd9c9ad, roughness: 1 }) : new THREE.MeshStandardMaterial({ map: tex.mud, roughness: 1 });
+    const pw = b.max[0] - b.min[0] + 0.1, pd = b.max[2] - b.min[2] + 0.1, ph = 1.6;
+    const pg = new THREE.BoxGeometry(pw, ph, pd); scaleUV(pg, 1, 1);
+    const uvp = pg.attributes.uv; for (let i = 0; i < uvp.count; i++) uvp.setXY(i, uvp.getX(i) * pw / 2.5, uvp.getY(i) * ph / 2.5);
+    const plinth = new THREE.Mesh(pg, plinthMat); plinth.position.set(cx, -ph / 2 - 0.02, cz); plinth.receiveShadow = true; plinth.castShadow = true; G.add(plinth);
+  }
   // shade canopies: mats of reeds and straw on the model's poles (the original strands are far too heavy for the web)
   const strawMat = new THREE.MeshStandardMaterial({ map: tex.reed, color: 0xd8c488, roughness: 1, side: THREE.DoubleSide });
   const canopies = [[-4.32, 3.45, -0.16, -2.21, 3.67, 2.05], [-1.3, 3.38, -5.01, 0.49, 3.62, -3.03]];

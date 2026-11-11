@@ -168,20 +168,20 @@ export function middenTexture(seed = 4) {
   const c = paint(size, (u, v) => {
     const big = fbm(n1, u * 5, v * 5, 4);
     const fine = fbm(n2, u * 70, v * 70, 3);
-    let l = 0.56 + (big - 0.5) * 0.3 + (fine - 0.5) * 0.15;
-    // ash is greyer, dirt browner
+    let l = 0.6 + (big - 0.5) * 0.22 + (fine - 0.5) * 0.12;
+    // ash is paler, dirt browner; both warm so the ground never reads blue in the shade
     const ash = clamp((big - 0.45) * 3, 0, 1);
-    const r = (150 * (1 - ash) + 160 * ash) * l + 10;
-    const g = (125 * (1 - ash) + 155 * ash) * l + 8;
-    const b = (95 * (1 - ash) + 150 * ash) * l + 6;
+    const r = (152 * (1 - ash) + 172 * ash) * l + 12;
+    const g = (128 * (1 - ash) + 160 * ash) * l + 9;
+    const b = (98 * (1 - ash) + 138 * ash) * l + 6;
     return [r, g, b];
   });
   const ctx = c.getContext('2d');
   const rnd = mulberry32(seed + 55);
-  for (let k = 0; k < 420; k++) {
-    const x = rnd() * size, y = rnd() * size, r = 0.5 + rnd() * 1.6;
+  for (let k = 0; k < 260; k++) {
+    const x = rnd() * size, y = rnd() * size, r = 0.5 + rnd() * 1.4;
     const t = rnd();
-    ctx.fillStyle = t < 0.45 ? 'rgba(35,28,22,0.8)' : t < 0.8 ? 'rgba(235,228,210,0.85)' : 'rgba(120,90,60,0.8)';
+    ctx.fillStyle = t < 0.45 ? 'rgba(45,36,28,0.7)' : t < 0.8 ? 'rgba(230,220,200,0.7)' : 'rgba(120,90,60,0.8)';
     ctx.beginPath(); ctx.ellipse(x, y, r * (0.6 + rnd()), r, rnd() * 3, 0, Math.PI * 2); ctx.fill();
   }
   return toTexture(c);

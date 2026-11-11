@@ -28,7 +28,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     plaster: new THREE.MeshStandardMaterial({ map: tex.white, roughness: 0.95 }),
     plasterSoot: new THREE.MeshStandardMaterial({ map: tex.whiteSoot, roughness: 0.95 }),
     floor: new THREE.MeshStandardMaterial({ map: tex.white, color: 0xe9e2d2, roughness: 1 }),
-    floorDirty: new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x8d7f6b, roughness: 1 }),
+    floorDirty: new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x8d7f6b, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
     silt: tex.loam ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, normalScale: new THREE.Vector2(0.5, 0.5), color: 0xe2d2bc, roughness: 1 })
                    : new THREE.MeshStandardMaterial({ map: tex.mud2, color: 0xd9b88c, roughness: 1 }),
     earth: tex.dirt ? new THREE.MeshStandardMaterial({ map: tex.dirt, color: 0x5e4e3e, roughness: 1 }) : new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x5a4a3a, roughness: 1 }),
@@ -42,7 +42,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     charcoal: new THREE.MeshStandardMaterial({ color: 0x1b1613, roughness: 1 }),
     ash: new THREE.MeshStandardMaterial({ color: 0x9a948a, roughness: 1 }),
     basket: new THREE.MeshStandardMaterial({ map: tex.basket, roughness: 1, side: THREE.DoubleSide }),
-    mat: new THREE.MeshStandardMaterial({ map: tex.mat, roughness: 1 }),
+    mat: new THREE.MeshStandardMaterial({ map: tex.mat, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
     redMat: new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb0604a, roughness: 1 }),
     hide: new THREE.MeshStandardMaterial({ color: 0x6b4b34, roughness: 1 }),
     hideDS: new THREE.MeshStandardMaterial({ color: 0x8a5f3c, roughness: 1, side: THREE.DoubleSide }),
@@ -380,7 +380,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     {
       const dz = Math.min(L * 0.4, 2.2);
       const d = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.02, dz), M.floorDirty); scaleUV(d.geometry, W / 2, dz / 2);
-      d.rotation.x = -Math.PI / 2; d.position.set((R.x0 + R.x1) / 2, 0.006, R.z1 - dz / 2); d.receiveShadow = true; G.add(d);
+      d.rotation.x = -Math.PI / 2; d.position.set((R.x0 + R.x1) / 2, 0.012, R.z1 - dz / 2); d.receiveShadow = true; G.add(d);
     }
     // platforms: NW large, NE, and east-central. Heights per Hodder (0.1-0.4 m)
     const plats = [];
