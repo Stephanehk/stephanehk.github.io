@@ -209,7 +209,7 @@ async function build() {
     smoke = new Puffs(tex.puff, smokeSources.slice(0, 70), { rise: 5.5, spread: 3.0, jitter: 0.5, size: 2.2, alpha: 0.26, speed: 0.07, color: new THREE.Color(0xd8d4cc) });
     scene.add(smoke.points);
     const dustSrc = town.houses.map((h) => worldPt(h.sector, (h.hatch.x0 + h.hatch.x1) / 2, h.roofY - 1.6, (h.hatch.z0 + h.hatch.z1) / 2));
-    dust = new Puffs(tex.puff, dustSrc, { rise: -0.6, spread: 0.3, jitter: 1.4, size: 0.06, alpha: 0.5, speed: 0.05, color: new THREE.Color(0xfff2d8), perEmitter: 10 });
+    dust = new Puffs(tex.puff, dustSrc, { rise: -0.6, spread: 0.3, jitter: 1.4, size: 0.05, alpha: 0.22, speed: 0.04, color: new THREE.Color(0xfff2d8), perEmitter: 8 });
     scene.add(dust.points);
   });
 
@@ -345,7 +345,7 @@ function setLowQuality() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   showCaption('Running in reduced quality to keep the frame rate smooth.', 6);
 }
-const tmpV = new THREE.Vector3();
+const tmpV = new THREE.Vector3(), shadowRight = new THREE.Vector3(), shadowUp = new THREE.Vector3(), WORLD_UP = new THREE.Vector3(0, 1, 0);
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, clock.getDelta());
@@ -360,10 +360,13 @@ function frame() {
   if (interiors.timer <= 0) { interiors.timer = 0.15; updateInteriors(player.pos.x, player.pos.z, 2); }
 
   // sun follows the player; snap to shadow texels to avoid shimmer
-  const texel = (2 * SH) / 2048;
-  const px = Math.round(player.pos.x / texel) * texel, pz = Math.round(player.pos.z / texel) * texel, py = Math.round(player.pos.y / texel) * texel;
-  sun.target.position.set(px, py, pz);
-  sun.position.set(px + sunDir.x * 260, py + sunDir.y * 260, pz + sunDir.z * 260);
+  const texel = (2 * SH) / sun.shadow.mapSize.x;
+  shadowRight.crossVectors(sunDir, WORLD_UP).normalize(); shadowUp.crossVectors(shadowRight, sunDir).normalize();
+  tmpV.copy(player.pos);
+  const a = tmpV.dot(shadowRight), b = tmpV.dot(shadowUp);
+  tmpV.addScaledVector(shadowRight, Math.round(a / texel) * texel - a).addScaledVector(shadowUp, Math.round(b / texel) * texel - b);
+  sun.target.position.copy(tmpV);
+  sun.position.copy(tmpV).addScaledVector(sunDir, 260);
   sky.position.copy(camera.position);
   if (mountains) mountains.position.set(camera.position.x, 0, camera.position.z);
 
@@ -385,7 +388,7 @@ function frame() {
   let nearest = inside;
   if (!nearest) { let nd = Infinity; for (const e of registry) { const d = e.hearth.distanceToSquared(player.pos); if (d < nd) { nd = d; nearest = e; } } }
   if (nearest) {
-    const flick = 1.6 + Math.sin(time * 5.3) * 0.12 + Math.sin(time * 8.9) * 0.08;   // a slow breathing glow, not a strobe
+    const flick = 1.7;
     if (inside) { fire.position.copy(nearest.hearth); skyFill.position.copy(nearest.hatchWorld).add(tmpV.set(0, -0.9, 0)); }
     fire.intensity = flick * insideAmt; fire.distance = 7;
     skyFill.intensity = 7.0 * insideAmt;

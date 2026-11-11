@@ -490,8 +490,8 @@ export function buildTown(town, tex, world, rnd) {
     ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, normalScale: new THREE.Vector2(0.6, 0.6), vertexColors: true, roughness: 1 })
     : new THREE.MeshStandardMaterial({ map: tex.mud, vertexColors: true, roughness: 1 });
   const roofMat = tex.dirt
-    ? new THREE.MeshStandardMaterial({ map: tex.dirt, normalMap: tex.dirtN, normalScale: new THREE.Vector2(0.5, 0.5), vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
-    : new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    ? new THREE.MeshStandardMaterial({ map: tex.dirt, normalMap: tex.dirtN, normalScale: new THREE.Vector2(0.5, 0.5), vertexColors: true, roughness: 1 })
+    : new THREE.MeshStandardMaterial({ map: tex.roof, vertexColors: true, roughness: 1 });
   const woodMat = tex.timber
     ? new THREE.MeshStandardMaterial({ map: tex.timber, normalMap: tex.timberN, roughness: 0.9 })
     : new THREE.MeshStandardMaterial({ map: tex.wood, roughness: 0.85, color: 0xb59a78 });
@@ -600,7 +600,7 @@ export function buildMiddens(town, tex, rnd) {
     geos.push(g);
   }
   if (!geos.length) return null;
-  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1 });
   const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
   mesh.receiveShadow = true; mesh.name = 'middens';
   return mesh;

@@ -541,7 +541,7 @@ export function buildMoundCap(tex) {
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / 3, pos.getZ(i) / 3);
   g.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const mat = new THREE.MeshStandardMaterial({ map: tex.midden, vertexColors: true, roughness: 1 });
   const mesh = new THREE.Mesh(g, mat);
   mesh.receiveShadow = true; mesh.name = 'moundcap';
   return mesh;

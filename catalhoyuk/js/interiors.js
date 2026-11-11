@@ -28,7 +28,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     plaster: new THREE.MeshStandardMaterial({ map: tex.white, roughness: 0.95 }),
     plasterSoot: new THREE.MeshStandardMaterial({ map: tex.whiteSoot, roughness: 0.95 }),
     floor: new THREE.MeshStandardMaterial({ map: tex.white, color: 0xe9e2d2, roughness: 1 }),
-    floorDirty: new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x8d7f6b, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
+    floorDirty: new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x8d7f6b, roughness: 1 }),
     silt: tex.loam ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, normalScale: new THREE.Vector2(0.5, 0.5), color: 0xe2d2bc, roughness: 1 })
                    : new THREE.MeshStandardMaterial({ map: tex.mud2, color: 0xd9b88c, roughness: 1 }),
     earth: tex.dirt ? new THREE.MeshStandardMaterial({ map: tex.dirt, color: 0x5e4e3e, roughness: 1 }) : new THREE.MeshStandardMaterial({ map: tex.soil, color: 0x5a4a3a, roughness: 1 }),
@@ -42,7 +42,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     charcoal: new THREE.MeshStandardMaterial({ color: 0x1b1613, roughness: 1 }),
     ash: new THREE.MeshStandardMaterial({ color: 0x9a948a, roughness: 1 }),
     basket: new THREE.MeshStandardMaterial({ map: tex.basket, roughness: 1, side: THREE.DoubleSide }),
-    mat: new THREE.MeshStandardMaterial({ map: tex.mat, roughness: 1, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }),
+    mat: new THREE.MeshStandardMaterial({ map: tex.mat, roughness: 1 }),
     redMat: new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb0604a, roughness: 1 }),
     hide: new THREE.MeshStandardMaterial({ color: 0x6b4b34, roughness: 1 }),
     hideDS: new THREE.MeshStandardMaterial({ color: 0x8a5f3c, roughness: 1, side: THREE.DoubleSide }),
@@ -52,7 +52,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     bone: new THREE.MeshStandardMaterial({ color: 0xf2eadb, roughness: 0.7 }),
     graveMat: new THREE.MeshStandardMaterial({ map: tex.mat, color: 0x6a553c, roughness: 1 }),
     grain: new THREE.MeshStandardMaterial({ color: 0xc8a85a, roughness: 1 }),
-    soot: new THREE.MeshBasicMaterial({ map: tex.puff, color: 0x000000, transparent: true, opacity: 0.75, depthWrite: false }),
+    soot: new THREE.MeshStandardMaterial({ color: 0x1a1512, alphaMap: tex.puff, transparent: true, opacity: 0.8, depthWrite: false, roughness: 1 }),
     sootWall: new THREE.MeshBasicMaterial({ map: tex.soot, transparent: true, depthWrite: false }),
     leopard: null, // set below
     groove: new THREE.MeshStandardMaterial({ color: 0x4a3a2c, roughness: 1 }),
@@ -353,13 +353,13 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     const W = R.x1 - R.x0, L = R.z1 - R.z0;
     const hatchCx = (hatch.x0 + hatch.x1) / 2;
     // domed oven against the south wall at the foot of the ladder, so the hatch above draws its smoke
-    const ovenX = Math.max(R.x0 + 0.7, hatchCx - 1.05);
+    const ovenX = Math.max(R.x0 + 0.7, Math.min(hatchCx - 1.15, hatch.x0 - 0.68));
     {
       const dome = new THREE.Mesh(new THREE.SphereGeometry(0.52, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.clay);
       dome.scale.set(1, 0.82, 1); dome.position.set(ovenX, 0, R.z1 - 0.3); dome.castShadow = true; dome.receiveShadow = true; G.add(dome);
       const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.14, 10, 1, false, 0, Math.PI), M.charcoal); mouth.rotation.x = Math.PI / 2; mouth.rotation.z = 0; mouth.position.set(ovenX, 0.12, R.z1 - 0.78); G.add(mouth);
-      const mouthFloor = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), M.charcoal); mouthFloor.rotation.x = -Math.PI / 2; mouthFloor.position.set(ovenX, 0.01, R.z1 - 0.7); G.add(mouthFloor);
-      const sill = box(G, M.clay, ovenX - 0.6, 0, R.z1 - 0.95, ovenX + 0.6, 0.07, R.z1 - 0.7);
+      const mouthFloor = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), M.charcoal); mouthFloor.rotation.x = -Math.PI / 2; mouthFloor.position.set(ovenX, 0.02, R.z1 - 0.7); G.add(mouthFloor);
+      const sill = box(G, M.clay, Math.max(R.x0 + 0.05, ovenX - 0.6), 0, R.z1 - 0.95, Math.min(ovenX + 0.6, hatch.x0 - 0.16), 0.07, R.z1 - 0.7);
       addSolid(ovenX - 0.55, 0, R.z1 - 0.82, ovenX + 0.55, 0.45, R.z1);
       // basin west of the oven, set back into the wall
       if (ovenX - 0.6 - R.x0 > 1.1) { box(G, M.clay, R.x0 + 0.1, 0, R.z1 - 0.5, R.x0 + 1.0, 0.22, R.z1 - 0.1); box(G, M.charcoal, R.x0 + 0.17, 0.2, R.z1 - 0.43, R.x0 + 0.93, 0.21, R.z1 - 0.17, UVS, false); }
@@ -368,19 +368,21 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     const hearth = { x: Math.max(R.x0 + 0.6, ovenX - 0.7), z: R.z1 - 1.45 };
     {
       const rim = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.06, 7, 18), M.clay); rim.rotation.x = Math.PI / 2; rim.position.set(hearth.x, 0.04, hearth.z); rim.scale.z = 0.6; G.add(rim);
-      const ash = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), M.ash); ash.rotation.x = -Math.PI / 2; ash.position.set(hearth.x, 0.012, hearth.z); G.add(ash);
-      const coals = new THREE.Mesh(new THREE.CircleGeometry(0.14, 10), M.charcoal); coals.rotation.x = -Math.PI / 2; coals.position.set(hearth.x, 0.02, hearth.z); G.add(coals);
+      const ash = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), M.ash); ash.rotation.x = -Math.PI / 2; ash.position.set(hearth.x, 0.016, hearth.z); G.add(ash);
+      const coals = new THREE.Mesh(new THREE.CircleGeometry(0.14, 10), M.charcoal); coals.rotation.x = -Math.PI / 2; coals.position.set(hearth.x, 0.026, hearth.z); G.add(coals);
       // scattered sticks
       for (let i = 0; i < 4; i++) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.4, 5), M.wood); st.rotation.set(Math.PI / 2, 0, rnd() * Math.PI); st.position.set(hearth.x + (rnd() - 0.5) * 0.3, 0.05, hearth.z + (rnd() - 0.5) * 0.3); G.add(st); }
       // soot on the ceiling above hatch and hearth, and on the south wall
-      const sc = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.6), M.soot); sc.rotation.x = Math.PI / 2; sc.position.set((hatchCx + ovenX) / 2, H - 0.01, R.z1 - 0.9); G.add(sc);
-      const sw = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(W, 3.0), 1.6), M.sootWall); sw.rotation.y = Math.PI; sw.position.set(Math.min(R.x1 - 1.5, (hatchCx + ovenX) / 2), H - 0.8, R.z1 - 0.01); G.add(sw);
+      const scW = Math.min(3.2, W - 0.1), scD = Math.min(2.6, L - 0.1);
+      const scX = Math.max(R.x0 + scW / 2 + 0.05, Math.min(R.x1 - scW / 2 - 0.05, (hatchCx + ovenX) / 2)), scZ = R.z1 - 0.05 - scD / 2;
+      const sc = new THREE.Mesh(new THREE.PlaneGeometry(scW, scD), M.soot); sc.rotation.x = Math.PI / 2; sc.position.set(scX, H - 0.015, scZ); G.add(sc);
+
     }
     // dirty floor zone in the south
     {
       const dz = Math.min(L * 0.4, 2.2);
       const d = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.02, dz), M.floorDirty); scaleUV(d.geometry, W / 2, dz / 2);
-      d.rotation.x = -Math.PI / 2; d.position.set((R.x0 + R.x1) / 2, 0.012, R.z1 - dz / 2); d.receiveShadow = true; G.add(d);
+      d.rotation.x = -Math.PI / 2; d.position.set((R.x0 + R.x1) / 2, 0.006, R.z1 - dz / 2); d.receiveShadow = true; G.add(d);
     }
     // platforms: NW large, NE, and east-central. Heights per Hodder (0.1-0.4 m)
     const plats = [];
@@ -536,8 +538,15 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
           addSolid(r.x0, 0, r.z1 - 0.55, r.x1, 0.25, r.z1);
         }
       }
-      // baskets
-      for (let i = 0; i < 2; i++) { const b = basket(0.2 + rnd() * 0.1, 0.35 + rnd() * 0.2); b.position.set(r.x0 + 0.4 + rnd() * (rw - 0.8), 0, r.z0 + 0.4 + rnd() * (rl - 0.8)); G.add(b); }
+      // baskets, in the part of the room the bins and basin leave free
+      const bx0 = room.wall === 'W' ? r.x0 + 1.05 : r.x0 + 0.3, bx1 = room.wall === 'E' ? r.x1 - 1.05 : r.x1 - 0.3;
+      const bz0 = room.wall === 'N' ? r.z0 + 1.05 : r.z0 + 0.3, bz1 = room.wall === 'N' ? r.z1 - 0.3 : r.z1 - 0.9;
+      const doorHere2 = doors.find((d) => d.sr === r);
+      if (bx1 - bx0 > 0.5 && bz1 - bz0 > 0.5) for (let i = 0; i < 2; i++) {
+        const rr = 0.18 + rnd() * 0.08, x = bx0 + rr + rnd() * (bx1 - bx0 - 2 * rr), z = bz0 + rr + rnd() * (bz1 - bz0 - 2 * rr);
+        if (doorHere2 && doorHere2.axis === 'x' && z > doorHere2.z0 - 0.6 && z < doorHere2.z1 + 0.6 && Math.abs(x - (room.wall === 'W' ? r.x1 : r.x0)) < 0.9) continue;   // not in the crawl-hole's path
+        const b = basket(rr, 0.35 + rnd() * 0.2); b.position.set(x, 0, z); G.add(b);
+      }
     }
 
     // --- everyday objects in the main room, each given a clear spot ---
@@ -550,7 +559,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     if (grave) { const sp = take(0.5, 0.5, nw.x0 + 0.35, nw.z1 + 0.4); if (sp) { const b = basket(0.22, 0.4); b.position.set(sp.x, 0, sp.z); G.add(b); } }
     { const sp = take(0.6, 0.45, hearth.x + 1.0, hearth.z + 0.1); if (sp) { const q = quern(); q.position.set(sp.x, 0, sp.z); q.rotation.y = rnd(); G.add(q); } }
     { const sp = take(0.5, 0.4, ovenX - 1.1, R.z1 - 1.25); if (sp) { const cb = clayBalls(9); cb.position.set(sp.x, 0, sp.z); G.add(cb); } }
-    { const sp = take(0.6, 0.5, hearth.x - 0.3, hearth.z - 0.9); if (sp) { const ob = obsidianBlades(7); ob.position.set(sp.x, 0.012, sp.z); G.add(ob); const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.4), M.mat); sm.rotation.x = -Math.PI / 2; sm.position.set(sp.x, 0.008, sp.z); G.add(sm); } }
+    { const sp = take(0.6, 0.5, hearth.x - 0.3, hearth.z - 0.9); if (sp) { const ob = obsidianBlades(7); ob.position.set(sp.x, 0.02, sp.z); G.add(ob); const sm = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.4), M.mat); sm.rotation.x = -Math.PI / 2; sm.position.set(sp.x, 0.014, sp.z); G.add(sm); } }
     if (pNE && ne.x1 - ne.x0 > 1.0 && ne.z1 - ne.z0 > 0.9) {
       const hw = Math.min(1.1, ne.x1 - ne.x0 - 0.4), hdp = Math.min(0.8, ne.z1 - ne.z0 - 0.35);
       const hd = new THREE.Mesh(new THREE.PlaneGeometry(hw, hdp), M.hide); hd.rotation.x = -Math.PI / 2; hd.rotation.z = 0.15; hd.position.set((ne.x0 + ne.x1) / 2, ne.h + 0.01, (ne.z0 + ne.z1) / 2); G.add(hd);
@@ -585,7 +594,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       else if (pr < 0.55) { const pw = Math.min(1.5, L - 1.5); const a = wallSpot('E', pw, nwD + 0.45); if (a !== null) { hang(G, 'E', R, 0, a, ne.h + 0.45, pw, 0.55, paintMat(P.kilim(pw, 0.55, Math.floor(rnd() * 3)))); wallUsed.E.push([a, a + pw]); } }
       // small red hunters and animals on the wall by the ladder (as in the Grant Cox model)
       if (rnd() < 0.3) { const pw = Math.min(1.3, L - 2.6); if (pw > 0.7) { const a = wallSpot('W', pw, L - 1.4 - pw); if (a !== null) { hang(G, 'W', R, 0, L - a - pw, 0.9, pw, 0.5, paintMat(P.huntDeer(pw, 0.5))); wallUsed.W.push([a, a + pw]); } } }
-      if (rnd() < 0.15) { const b = bucranium(1.0); b.position.set(R.x0 + 0.05, 1.3, R.z0 + L * 0.5); b.rotation.y = Math.PI / 2; G.add(b); }
+      if (rnd() < 0.15) { const a = wallSpot('W', 1.2, L * 0.5 - 0.6); if (a !== null) { const b = bucranium(1.0); b.position.set(R.x0 + 0.05, 1.3, R.z0 + a + 0.6); b.rotation.y = Math.PI / 2; G.add(b); wallUsed.W.push([a, a + 1.2]); } }
     } else if (kind === 'b77') {
       // red dado on N and E walls, continuing over the NE platform faces
       hang(G, 'N', R, 0, 0, 0, W, 0.24, red, 0.006); hang(G, 'E', R, 0, 0, 0, L, 0.18, red, 0.006);
@@ -601,7 +610,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       // incised geometric panel west of the alcove
       hang(G, 'N', R, 0, 0.1, 0.5, Math.max(0.6, W / 2 - 0.6), 0.4, paintMat(P.incised(Math.max(0.6, W / 2 - 0.6), 0.4)));
       // east wall: two engaged pillars with red/black geometric panels between them
-      for (const z of [R.z0 + 0.9, R.z0 + 2.1]) { if (nearDoor('E', z, 0.4)) continue; box(G, M.plaster, R.x1 - 0.22, 0, z - 0.14, R.x1, 2.0, z + 0.14); addSolid(R.x1 - 0.22, 0, z - 0.14, R.x1, 2.0, z + 0.14); }
+      for (const z of [R.z0 + 0.9, R.z0 + 2.1]) { if (!wallFree('E', z - R.z0 - 0.2, z - R.z0 + 0.2)) continue; box(G, M.plaster, R.x1 - 0.22, 0, z - 0.14, R.x1, 2.0, z + 0.14); addSolid(R.x1 - 0.22, 0, z - 0.14, R.x1, 2.0, z + 0.14); wallUsed.E.push([z - R.z0 - 0.2, z - R.z0 + 0.2]); }
       hang(G, 'E', R, 0, 1.1, 0.75, 0.9, 0.45, paintMat(P.kilim(0.9, 0.45, 1)));
       hang(G, 'E', R, 0, 2.4, 1.1, 0.3, 0.32, paintMat(P.hands(0.3, 0.32, 1, 0)));
       // beam stub projecting over the platform
@@ -622,11 +631,14 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       // brick motif panel above the central east platform
       hang(G, 'E', R, 0, uOf('E', R, 0, R.z0 + neD + 0.1), 0.18, 1.3, 0.55, paintMat(P.brickMotif(1.3, 0.55)));
       // three-post plastered installation on the W wall with a goat skull
-      const iz = nearDoor('W', R.z0 + L * 0.45, 0.8) ? R.z0 + nwD + 0.6 : R.z0 + L * 0.45;
-      for (const z of [iz - 0.35, iz, iz + 0.35]) { box(G, M.plaster, R.x0, 0, z - 0.1, R.x0 + 0.22, 1.7, z + 0.1); }
-      box(G, M.plaster, R.x0, 1.7, iz - 0.5, R.x0 + 0.3, 1.82, iz + 0.5);
-      addSolid(R.x0, 0, iz - 0.45, R.x0 + 0.22, 1.7, iz + 0.45);
-      const goat = bucranium(0.45, true); goat.scale.set(0.5, 0.5, 0.5); goat.position.set(R.x0 + 0.3, 1.45, iz); goat.rotation.y = Math.PI / 2; G.add(goat);
+      const aI = wallSpot('W', 1.1, L * 0.45 - 0.55);
+      if (aI !== null) {
+        const iz = R.z0 + aI + 0.55; wallUsed.W.push([aI, aI + 1.1]); block(R.x0, iz - 0.6, R.x0 + 0.45, iz + 0.6);
+        for (const z of [iz - 0.35, iz, iz + 0.35]) { box(G, M.plaster, R.x0, 0, z - 0.1, R.x0 + 0.22, 1.7, z + 0.1); }
+        box(G, M.plaster, R.x0, 1.7, iz - 0.5, R.x0 + 0.3, 1.82, iz + 0.5);
+        addSolid(R.x0, 0, iz - 0.45, R.x0 + 0.22, 1.7, iz + 0.45);
+        const goat = bucranium(0.45, true); goat.scale.set(0.5, 0.5, 0.5); goat.position.set(R.x0 + 0.3, 1.45, iz); goat.rotation.y = Math.PI / 2; G.add(goat);
+      }
       // four red spots on the W wall
       for (let i = 0; i < 4; i++) { const sp = new THREE.Mesh(new THREE.CircleGeometry(0.06, 10), red); G.add(wallMesh(sp.geometry.clone().translate(0.6 + i * 0.3, 1.3, 0), 'W', R, 0, red, 0.006)); }
       // child's handprints near the oven on the south wall
@@ -642,7 +654,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
     } else if (kind === 'vultures') {
       hang(G, 'E', R, 0, 0.05, 0.55, L - 0.1, 1.4, paintMat(P.vultures(L - 0.1, 1.4, Math.max(2, Math.round((L - 0.1) / 1.6)))));
       hang(G, 'N', R, 0, 0.05, nw.h + 0.35, W - 0.1, 1.3, paintMat(P.vultures(W - 0.1, 1.3, Math.max(2, Math.round((W - 0.1) / 1.6)))));
-      const b = bucranium(1.2); b.position.set(R.x0 + 0.05, 1.25, R.z0 + L * 0.5); b.rotation.y = Math.PI / 2; G.add(b);
+      { const a = wallSpot('W', 1.3, L * 0.5 - 0.65); if (a !== null) { const b = bucranium(1.2); b.position.set(R.x0 + 0.05, 1.25, R.z0 + a + 0.65); b.rotation.y = Math.PI / 2; G.add(b); wallUsed.W.push([a, a + 1.3]); } }
     } else if (kind === 'leopards') {
       // red panel with the leopard pair above it, on the north wall
       const pw = Math.min(3.4, W - 0.4), u0 = (W - pw) / 2;
