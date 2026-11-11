@@ -336,7 +336,17 @@ export function ladderGeo(bx, by, bz, tx, ty, tz, over = 0.7) {
 export function buildTown(town, tex, world, rnd) {
   const group = new THREE.Group();
   group.name = 'town';
-  const wallGeos = [], roofGeos = [], woodGeos = [], darkGeos = [], matGeos = [], strawGeos = [];
+  // geometry is merged per ~30 m chunk (not per town) so the renderer can frustum-cull
+  // what is behind the player, in both the colour pass and the shadow pass
+  const CHUNK = 30;
+  const buckets = new Map();
+  const bucketFor = (s, wx, wz) => {
+    const k = Math.floor(wx / CHUNK) + ':' + Math.floor(wz / CHUNK);
+    let b = buckets.get(k);
+    if (!b) { b = { wallGeos: [], roofGeos: [], woodGeos: [], darkGeos: [], matGeos: [], strawGeos: [] }; buckets.set(k, b); }
+    return b;
+  };
+  const bucketArrays = (b) => [b.wallGeos, b.roofGeos, b.woodGeos, b.darkGeos, b.matGeos, b.strawGeos];
   const cWall = new THREE.Color(), cRoof = new THREE.Color();
   const smokeSources = [], ladderZones = [];
   const nTint = makeValueNoise(401, 32);
@@ -345,6 +355,7 @@ export function buildTown(town, tex, world, rnd) {
     s.fi = world.addFrame(s.cx, s.cz, s.angle);
     const M = sectorMatrix(s);
     for (const h of s.houses) {
+      const { wallGeos, roofGeos, woodGeos, darkGeos, matGeos, strawGeos } = bucketFor(s, h.wx, h.wz);
       const w = h.x1 - h.x0, l = h.z1 - h.z0, cx = (h.x0 + h.x1) / 2, cz = (h.z0 + h.z1) / 2;
       const tn = fbm(nTint, h.wx * 0.05, h.wz * 0.05, 2);
       cWall.setHSL(0.08 + (tn - 0.5) * 0.02, 0.18 + (tn - 0.5) * 0.08, (tex.loam ? 0.86 : 0.72) * h.tint, THREE.SRGBColorSpace);
@@ -482,8 +493,8 @@ export function buildTown(town, tex, world, rnd) {
         }
       }
     }
-    // transform this sector's geometry into world space
-    for (const arr of [wallGeos, roofGeos, woodGeos, darkGeos, matGeos, strawGeos]) for (const g of arr) if (!g.userData.placed) { g.applyMatrix4(M); g.userData.placed = true; }
+    // transform this sector's geometry (everything not yet placed) into world space
+    for (const b of buckets.values()) for (const arr of bucketArrays(b)) for (const g of arr) if (!g.userData.placed) { g.applyMatrix4(M); g.userData.placed = true; }
   }
 
   const wallMat = tex.loam
@@ -496,13 +507,18 @@ export function buildTown(town, tex, world, rnd) {
     ? new THREE.MeshStandardMaterial({ map: tex.timber, normalMap: tex.timberN, roughness: 0.9 })
     : new THREE.MeshStandardMaterial({ map: tex.wood, roughness: 0.85, color: 0xb59a78 });
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1512, roughness: 1 });
-  const walls = new THREE.Mesh(mergeGeometries(wallGeos), wallMat); walls.castShadow = true; walls.receiveShadow = true; walls.name = 'walls';
-  const roofs = new THREE.Mesh(mergeGeometries(roofGeos), roofMat); roofs.castShadow = true; roofs.receiveShadow = true; roofs.name = 'roofs';
-  const wood = new THREE.Mesh(mergeGeometries(woodGeos), woodMat); wood.castShadow = true; wood.receiveShadow = true; wood.name = 'ladders';
-  const dark = new THREE.Mesh(mergeGeometries(darkGeos), darkMat); dark.name = 'hatches';
-  group.add(walls, roofs, wood, dark);
-  if (strawGeos.length) { const straw = new THREE.Mesh(mergeGeometries(strawGeos), new THREE.MeshStandardMaterial({ map: tex.reed, color: 0xd8c488, roughness: 1 })); straw.castShadow = true; straw.receiveShadow = true; straw.name = 'canopies'; group.add(straw); }
-  if (matGeos.length) { const covers = new THREE.Mesh(mergeGeometries(matGeos), new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb8ab90, roughness: 1, side: THREE.DoubleSide })); covers.castShadow = true; covers.receiveShadow = true; covers.name = 'covers'; group.add(covers); }
+  const strawMat = new THREE.MeshStandardMaterial({ map: tex.reed, color: 0xd8c488, roughness: 1 });
+  const coverMat = new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb8ab90, roughness: 1, side: THREE.DoubleSide });
+  const chunkMesh = (geos, mat, name, shadows = true) => {
+    if (!geos.length) return;
+    const m = new THREE.Mesh(mergeGeometries(geos), mat); m.name = name;
+    if (shadows) { m.castShadow = true; m.receiveShadow = true; }
+    group.add(m);
+  };
+  for (const b of buckets.values()) {
+    chunkMesh(b.wallGeos, wallMat, 'walls'); chunkMesh(b.roofGeos, roofMat, 'roofs'); chunkMesh(b.woodGeos, woodMat, 'ladders');
+    chunkMesh(b.darkGeos, darkMat, 'hatches', false); chunkMesh(b.strawGeos, strawMat, 'canopies'); chunkMesh(b.matGeos, coverMat, 'covers');
+  }
   return { group, smokeSources };
 }
 

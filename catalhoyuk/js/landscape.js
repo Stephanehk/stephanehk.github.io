@@ -487,6 +487,11 @@ export class Herds {
     }
     this.mesh.instanceMatrix.needsUpdate = true;
   }
+  anyWithin(x, z, r) {
+    const r2 = r * r;
+    for (const a of this.animals) { const dx = a.x - x, dz = a.z - z; if (dx * dx + dz * dz < r2) return true; }
+    return false;
+  }
 }
 
 // circling birds (vultures / cranes) as simple V shapes

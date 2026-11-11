@@ -30,11 +30,22 @@ function sunDirOf(p) {
 
 // ---------------- renderer / scene ----------------
 const canvas = $('c');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
+// Depth precision: a reversed floating-point depth buffer where the browser supports it (no
+// z-fighting between the separated floor/stain/ash layers, and the GPU keeps early depth
+// rejection); otherwise a logarithmic depth buffer, which costs early-z but looks the same.
+// NOTE: lib/three.module.min.js (r170) carries two small patches for this: WebGLState.setReversed
+// set the clip control from the stale flag, and the shadow-map depth packing ignored the reversed
+// projection. Re-apply both if the library is ever upgraded short of a release that fixes them.
+const probeGL = document.createElement('canvas').getContext('webgl2');
+const REVERSE_Z = !!(probeGL && probeGL.getExtension('EXT_clip_control')) && !params.has('logdepth');
+if (probeGL) probeGL.getExtension('WEBGL_lose_context')?.loseContext();
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', reverseDepthBuffer: REVERSE_Z, logarithmicDepthBuffer: !REVERSE_Z });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;   // the sun's shadow map is re-rendered only when something it shows has changed (see frame())
+let shadowDirty = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 
@@ -76,6 +87,7 @@ function applyPreset(p) {
   if (mountains) scene.remove(mountains);
   mountains = buildMountains(new THREE.Color(p.fog)); scene.add(mountains);
   sunDir.copy(dir);
+  shadowDirty = true;
   if (registry.length) updateShafts(registry, sunDir);
   $('time').textContent = p.name;
 }
@@ -119,7 +131,7 @@ interiors.group.name = 'interiors';
 const near = [];
 function updateInteriors(px, pz, budget = 2) {
   const R_IN = 20, R_OUT = 28;
-  for (const [h, e] of interiors.built) if (Math.hypot(h.wx - px, h.wz - pz) > R_OUT) { disposeInterior(e, registry, world); interiors.built.delete(h); }
+  for (const [h, e] of interiors.built) if (Math.hypot(h.wx - px, h.wz - pz) > R_OUT) { disposeInterior(e, registry, world); interiors.built.delete(h); shadowDirty = true; }
   near.length = 0;
   for (const h of town.houses) { const d = Math.hypot(h.wx - px, h.wz - pz); if (d < R_IN && !interiors.built.has(h)) near.push([d, h]); }
   if (!near.length) return;
@@ -130,6 +142,7 @@ function updateInteriors(px, pz, budget = 2) {
     const e = interiors.builder(h, h.sector, sectorMatrix(h.sector), interiors.group, world);
     updateShafts([e], sunDir);
     interiors.built.set(h, e);
+    shadowDirty = true;
   }
 }
 let tex, town, herds = [], birds, smoke, dust, player, water;
@@ -342,16 +355,28 @@ function setLowQuality() {
   renderer.setPixelRatio(1);
   sun.shadow.mapSize.set(1024, 1024);
   if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+  shadowDirty = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   showCaption('Running in reduced quality to keep the frame rate smooth.', 6);
 }
 const tmpV = new THREE.Vector3(), shadowRight = new THREE.Vector3(), shadowUp = new THREE.Vector3(), WORLD_UP = new THREE.Vector3(0, 1, 0);
+const lastSunTarget = new THREE.Vector3(Infinity, Infinity, Infinity);
+let shadowTimer = 0, herdsNear = true;
+// Frame pacing: never above 60 fps (a 120 Hz laptop display would otherwise double the GPU
+// work), 30 fps when nobody has touched the controls for a few seconds, 10 fps while the
+// window is visible but not the active one.
+let lastInput = performance.now(), lastRender = -Infinity;
+for (const t of ['mousemove', 'mousedown', 'keydown', 'touchstart', 'touchmove', 'wheel']) document.addEventListener(t, () => { lastInput = performance.now(); }, { passive: true });
 function frame() {
   requestAnimationFrame(frame);
+  const now = performance.now();
+  const maxFps = !document.hasFocus() ? 10 : (now - lastInput > 4000 ? 30 : 60);
+  if (now - lastRender < 1000 / maxFps - 2.5) return;
+  lastRender = now;
   const dt = Math.min(0.05, clock.getDelta());
   time += dt;
   if (!player) return;
-  if (player.locked && !fpsChecked && started) {
+  if (player.locked && !fpsChecked && started && maxFps === 60) {
     fpsAcc += dt; fpsN++;
     if (fpsAcc > 6) { fpsChecked = true; if (fpsN / fpsAcc < 28) setLowQuality(); }
   }
@@ -365,8 +390,16 @@ function frame() {
   tmpV.copy(player.pos);
   const a = tmpV.dot(shadowRight), b = tmpV.dot(shadowUp);
   tmpV.addScaledVector(shadowRight, Math.round(a / texel) * texel - a).addScaledVector(shadowUp, Math.round(b / texel) * texel - b);
-  sun.target.position.copy(tmpV);
-  sun.position.copy(tmpV).addScaledVector(sunDir, 260);
+  shadowTimer -= dt;
+  if (shadowDirty || (shadowTimer <= 0 && (herdsNear || !tmpV.equals(lastSunTarget)))) {
+    // re-render the shadow map: a house interior appeared or went away or the light changed
+    // (at once), or, at most ten times a second, the frustum has followed the player by a
+    // texel or more, or animals are close enough to be in it
+    renderer.shadowMap.needsUpdate = true; shadowDirty = false; shadowTimer = 0.1;
+    lastSunTarget.copy(tmpV);
+    sun.target.position.copy(tmpV);
+    sun.position.copy(tmpV).addScaledVector(sunDir, 260);
+  }
   sky.position.copy(camera.position);
   if (mountains) mountains.position.set(camera.position.x, 0, camera.position.z);
 
@@ -396,7 +429,7 @@ function frame() {
   // caption timer
   if (captionTimer > 0) { captionTimer -= dt; if (captionTimer <= 0) $('caption').classList.remove('show'); }
   // animated bits
-  if (herds) herds.update(dt, time, Math.random);
+  if (herds) { herds.update(dt, time, Math.random); herdsNear = herds.anyWithin(player.pos.x, player.pos.z, SH + 6); }
   if (birds) birds.update(time);
   if (smoke) smoke.update(time);
   if (dust) dust.update(time);
