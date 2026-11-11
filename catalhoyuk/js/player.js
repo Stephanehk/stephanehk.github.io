@@ -112,6 +112,7 @@ export class Player {
     this.stepDist = 0;
     this.onStep = null;
     this.enabled = true;
+    this.freeLook = false;      // look around with the mouse even before the pointer is locked
     this.touch = { move: null, look: null };
     this._tmp = [];
     this._pen = { lx: 0, lz: 0, f: null };
@@ -135,7 +136,7 @@ export class Player {
       this.dom.dispatchEvent(new CustomEvent(this.locked ? 'player-lock' : 'player-unlock'));
     });
     document.addEventListener('mousemove', (e) => {
-      if (!this.locked) return;
+      if (!this.locked && !this.freeLook) return;
       this.rotate(e.movementX, e.movementY);
     });
     // touch controls: left half = move stick, right half = look

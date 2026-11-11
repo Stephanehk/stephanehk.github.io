@@ -283,18 +283,17 @@ function showCaption() {}
 // ---------------- input / UI wiring ----------------
 let started = false;
 function enter() {
-  if (!player) return;
+  if (!player || player.locked) return;
   player.lock();
   $('overlay').classList.add('hidden');
-  if (!started) { started = true; showCaption('You are standing on the roofs of Çatalhöyük, about 8,600 years ago. Every hatch with a ladder leads down into a house: walk onto the opening to climb down, and look up and press W (or Space) at the ladder to climb back out.', 18); }
+  started = true;
 }
 $('enter').addEventListener('click', enter);
 canvas.addEventListener('click', () => { if (player && !player.locked && !isTouch) enter(); });
-canvas.addEventListener('player-unlock', () => { if (!isTouch) $('overlay').classList.remove('hidden'); });
+// a key press is a user gesture too: the first step taken locks the mouse
+document.addEventListener('keydown', (e) => { if (player && !player.locked && !isTouch && e.code !== 'Escape' && !e.repeat) enter(); });
 let isTouch = false;
 canvas.addEventListener('player-touch', () => { isTouch = true; $('overlay').classList.add('hidden'); });
-$('about-btn').addEventListener('click', () => $('about').classList.toggle('hidden'));
-$('about-close').addEventListener('click', () => $('about').classList.add('hidden'));
 document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyT') { presetIdx = (presetIdx + 1) % PRESETS.length; applyPreset(PRESETS[presetIdx]); }
   if (e.code === 'KeyH') $('hud').classList.toggle('hidden');
@@ -372,8 +371,10 @@ function frame() {
 
 build().then(() => {
   $('loading').classList.add('hidden');
-  $('enter').disabled = false;
-  $('enter').textContent = 'Click to enter';
+  $('overlay').classList.add('hidden');
+  player.freeLook = true;
+  started = true;
+  window.focus();
   frame();
   // debug / screenshot support: ?cam=x,y,z,yaw,pitch
   if (params.get('cam')) {
