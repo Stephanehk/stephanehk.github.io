@@ -657,6 +657,7 @@ const QUIZ1 = [
   },
   {
     id: "PCT-D",
+    skip: true, // dropped 2026-11-11 (user): Quiz 1 cut to 8 items
     stem: "Which of these describes how a PCT counselor handles praise and reassurance?",
     own: [
       "The counselor does not praise or reassure the person, because telling someone they are good or that things will be fine is as much a judgment as telling them they are bad.",
@@ -699,6 +700,7 @@ const QUIZ1 = [
   },
   {
     id: "PCT-F",
+    skip: true, // dropped 2026-11-11 (user): Quiz 1 cut to 8 items
     stem: "Which of these describes how a PCT counselor handles explaining why someone behaved as they did?",
     own: [
       "The counselor does not interpret or explain why the person or anyone else behaves as they do; it reflects what the behavior means to the person instead.",
@@ -943,11 +945,10 @@ const EXAMPLE = {
 
 
 const THRESHOLDS = {
-  quiz1Pass: 7, // of 10 on the first attempt
-  quiz2Pass: 7, // of 10 on the first attempt
-  // Below the pass mark, the missed items are asked once more. The final score counts items
-  // right on either attempt; at or below this share the participant is screened out.
-  minShareAfterRetake: 0.6,
+  // Pass mark (user 2026-11-11): at least half the items right. Below it on the first attempt, the missed
+  // items are asked once more; the final score counts items right on either attempt, and a participant
+  // still below half is screened out.
+  passShare: 0.5,
 };
 
 </script>
@@ -1278,9 +1279,9 @@ function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature,
 // ---------------------------------------------------------------------------
 // Quizzes. The first attempt asks every item. Below the pass mark, the items missed are
 // asked once more (same wording, different order). The final score counts items right on
-// either attempt; at or below THRESHOLDS.minShareAfterRetake the participant is screened out.
+// either attempt; below THRESHOLDS.passShare the participant is screened out.
 
-const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.filter((q) => !q.skip).map((q) => ({ kind: "claim", q }))];
+const Q1_ITEMS = [...QUIZ1_STRENGTH.filter((q) => !q.skip).map((q) => ({ kind: "strength", q })), ...QUIZ1.filter((q) => !q.skip).map((q) => ({ kind: "claim", q }))];
 const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.filter((q) => !q.skip).map((q) => ({ kind: "rule", q }))];
 const itemKey = (it) => `${it.kind}:${it.q.id}`;
 
@@ -1355,10 +1356,10 @@ function resultScreen({ step, score, total, outcome, passLabel, onPass, onRetake
   bodyEl.appendChild(card);
 }
 
-function quizOutcome(qstate, all, passMark) {
-  const score = quizScore(qstate, all);
-  if (qstate.attempt === 1) return score >= passMark ? "pass" : "retake";
-  return score / all.length > THRESHOLDS.minShareAfterRetake ? "pass" : "out";
+function quizOutcome(qstate, all) {
+  const passed = quizScore(qstate, all) / all.length >= THRESHOLDS.passShare;
+  if (qstate.attempt === 1) return passed ? "pass" : "retake";
+  return passed ? "pass" : "out";
 }
 
 function renderQ1Intro() {
@@ -1372,7 +1373,7 @@ function renderQ1Intro() {
 }
 
 function renderQ1Result() {
-  const outcome = quizOutcome(state.q1, Q1_ITEMS, THRESHOLDS.quiz1Pass);
+  const outcome = quizOutcome(state.q1, Q1_ITEMS);
   if (outcome === "pass") state.critters = Math.max(state.critters, 2);
   resultScreen({
     step: 2, score: quizScore(state.q1, Q1_ITEMS), total: Q1_ITEMS.length, outcome,
@@ -1483,7 +1484,7 @@ function renderQ2Intro() {
 }
 
 function renderQ2Result() {
-  const outcome = quizOutcome(state.q2, Q2_ITEMS, THRESHOLDS.quiz2Pass);
+  const outcome = quizOutcome(state.q2, Q2_ITEMS);
   if (outcome === "pass") state.critters = Math.max(state.critters, 4);
   resultScreen({
     step: 4, score: quizScore(state.q2, Q2_ITEMS), total: Q2_ITEMS.length, outcome,
