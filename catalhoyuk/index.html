@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Çatalhöyük, c. 6600 BCE — walk the roofs of a Neolithic town</title>
+<meta name="description" content="A first-person, walkable 3D reconstruction of Çatalhöyük East Mound around 6600 BCE: the honeycomb of mudbrick houses entered through the roof, their plastered interiors, bucrania, wall paintings and the Konya Plain beyond. Built from the published archaeology.">
+<meta property="og:title" content="Çatalhöyük, c. 6600 BCE">
+<meta property="og:description" content="Walk across the roofs and climb down into the houses of the Neolithic town of Çatalhöyük.">
+<link rel="canonical" href="https://stephanehk.github.io/catalhoyuk/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1b1713; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3ead9; }
+  #c { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  .hidden { display: none !important; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15,12,9,0.6); z-index: 10; pointer-events: none; transition: opacity 0.6s; }
+  #overlay.hidden { opacity: 0; }
+  .card { max-width: 560px; width: calc(100% - 48px); padding: 28px 32px 26px; border: 1px solid rgba(243,234,217,0.18); background: rgba(28,22,17,0.72); backdrop-filter: blur(6px); border-radius: 6px; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .card h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: 0.02em; font-weight: 600; }
+  .card h2 { margin: 0 0 18px; font-size: 14px; font-weight: 400; color: #cdbfa7; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card p { line-height: 1.5; font-size: 15px; margin: 0 0 14px; color: #e9dfcd; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; margin: 14px 0 18px; }
+  .keys kbd { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: rgba(243,234,217,0.12); border: 1px solid rgba(243,234,217,0.25); border-radius: 4px; padding: 2px 7px; color: #fff; }
+  .keys span { color: #d9ccb6; }
+  button.primary { font: inherit; font-size: 16px; font-weight: 600; padding: 12px 22px; border-radius: 4px; border: 1px solid #c9a46a; background: linear-gradient(#b8894c, #8e6633); color: #fff8ea; cursor: pointer; width: 100%; }
+  button.primary:disabled { opacity: 0.6; cursor: progress; }
+  .fine { font-size: 12px; color: #a99b84; margin-top: 12px; }
+  .fine a, .fine button { color: #e3c891; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #compass { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 420px; height: 40px; max-width: 70vw; }
+  #loc { position: absolute; top: 12px; left: 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,245,225,0.75); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  #time, #mute { position: absolute; top: 12px; right: 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,245,225,0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  #mute { top: 30px; }
+  #caption { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); max-width: min(720px, 86vw); padding: 10px 16px; background: rgba(20,15,11,0.62); border-left: 2px solid #c9a46a; font-size: 14px; line-height: 1.45; color: #f6efe0; opacity: 0; transition: opacity 0.8s; border-radius: 2px; }
+  #caption.show { opacity: 1; }
+  #hint { position: absolute; left: 14px; bottom: 12px; font-size: 11px; color: rgba(255,245,225,0.55); text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+  #cross { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: rgba(255,255,255,0.7); box-shadow: 0 0 2px rgba(0,0,0,0.8); }
+  #loading { font-size: 14px; color: #d9ccb6; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .spin { width: 12px; height: 12px; border: 2px solid rgba(243,234,217,0.3); border-top-color: #e3c891; border-radius: 50%; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #about { position: fixed; inset: 0; z-index: 20; overflow: auto; background: rgba(15,12,9,0.95); padding: 40px 20px; }
+  #about .inner { max-width: 720px; margin: 0 auto; font-size: 15px; line-height: 1.55; color: #e9dfcd; }
+  #about h2 { font-weight: 600; margin-top: 28px; font-size: 18px; }
+  #about a { color: #e3c891; }
+  #about button { position: fixed; top: 16px; right: 20px; font: inherit; background: none; border: 1px solid rgba(243,234,217,0.3); color: #f3ead9; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  @media (max-width: 640px) { .card h1 { font-size: 26px; } .keys { display: none; } #compass { max-width: 80vw; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud"><div id="cross"></div></div>
+
+<div id="overlay"><div id="loading"><div class="spin"></div><span id="loadmsg" hidden></span></div></div>
+
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
