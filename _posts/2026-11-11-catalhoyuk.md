@@ -16,13 +16,18 @@ They serve as a millennium-long counterexample to Hobbes's claim that social ord
 </div>
 
 <style>
-  .catalhoyuk-embed { position: relative; width: 100vw; margin-top: 1.5em; height: 88vh; min-height: 480px; background: #000; }
+  .catalhoyuk-embed { position: relative; z-index: 3; width: 100%; margin-top: 1.5em; height: 88vh; min-height: 480px; background: #000; }
   .catalhoyuk-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+  /* the sidebar's skater walks behind the simulation on this page, not over it */
+  #hz-stage { z-index: -1; }
 </style>
 <script>
   (function () {
     var el = document.querySelector('.catalhoyuk-embed');
-    function fit() { el.style.marginLeft = '0px'; el.style.marginLeft = (-el.getBoundingClientRect().left) + 'px'; }
+    function fit() {
+      el.style.width = '100%';
+      if (window.innerWidth >= 925) el.style.width = (window.innerWidth - el.getBoundingClientRect().left) + 'px';
+    }
     fit(); window.addEventListener('resize', fit); window.addEventListener('load', fit);
   })();
 </script>
