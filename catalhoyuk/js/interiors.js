@@ -325,7 +325,7 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
         const g = new THREE.CylinderGeometry(0.05 + rnd() * 0.015, 0.055 + rnd() * 0.015, span + 0.02, 6);
         if (alongX) g.rotateZ(Math.PI / 2); else g.rotateX(Math.PI / 2);
         const m = new THREE.Mesh(g, M.wood); m.castShadow = true;
-        if (alongX) m.position.set((r.x0 + r.x1) / 2, H - 0.07, r.z0 + t * len); else m.position.set(r.x0 + t * len, H - 0.07, (r.z0 + r.z1) / 2);
+        if (alongX) m.position.set((r.x0 + r.x1) / 2, H - 0.1, r.z0 + t * len); else m.position.set(r.x0 + t * len, H - 0.1, (r.z0 + r.z1) / 2);
         G.add(m);
       }
       // plaster cove where the walls meet the floor
@@ -611,19 +611,6 @@ export function makeInteriorBuilder(tex, P0, rnd, registry) {
       hang(G, 'N', R, 0, W - pw - 0.15, ne.h + 0.25, pw, 0.95, paintMat(P.volcanoMap(pw, 0.95)));
       hang(G, 'E', R, 0, 0.2, 1.1, Math.min(1.6, L - 0.5), 0.5, paintMat(P.kilim(Math.min(1.6, L - 0.5), 0.5, 2)));
       hang(G, 'W', R, 0, 0.3, 0.9, Math.min(1.2, L - 0.6), 0.6, paintMat(P.circles(Math.min(1.2, L - 0.6), 0.6)));
-    }
-
-    // --- hatch reveal (inner faces of the roof opening) ---
-    {
-      const ht = hatch, t = ROOF_T;
-      const faces = [[ht.x0, ht.x1, ht.z0, ht.z0], [ht.x0, ht.x1, ht.z1, ht.z1], [ht.x0, ht.x0, ht.z0, ht.z1], [ht.x1, ht.x1, ht.z0, ht.z1]];
-      for (const [a, b, c, d] of faces) {
-        const len = a === b ? d - c : b - a;
-        const g = new THREE.PlaneGeometry(len, t);
-        const m = new THREE.Mesh(g, M.clay); m.position.set((a + b) / 2, H + t / 2, (c + d) / 2);
-        if (a === b) m.rotation.y = a === ht.x0 ? Math.PI / 2 : -Math.PI / 2; else m.rotation.y = c === ht.z0 ? 0 : Math.PI;
-        G.add(m);
-      }
     }
 
     // --- light shaft from the hatch (geometry rebuilt when the sun moves) ---

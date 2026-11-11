@@ -118,6 +118,14 @@ function makeHouse(rnd, sector, cell, rowBias) {
     ground = Math.max(ground, terrainHeight(p.x, p.z));
   }
   const floorY = ground + 0.3 + Math.abs(rowBias) + rnd() * 0.45;
+  // the walls must reach the ground on the downhill side too: sample the footprint for its lowest point
+  let low = ground;
+  for (let i = 0; i <= 3; i++) for (let j = 0; j <= 3; j++) {
+    const lx = x0 + (x1 - x0) * i / 3, lz = z0 + (z1 - z0) * j / 3;
+    const p = { x: sector.cx + sector.c * lx - sector.s * lz, z: sector.cz + sector.s * lx + sector.c * lz };
+    low = Math.min(low, terrainHeight(p.x, p.z));
+  }
+  const baseY = Math.min(low - 0.9, floorY - 1.4);
   const wallH = 2.3 + rnd() * 0.5;              // floor to ceiling (Building 52 reconstruction: ~2 m walls plus roof)
   const roofY = floorY + wallH + ROOF_T;
   // interior plan, after Building 52: a large central room with a strip of small store rooms along one long
@@ -145,7 +153,7 @@ function makeHouse(rnd, sector, cell, rowBias) {
   // hatch in the SE corner of the main room, against the south wall
   const hatch = { x1: main.x1 - 0.15, x0: main.x1 - 1.15, z1: main.z1 - 0.02, z0: main.z1 - 1.15 };
   const h = {
-    sector, x0, x1, z0, z1, wx, wz, floorY, wallH, roofY, main, side, hatch,
+    sector, x0, x1, z0, z1, wx, wz, floorY, baseY, wallH, roofY, main, side, hatch,
     adj: [], ladders: [], enterable: true, kind: 'plain', upper: null,
     tint: 0.9 + rnd() * 0.2, parapet: rnd() < 0.22, smoke: rnd() < 0.18, seed: Math.floor(rnd() * 1e9),
   };
@@ -341,7 +349,7 @@ export function buildTown(town, tex, world, rnd) {
       const tn = fbm(nTint, h.wx * 0.05, h.wz * 0.05, 2);
       cWall.setHSL(0.08 + (tn - 0.5) * 0.02, 0.18 + (tn - 0.5) * 0.08, (tex.loam ? 0.86 : 0.72) * h.tint, THREE.SRGBColorSpace);
       cRoof.setHSL(0.085 + (tn - 0.5) * 0.02, 0.2, (tex.dirt ? 0.84 : 0.7) * h.tint, THREE.SRGBColorSpace);
-      const base = h.floorY - 1.4;
+      const base = h.baseY;
       {
         // hollow shell: four walls, roof slabs around the hatch; the interior is built on demand
         const parts = [

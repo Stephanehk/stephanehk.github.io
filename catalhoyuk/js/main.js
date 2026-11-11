@@ -383,7 +383,7 @@ function frame() {
   let nearest = null, nd = Infinity;
   for (const e of registry) { const d = e.hearth.distanceToSquared(player.pos); if (d < nd) { nd = d; nearest = e; } }
   if (nearest) {
-    const flick = 1.6 + Math.sin(time * 11) * 0.25 + Math.sin(time * 23.7) * 0.2 + (Math.random() - 0.5) * 0.3;
+    const flick = 1.6 + Math.sin(time * 5.3) * 0.12 + Math.sin(time * 8.9) * 0.08;   // a slow breathing glow, not a strobe
     fire.position.copy(nearest.hearth); fire.intensity = flick * Math.min(1, insideAmt + 0.15);
     skyFill.position.copy(nearest.hatchWorld).add(tmpV.set(0, -0.9, 0)); skyFill.intensity = 7.0 * insideAmt;
   }

@@ -68,7 +68,7 @@ export async function buildB52(plot, tex, world, parent, rnd, registry) {
   // the house stands on the stubs of earlier walls, like its neighbours: a plinth down to the midden
   {
     const plinthMat = tex.loam ? new THREE.MeshStandardMaterial({ map: tex.loam, normalMap: tex.loamN, color: 0xd9c9ad, roughness: 1 }) : new THREE.MeshStandardMaterial({ map: tex.mud, roughness: 1 });
-    const pw = b.max[0] - b.min[0] + 0.1, pd = b.max[2] - b.min[2] + 0.1, ph = 1.6;
+    const pw = b.max[0] - b.min[0] + 0.1, pd = b.max[2] - b.min[2] + 0.1, ph = 2.8;
     const pg = new THREE.BoxGeometry(pw, ph, pd); scaleUV(pg, 1, 1);
     const uvp = pg.attributes.uv; for (let i = 0; i < uvp.count; i++) uvp.setXY(i, uvp.getX(i) * pw / 2.5, uvp.getY(i) * ph / 2.5);
     const plinth = new THREE.Mesh(pg, plinthMat); plinth.position.set(cx, -ph / 2 - 0.02, cz); plinth.receiveShadow = true; plinth.castShadow = true; G.add(plinth);
