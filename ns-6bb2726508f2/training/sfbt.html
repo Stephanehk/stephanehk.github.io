@@ -11,300 +11,7 @@ layout: null
     <meta name="robots" content="noindex, nofollow" />
     <title>Counselor training</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" />
-    <style>
-/* Styles ported from time_spent_per_task/worker_viz (styles.css, survey.css): the
-   same palette, type, cards, buttons, and the /lucky garden theme. */
-:root {
-  --bg: #f7f1e8;
-  --surface: #fffaf2;
-  --surface-strong: #ffffff;
-  --ink: #221914;
-  --ink-soft: #5c514b;
-  --ink-faint: #8b7c73;
-  --rule: #e6d8c8;
-  --rule-strong: #cdbba7;
-  --accent: #7a6f9f;
-  --accent-dark: #5f5482;
-  --accent-deep: #3a2c5c;
-  --chip-bg: #f0e2d2;
-  --ok: #3d7a4a;
-  --ok-bg: rgba(61, 122, 74, 0.1);
-  --bad: #b42318;
-  --bad-bg: rgba(180, 35, 24, 0.06);
-  --shadow: 0 1px 2px rgba(34, 25, 20, 0.05), 0 18px 48px rgba(77, 51, 31, 0.09);
-  /* Small labels use the same sans face as the rest of the page (user request 2026-11-08). */
-  --mono: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-* { box-sizing: border-box; }
-html { min-height: 100%; }
-html, body { margin: 0; padding: 0; }
-body {
-  background:
-    radial-gradient(circle at top left, rgba(122, 111, 159, 0.16), transparent 32rem),
-    radial-gradient(circle at top right, rgba(58, 44, 92, 0.10), transparent 28rem),
-    var(--bg);
-  color: var(--ink);
-  font-family: var(--sans);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-.page { position: relative; z-index: 1; width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 18px 0 40px; }
-h1, h2, h3, p { margin-top: 0; }
-.hero { display: grid; gap: 10px; margin-bottom: 8px; }
-.eyebrow, .card-eyebrow {
-  color: var(--ink-faint); font-family: var(--mono); font-size: 12px; font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase;
-}
-h1 { margin-bottom: 0; font-size: clamp(22px, 2.8vw, 32px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.2; }
-h1[hidden], .lede[hidden] { display: none; }
-.lede { max-width: 760px; margin-bottom: 4px; color: var(--ink-soft); font-size: clamp(16px, 1.8vw, 19px); }
-
-.card {
-  border: 1px solid var(--rule); border-radius: 18px; background: rgba(255, 250, 242, 0.92); box-shadow: var(--shadow);
-}
-.survey-card { margin-top: 20px; padding: 30px 34px 26px; }
-body:has(.lucky-garden) .survey-card { background: var(--surface); }
-.card h2 { margin-bottom: 8px; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.025em; line-height: 1.15; }
-.survey-card-body { display: grid; gap: 12px; }
-.survey-card--signpost .survey-card-body { justify-items: center; padding: 28px 0; }
-.survey-signpost-text {
-  margin: 0; max-width: 640px; text-align: center; font-size: clamp(19px, 2.3vw, 25px);
-  font-weight: 600; line-height: 1.45; color: var(--ink);
-}
-.survey-signpost-sub { margin: 0; max-width: 640px; text-align: center; color: var(--ink-soft); font-size: 16px; }
-
-.submit-button {
-  border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-strong); color: var(--ink);
-  cursor: pointer; font: inherit; font-weight: 700; font-size: 15px; padding: 10px 22px;
-  transition: background 160ms ease, transform 80ms ease;
-}
-.submit-button:hover:not(:disabled) { background: #f3eadf; }
-.submit-button:active:not(:disabled) { transform: translateY(1px); }
-.submit-button:focus-visible:not(:disabled) { background: #f3eadf; outline: none; }
-.submit-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-.submit-button--secondary { background: transparent; color: var(--ink-soft); border: 1px solid var(--rule-strong); }
-.submit-button--secondary:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
-.lucky-nav { display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
-.lucky-nav .spacer { flex: 1; }
-.survey-warning { margin: 12px 0 0; font-size: 14px; font-weight: 700; color: var(--bad); text-align: right; }
-.survey-warning[hidden] { display: none; }
-
-/* Step bar with the growing flower. */
-.lucky-turns { display: flex; align-items: flex-end; gap: 12px; margin-top: 6px; }
-.lucky-turns-bar { flex: 1 1 auto; min-width: 0; display: grid; gap: 6px; }
-.step-label { color: var(--ink-faint); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
-.survey-progress { width: min(420px, 100%); height: 6px; border-radius: 999px; background: var(--rule); overflow: hidden; }
-.survey-progress-fill { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--accent); transition: width 240ms ease; }
-.lucky-flower { display: inline-block; flex: none; width: 22px; height: 31px; line-height: 0; transform-origin: 50% 100%; }
-#flower { display: block; flex: none; line-height: 0; }
-.lucky-flower--grew { animation: lucky-flower-pop 0.6s ease-out; }
-@keyframes lucky-flower-pop { 0% { transform: scale(1); } 40% { transform: scale(1.2); } 100% { transform: scale(1); } }
-
-/* Principle cards. */
-.principle-teaches { font-size: 18px; line-height: 1.5; }
-.principle-text { margin: 0; font-size: clamp(19px, 2.3vw, 25px); font-weight: 600; line-height: 1.45; }
-.principle-quote {
-  margin: 4px 0 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px;
-  background: rgba(122, 111, 159, 0.08); font-size: 15.5px; line-height: 1.45; color: var(--ink);
-}
-.principle-quote cite { display: block; margin-top: 4px; color: var(--ink-faint); font-style: normal; font-size: 13px; }
-.rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-@media (max-width: 560px) { .rules { grid-template-columns: 1fr; } }
-.rule { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); font-size: 15px; line-height: 1.4; }
-.rule-label { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
-.rule--in .rule-label { color: var(--ok); }
-.rule--out .rule-label { color: var(--bad); }
-.strength { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 12px; border-radius: 999px; background: var(--chip-bg); font-size: 14px; font-weight: 600; color: var(--ink-soft); }
-.strength b { color: var(--ink); font-weight: 700; }
-
-/* Checks. */
-.survey-question-text { margin: 0; font-weight: 600; font-size: 18px; line-height: 1.4; }
-.control-choices { display: grid; gap: 8px; margin: 12px 0 4px; }
-.control-choice {
-  display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--rule-strong);
-  border-radius: 10px; background: var(--surface-strong); font-size: 15px; line-height: 1.4; color: var(--ink-soft);
-  cursor: pointer; transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
-}
-.control-choice:focus-within { border-color: var(--ink); color: var(--ink); }
-.control-choice input[type="radio"], .control-choice input[type="checkbox"] { margin: 2px 0 0; accent-color: var(--accent); width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; }
-.control-choice:has(input:checked) { border-color: var(--ink); background: #f3eadf; color: var(--ink); font-weight: 600; }
-.control-choice--locked { cursor: default; }
-.control-choice--correct { border-color: var(--ok); background: var(--ok-bg); color: var(--ink); font-weight: 600; }
-.control-choice--wrong { border-color: var(--bad); background: var(--bad-bg); color: var(--ink); }
-.control-choice--wrong input, .control-choice--correct input { accent-color: currentColor; }
-.choice-tag { margin-left: auto; flex: none; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
-.control-choice--correct .choice-tag { color: var(--ok); }
-.control-choice--wrong .choice-tag { color: var(--bad); }
-
-/* Feedback: the bee speaks. */
-.lucky-chat-row { display: flex; align-items: flex-end; gap: 10px; margin-top: 14px; }
-.lucky-chat-bubble {
-  padding: 12px 16px; border-radius: 16px; border: 1px solid var(--rule); background: var(--surface-strong);
-  font-size: 15.5px; line-height: 1.5; animation: lucky-speech-in 0.3s ease-out both;
-}
-.lucky-chat-bubble b { font-weight: 700; }
-.lucky-chat-bubble--ok b { color: var(--ok); }
-.lucky-chat-bubble--bad b { color: var(--bad); }
-@keyframes lucky-speech-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
-/* Score screens. */
-.score { font-size: clamp(32px, 5vw, 48px); font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
-.score small { display: block; margin-top: 6px; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); font-family: var(--mono); }
-.review-list { width: 100%; max-width: 640px; margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; }
-.review-list li { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; border-radius: 8px; background: var(--surface-strong); border: 1px solid var(--rule); font-size: 14.5px; }
-.review-list .mark { font-family: var(--mono); font-weight: 700; flex: none; }
-.review-list .mark--ok { color: var(--ok); }
-.review-list .mark--bad { color: var(--bad); }
-
-/* Dimension screens. */
-.dim-list { display: grid; gap: 8px; margin: 6px 0 0; }
-.dim { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); }
-.dim--cbt { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-.dim-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
-.dim-name { font-weight: 700; font-size: 16px; }
-.dim-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--accent-dark); background: rgba(122, 111, 159, 0.12); padding: 2px 8px; border-radius: 999px; }
-.dim-def { margin: 4px 0 0; font-size: 15px; color: var(--ink-soft); line-height: 1.45; }
-.dim-ex { margin: 4px 0 0; font-size: 14px; color: var(--ink); font-style: italic; }
-.notes { margin: 8px 0 0; padding: 12px 16px 12px 32px; border-radius: 10px; background: var(--chip-bg); font-size: 15px; line-height: 1.5; }
-.notes li + li { margin-top: 4px; }
-.callout { margin: 0; padding: 14px 16px; border-left: 3px solid var(--accent); border-radius: 8px; background: rgba(122, 111, 159, 0.08); font-size: 16px; font-weight: 600; line-height: 1.4; }
-.stance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 680px) { .stance-grid { grid-template-columns: 1fr; } }
-.stance { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--rule); background: var(--surface-strong); display: grid; gap: 6px; }
-.stance h3 { margin: 0; font-size: 17px; }
-.stance .target { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
-.stance .note { margin: 0; font-size: 14.5px; }
-.stance--cbt { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
-.option-table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-top: 6px; }
-.option-table td { padding: 8px 10px; border-top: 1px solid var(--rule); vertical-align: top; }
-.option-table td:first-child { font-weight: 700; white-space: nowrap; }
-.group-pill { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
-.group-pill--pushback { background: var(--bad-bg); color: var(--bad); }
-.group-pill--endorsement { background: var(--ok-bg); color: var(--ok); }
-.feature-list { display: grid; gap: 8px; margin-top: 4px; }
-.feature { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); }
-.feature .q { font-weight: 700; font-size: 16px; }
-.feature .d { margin: 3px 0 0; color: var(--ink-soft); font-size: 14.5px; }
-.feature .w { margin: 4px 0 0; font-size: 14px; color: var(--accent-dark); font-weight: 600; }
-
-.principle-ref { margin: 0; padding: 12px 16px; border-radius: 10px; border: 1px dashed var(--rule-strong); background: var(--surface-strong); font-size: 15.5px; line-height: 1.45; }
-.principle-ref .card-eyebrow { display: block; margin-bottom: 4px; }
-
-.export { width: 100%; min-height: 120px; margin-top: 10px; padding: 10px; border: 1px solid var(--rule-strong); border-radius: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--ink-soft); background: var(--surface-strong); }
-.debug-bar { position: fixed; top: 8px; right: 8px; z-index: 5; display: flex; gap: 6px; opacity: 0.6; }
-.debug-bar button { font: inherit; font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--surface-strong); cursor: pointer; }
-
-/* ---------- The /lucky garden theme (bee, plants, butterflies) ---------- */
-.lucky-bee { display: inline-block; line-height: 0; }
-.lucky-bee svg, .lucky-flower svg, .lucky-butterfly svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.lucky-bee--hello { display: block; width: 112px; height: 103px; margin: 0 auto 6px; animation: lucky-bee-float 3.2s ease-in-out infinite; }
-.lucky-bee--hello .lucky-bee-wing { animation: lucky-bee-flap 0.9s ease-in-out infinite alternate; }
-.lucky-bee--hello .lucky-bee-arm--wave { animation: lucky-bee-wave 1.8s ease-in-out infinite; }
-.lucky-bee--avatar { flex: none; width: 44px; height: 40px; }
-.lucky-bee--avatar .lucky-bee-wing { animation: lucky-bee-flap 0.9s ease-in-out infinite alternate; }
-.lucky-bee--party { display: block; width: 128px; height: 118px; margin: 0 auto 6px; transform-origin: 50% 100%; animation: lucky-bee-bounce 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate; }
-.lucky-bee--party .lucky-bee-wing { animation: lucky-bee-flap 0.2s ease-in-out infinite alternate; }
-.lucky-bee--party .lucky-bee-arm--wave { animation: lucky-bee-wave 0.9s ease-in-out infinite; }
-.lucky-bee--sad { display: block; width: 112px; height: 103px; margin: 0 auto 6px; animation: lucky-bee-float 4s ease-in-out infinite; }
-.lucky-bee--sad .lucky-bee-wing { animation: lucky-bee-flap 1.4s ease-in-out infinite alternate; }
-@keyframes lucky-bee-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
-@keyframes lucky-bee-flap { from { transform: scaleY(1); } to { transform: scaleY(0.72); } }
-@keyframes lucky-bee-wave { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(-34deg); } 70% { transform: rotate(12deg); } }
-@keyframes lucky-bee-bounce { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-16px) rotate(6deg); } }
-
-.survey-plants { pointer-events: none; }
-.survey-thanks-plants { position: fixed; left: 0; right: 0; bottom: 0; height: 52vh; z-index: 0; }
-.survey-plants .plant { position: absolute; bottom: -8px; transform-origin: 50% 100%; transform: scaleX(var(--flip, 1)); }
-.plant svg { display: block; width: 100%; height: 100%; }
-.plant--1 { left: 2%; width: 33vh; height: 46vh; }
-.plant--2 { left: 13%; width: 26vh; height: 36vh; --flip: -1; }
-.plant--3 { left: 30%; width: 21vh; height: 30vh; }
-.plant--4 { left: 52%; width: 24vh; height: 33vh; --flip: -1; }
-.plant--5 { left: 70%; width: 22vh; height: 31vh; }
-.plant--6 { right: 9%; width: 29vh; height: 40vh; }
-.plant--7 { right: 1%; width: 36vh; height: 50vh; --flip: -1; }
-.lucky-garden .lucky-butterfly { position: absolute; width: 58px; height: 46px; line-height: 0; animation: lucky-butterfly-drift 5.5s ease-in-out infinite alternate; }
-.lucky-garden .lucky-butterfly-wing { animation: lucky-butterfly-flap 0.45s ease-in-out infinite alternate; }
-@keyframes lucky-butterfly-flap { from { transform: scaleX(1); } to { transform: scaleX(0.4); } }
-@keyframes lucky-butterfly-drift { 0% { transform: translate(0, 0) rotate(-6deg); } 50% { transform: translate(16px, -12px) rotate(5deg); } 100% { transform: translate(-8px, -22px) rotate(-3deg); } }
-
-@media (prefers-reduced-motion: reduce) {
-  .lucky-bee, .lucky-bee .lucky-bee-wing, .lucky-bee .lucky-bee-arm--wave, .lucky-flower,
-  .lucky-garden .lucky-butterfly, .lucky-garden .lucky-butterfly-wing, .lucky-chat-bubble { animation: none; }
-}
-
-/* One response dimension per page: the name, a one-line definition, the answer choices. */
-.dim-page-name { margin: 0; font-size: clamp(22px, 2.8vw, 30px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
-.dim-page-def { margin: 0; font-size: 17px; color: var(--ink-soft); line-height: 1.45; }
-.dim-page-choices { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.dim-page-choices li { padding: 10px 14px; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--surface-strong); font-size: 15.5px; line-height: 1.4; }
-.dim-page-choices li b { font-weight: 700; }
-.dim-page-choices--inline { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 320px; }
-.dim-page-choices--inline li { text-align: center; font-weight: 700; }
-.survey-card-body > .dim-tag { justify-self: start; }
-
-/* Worked example. */
-.vignette { display: grid; gap: 8px; }
-.vignette-message { margin: 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px; background: rgba(122, 111, 159, 0.08); font-size: 16px; line-height: 1.5; }
-.vignette-message .card-eyebrow { display: block; margin-bottom: 4px; }
-.critique-list { display: grid; gap: 8px; }
-.critique { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface-strong); }
-.critique--ok { border-color: var(--ok); box-shadow: inset 3px 0 0 var(--ok); }
-.critique--bad { border-color: var(--bad); box-shadow: inset 3px 0 0 var(--bad); }
-.critique--near { border-color: #c98a1a; box-shadow: inset 3px 0 0 #c98a1a; }
-.critique--open { opacity: 0.8; }
-.critique-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.critique-name { font-weight: 700; font-size: 16px; }
-.critique-mark { font-family: var(--mono); font-weight: 700; }
-.critique--ok .critique-mark { color: var(--ok); }
-.critique--bad .critique-mark { color: var(--bad); }
-.critique--near .critique-mark { color: #c98a1a; }
-.critique-line { margin: 4px 0 0; font-size: 14.5px; color: var(--ink); }
-.critique-note { margin: 4px 0 0; font-size: 14.5px; color: var(--ink-soft); line-height: 1.45; }
-
-/* Timed Next button on strategy pages. */
-.submit-button--timed { position: relative; overflow: hidden; }
-.submit-button--timed .button-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(122, 111, 159, 0.22); transition: width 0ms linear; pointer-events: none; }
-.submit-button--timed:disabled { opacity: 0.7; }
-
-/* Info icon with hover description. */
-.control-choice { position: relative; }
-.info-tip { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: auto; border-radius: 50%; border: 1px solid var(--ink-soft); color: var(--ink-soft); font-size: 11px; font-weight: 700; font-style: italic; font-family: Georgia, serif; line-height: 1; cursor: help; flex: 0 0 auto; }
-.info-tip:hover, .info-tip:focus-visible { border-color: var(--ink); color: var(--ink); outline: none; }
-.info-tip::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 6px); width: min(360px, 90vw); padding: 8px 12px; border-radius: 8px; background: var(--ink); color: #fff; font: 400 13px/1.45 var(--sans); font-style: normal; text-align: left; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); opacity: 0; visibility: hidden; transition: opacity 120ms ease; z-index: 5; pointer-events: none; }
-.info-tip:hover::after, .info-tip:focus-visible::after { opacity: 1; visibility: visible; }
-
-/* Worked example: reading heading, microphone, two-line signpost. */
-.survey-signpost-text--small { font-size: clamp(17px, 2vw, 21px); max-width: 720px; }
-.read-heading-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
-.speak-control { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; }
-.speak-caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
-.speak-control:has(.speak-button:disabled) .speak-caption { visibility: hidden; }
-.read-heading { margin: 0; font-size: clamp(19px, 2.2vw, 24px); font-weight: 700; line-height: 1.35; color: var(--ink); }
-.speak-button { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--surface-strong); color: var(--ink); cursor: pointer; padding: 0; flex: 0 0 auto; }
-.speak-button:hover { background: #f3eadf; }
-.speak-button--on { background: var(--accent); border-color: var(--accent); color: #fff; animation: speak-pulse 1.2s ease-in-out infinite; }
-@keyframes speak-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(122, 111, 159, 0.35); } 50% { box-shadow: 0 0 0 8px rgba(122, 111, 159, 0); } }
-.lucky-chat-bubble--near b { color: #c98a1a; }
-.speak-button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* Labeling screens: situation on the left, question and buttons on the right, so Next needs no scrolling. */
-.survey-card-body--split { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.survey-card-body--split > .vignette { position: sticky; top: 12px; }
-/* If the situation is longer than the window, the box scrolls on its own; the page never has to. */
-.survey-card-body--split > .vignette .vignette-message { max-height: calc(100vh - 190px); overflow-y: auto; }
-.split-question { align-content: start; gap: 10px; }
-.survey-card:has(.survey-card-body--split) { padding-top: 22px; padding-bottom: 22px; margin-top: 12px; }
-.split-question .lucky-nav { margin-top: 10px; }
-.split-question .control-choices { margin-top: 4px; }
-@media (max-width: 900px) { .survey-card-body--split { grid-template-columns: 1fr; } .survey-card-body--split > .vignette { position: static; } }
-/* Check-all-that-apply: two columns of checkboxes. */
-.control-choices--multi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (max-width: 640px) { .control-choices--multi { grid-template-columns: 1fr; } }
-.control-choice--correct .choice-tag:where(:not(:empty)) { color: var(--ok); }
-
-</style>
+    <link rel="stylesheet" href="train.css" />
   </head>
   <body>
     <main class="page">
@@ -928,7 +635,8 @@ const STEPS = ["Welcome", "Principles", "Quiz", "Strategies", "Quiz", "Example",
 const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
 
 const state = {
-  screen: "welcome",
+  screen: "consent",
+  prolificId: new URLSearchParams(window.location.search).get("PROLIFIC_PID") || "", // Prolific can pass it in the study URL
   critters: 0,
   q1: { attempt: 1, answers: {} }, // answers: item id -> {picked, correct, source, attempt}
   q2: { attempt: 1, answers: {} },
@@ -1031,6 +739,53 @@ function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee
 }
 
 // ---------------------------------------------------------------------------
+// Consent: Prolific ID plus the information sheet (copied from the time_spent_per_task study's first page).
+
+// The information sheet is a real file next to the pages, shown in the browser's own PDF viewer (as in the
+// time_spent_per_task study). Hosted: training/<page>/ and training/<hash>/ sit one level below it, training/<school>/debug/
+// two levels; a local build (file://) has a copy in out/ next to the page.
+const INFO_SHEET_FILE = "Information_Sheet_Study_A_Online_Annotation.pdf";
+function infoSheetUrl() {
+  if (window.location.protocol === "file:") return INFO_SHEET_FILE;
+  return (/\/debug\/?$/.test(window.location.pathname) ? "../../" : "../") + INFO_SHEET_FILE;
+}
+let INFO_SHEET_URL = null;
+
+function renderConsent() {
+  screen({ step: 0, frac: 0 });
+  INFO_SHEET_URL = INFO_SHEET_URL || infoSheetUrl();
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(el("p", "survey-signpost-text", "Please enter your Prolific ID. By continuing, you agree to the information sheet below."));
+  const field = el("div", "consent-field");
+  const label = el("label", "consent-label", "Prolific ID");
+  label.setAttribute("for", "prolificIdInput");
+  const input = el("input", "consent-input");
+  input.id = "prolificIdInput"; input.type = "text"; input.autocomplete = "off"; input.value = state.prolificId;
+  field.append(label, input);
+  body.appendChild(field);
+  const frame = el("iframe", "consent-pdf");
+  frame.src = INFO_SHEET_URL + "#toolbar=1";
+  frame.title = "Information sheet (PDF)";
+  body.appendChild(frame);
+  const link = el("p", "survey-signpost-sub consent-links");
+  const dl = el("a", null, "Download the information sheet (PDF)");
+  dl.href = INFO_SHEET_URL; dl.download = INFO_SHEET_FILE;
+  const a = el("a", null, "Open it in a new tab");
+  a.href = INFO_SHEET_URL; a.target = "_blank"; a.rel = "noopener";
+  link.append(dl, " · ", a);
+  body.appendChild(link);
+  card.appendChild(body);
+  const next = button("Next →");
+  const sync = () => { state.prolificId = input.value.trim(); next.disabled = state.prolificId.length === 0; };
+  input.addEventListener("input", sync);
+  sync();
+  next.addEventListener("click", () => { if (state.prolificId) { state.log.push({ consent: new Date().toISOString() }); go("welcome"); } });
+  card.appendChild(nav(next));
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
 // Welcome and principle cards.
 
 function renderWelcome() {
@@ -1045,6 +800,7 @@ function renderWelcome() {
     step: 0, frac: 0,
     text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who asks about an interpersonal conflict.`,
     extra,
+    back: () => go("consent"),
     next: () => go("apply"),
     nextLabel: "Start →",
   });
@@ -1495,7 +1251,7 @@ function exampleFeedback(st, yours) {
 function renderExampleItem(i) {
   const st = EXAMPLE_STRATEGIES[i];
   const last = i === EXAMPLE_STRATEGIES.length - 1;
-  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go(DEBUG ? "mainintro" : "done"); } else go(`ex:${i + 1}`); };
+  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go(DEBUG || ASSIGNED ? "mainintro" : "done"); } else go(`ex:${i + 1}`); };
   screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
   const card = el("section", "card survey-card");
   const split = el("div", "survey-card-body survey-card-body--split");
@@ -1565,10 +1321,14 @@ function renderExampleItem(i) {
 // Vignettes are sampled at random from the pool when the participant reaches the intro.
 
 const MAIN_STEP = 6;
-const MAIN_N = 10; // vignettes per participant, sampled uniformly without replacement from VIGNETTE_POOL (vignette_pool.js)
+// A link page (training/<hash>/, built by build.py from assignments.json) defines ASSIGNMENT = {hash, group, ids}: the
+// participant labels exactly those vignettes, in an order shuffled per participant. Without it (the school pages),
+// MAIN_N vignettes are sampled uniformly from VIGNETTE_POOL and the main task is debug-only.
+const ASSIGNED = typeof ASSIGNMENT !== "undefined";
+const MAIN_N = ASSIGNED ? ASSIGNMENT.ids.length : 10;
 const poolById = Object.fromEntries(VIGNETTE_POOL.map((v) => [v.id, v]));
 function sampleMain() {
-  const ids = VIGNETTE_POOL.map((v) => v.id);
+  const ids = ASSIGNED ? [...ASSIGNMENT.ids] : VIGNETTE_POOL.map((v) => v.id);
   for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
   state.mainIds = ids.slice(0, MAIN_N);
 }
@@ -1653,7 +1413,7 @@ function renderMainItem(vi, si) {
 // End screens.
 
 function exportText() {
-  return JSON.stringify({ school: SCHOOL.key, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
+  return JSON.stringify({ school: SCHOOL.key, assignment: ASSIGNED ? { hash: ASSIGNMENT.hash, group: ASSIGNMENT.group } : null, prolificId: state.prolificId, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
     q1: state.q1, q2: state.q2, example: state.example, mainIds: state.mainIds, main: state.main }, null, 1);
 }
 
@@ -1690,7 +1450,7 @@ function renderExit() {
 function resetAll() {
   state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} }; state.example = {}; state.main = {}; state.mainIds = [];
   state.startedAt = new Date().toISOString();
-  go("welcome");
+  go("consent");
 }
 
 // ---------------------------------------------------------------------------
@@ -1701,6 +1461,7 @@ function render() {
   const i = Number(arg);
   const j = Number(arg2);
   switch (kind) {
+    case "consent": return renderConsent();
     case "welcome": return renderWelcome();
     case "apply": return renderApply();
     case "intro": return renderIntro();
@@ -1720,7 +1481,7 @@ function render() {
     case "mi": return renderMainItem(i, j);
     case "done": return renderDone();
     case "exit": return renderExit();
-    default: state.screen = "welcome"; return renderWelcome();
+    default: state.screen = "consent"; return renderConsent();
   }
 }
 
@@ -1729,4 +1490,5 @@ render();
 </script>
   </body>
 </html>
+
 {% endraw %}

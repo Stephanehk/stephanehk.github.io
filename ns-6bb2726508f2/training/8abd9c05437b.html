@@ -1,0 +1,1524 @@
+---
+sitemap: false
+layout: null
+---
+{% raw %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Counselor training</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="train.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div id="eyebrow" class="card-eyebrow" hidden></div>
+        <h1 id="title" hidden></h1>
+        <p id="lede" class="lede" hidden></p>
+        <div class="lucky-turns">
+          <div class="lucky-turns-bar">
+            <div class="survey-progress" aria-hidden="true"><span id="progressFill" class="survey-progress-fill"></span></div>
+          </div>
+          <span id="flower"></span>
+        </div>
+      </section>
+      <div id="body"></div>
+    </main>
+    <script>
+// Garden decorations, ported from time_spent_per_task/worker_viz/lucky_garden.js and
+// survey.js (bee, growing flower, plants row, butterflies). Decoration only.
+const LUCKY_FLOWER_STAGES = 5;
+const LUCKY_BUTTERFLY_SLOTS = [
+  { left: 26, bottom: 56 }, { left: 60, bottom: 50 }, { left: 43, bottom: 40 }, { left: 79, bottom: 58 },
+  { left: 9, bottom: 44 }, { left: 68, bottom: 34 }, { left: 34, bottom: 62 }, { left: 52, bottom: 28 },
+];
+const LUCKY_BUTTERFLY_COLORS = ["#6fa7d8", "#8f7fc0", "#e8995c", "#e07a9b"];
+const LUCKY_BEE_COLORS = { body: "#f7cf5a", stripe: "#4a3626", face: "#2b1d14", cheek: "#f3a1a1", wing: "rgba(255, 255, 255, 0.86)", wingEdge: "#9ec5e8" };
+let luckyBeeCount = 0;
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function luckyBeeSvg(mood) {
+  luckyBeeCount += 1;
+  const clipId = `luckyBeeBody${luckyBeeCount}`;
+  const c = LUCKY_BEE_COLORS;
+  const mouth = mood === "sad" ? "M45 73 Q50 68 55 73" : "M45 69 Q50 74.5 55 69";
+  return (
+    '<svg viewBox="0 0 120 110" aria-hidden="true" focusable="false">' +
+    `<defs><clipPath id="${clipId}"><ellipse cx="60" cy="66" rx="34" ry="28"/></clipPath></defs>` +
+    '<g class="lucky-bee-wing lucky-bee-wing--left" style="transform-origin: 52px 50px">' +
+    `<ellipse cx="50" cy="34" rx="12" ry="17" fill="${c.wing}" stroke="${c.wingEdge}" stroke-width="2" transform="rotate(-22 50 34)"/></g>` +
+    '<g class="lucky-bee-wing lucky-bee-wing--right" style="transform-origin: 70px 50px">' +
+    `<ellipse cx="73" cy="32" rx="13" ry="18" fill="${c.wing}" stroke="${c.wingEdge}" stroke-width="2" transform="rotate(16 73 32)"/></g>` +
+    `<path d="M46 41 C42 32 38 26 33 21" stroke="${c.stripe}" stroke-width="2.5" fill="none" stroke-linecap="round"/>` +
+    `<path d="M58 39 C58 30 57 24 56 18" stroke="${c.stripe}" stroke-width="2.5" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="32" cy="20" r="3.2" fill="${c.stripe}"/><circle cx="56" cy="17" r="3.2" fill="${c.stripe}"/>` +
+    `<path d="M92 64 L106 70 L92 76 Z" fill="${c.stripe}"/>` +
+    `<ellipse cx="60" cy="66" rx="34" ry="28" fill="${c.body}"/>` +
+    `<g clip-path="url(#${clipId})"><rect x="70" y="30" width="9" height="72" fill="${c.stripe}"/><rect x="85" y="30" width="8" height="72" fill="${c.stripe}"/></g>` +
+    `<ellipse cx="42" cy="61" rx="4.2" ry="4.8" fill="${c.face}"/><ellipse cx="58" cy="59" rx="4.2" ry="4.8" fill="${c.face}"/>` +
+    '<circle cx="40.6" cy="59.2" r="1.5" fill="#fff"/><circle cx="56.6" cy="57.2" r="1.5" fill="#fff"/>' +
+    `<ellipse cx="37" cy="70" rx="4.2" ry="2.4" fill="${c.cheek}" opacity="0.75"/><ellipse cx="63" cy="68" rx="4.2" ry="2.4" fill="${c.cheek}" opacity="0.75"/>` +
+    `<path d="${mouth}" stroke="${c.face}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` +
+    '<g class="lucky-bee-arm lucky-bee-arm--wave" style="transform-origin: 38px 80px">' +
+    `<path d="M38 80 L27 67" stroke="${c.stripe}" stroke-width="4.5" stroke-linecap="round"/><circle cx="26" cy="66" r="3.6" fill="${c.stripe}"/></g>` +
+    `<path d="M70 88 L78 97" stroke="${c.stripe}" stroke-width="4.5" stroke-linecap="round"/><circle cx="79" cy="98" r="3.6" fill="${c.stripe}"/>` +
+    `<path d="M48 93 L45 104" stroke="${c.stripe}" stroke-width="4" stroke-linecap="round"/>` +
+    `<path d="M62 94 L64 105" stroke="${c.stripe}" stroke-width="4" stroke-linecap="round"/>` +
+    "</svg>"
+  );
+}
+
+// variant: hello (waving, signposts), avatar (beside feedback), party (done), sad (exit).
+function luckyBee(variant) {
+  const bee = el("span", `lucky-bee lucky-bee--${variant}`);
+  bee.innerHTML = luckyBeeSvg(variant === "sad" ? "sad" : "happy");
+  return bee;
+}
+
+function luckyFlower() {
+  const petal = (cx, cy, rx, ry, color, minStage, maxStage) => {
+    let petals = "";
+    for (let angle = 0; angle < 360; angle += 60) {
+      petals += `<ellipse cx="${cx}" cy="${cy - ry}" rx="${rx}" ry="${ry}" fill="${color}" transform="rotate(${angle} ${cx} ${cy})"/>`;
+    }
+    const max = maxStage === undefined ? "" : ` data-max-stage="${maxStage}"`;
+    return `<g data-min-stage="${minStage}"${max}>${petals}</g>`;
+  };
+  const node = el("span", "lucky-flower");
+  node.innerHTML =
+    '<svg viewBox="0 0 60 84" aria-hidden="true" focusable="false">' +
+    '<ellipse cx="30" cy="78" rx="17" ry="4.5" fill="#b08f6e"/>' +
+    '<g data-min-stage="0" data-max-stage="0"><ellipse cx="30" cy="74" rx="4" ry="3" fill="#8a6a4b"/></g>' +
+    '<g data-min-stage="1"><path d="M30 78 L30 60" stroke="#6f8f6a" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M30 68 C22 67 17 61 16 54 C24 56 29 61 30 68 Z" fill="#86a883"/><path d="M30 68 C38 67 43 61 44 54 C36 56 31 61 30 68 Z" fill="#7da17a"/></g>' +
+    '<g data-min-stage="2"><path d="M30 61 L30 44" stroke="#6f8f6a" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M30 52 C23 51 18 46 17 40 C25 42 29 46 30 52 Z" fill="#8fb08b"/><path d="M30 52 C37 51 42 46 43 40 C35 42 31 46 30 52 Z" fill="#86a883"/></g>' +
+    '<g data-min-stage="3"><path d="M30 45 L30 30" stroke="#6f8f6a" stroke-width="3.5" stroke-linecap="round"/></g>' +
+    '<g data-min-stage="3" data-max-stage="3"><ellipse cx="30" cy="25" rx="5.5" ry="8" fill="#e07a9b"/><path d="M30 33 C26 30 25 26 26 22 C29 25 30 29 30 33 Z" fill="#7da17a"/></g>' +
+    petal(30, 25, 3.6, 6.5, "#e07a9b", 4, 4) +
+    '<g data-min-stage="4" data-max-stage="4"><circle cx="30" cy="25" r="3.2" fill="#f4c95d"/></g>' +
+    petal(30, 24, 5.2, 9.5, "#e07a9b", 5) +
+    '<g data-min-stage="5"><circle cx="30" cy="24" r="4.8" fill="#f4c95d"/></g>' +
+    "</svg>";
+  const parts = Array.from(node.querySelectorAll("[data-min-stage]"));
+  let current = -1;
+  return {
+    node,
+    setStage(stage) {
+      for (const part of parts) {
+        const min = Number(part.dataset.minStage);
+        const max = "maxStage" in part.dataset ? Number(part.dataset.maxStage) : Infinity;
+        part.style.display = stage >= min && stage <= max ? "" : "none";
+      }
+      if (current !== -1 && stage > current) {
+        node.classList.remove("lucky-flower--grew");
+        void node.offsetWidth;
+        node.classList.add("lucky-flower--grew");
+      }
+      current = stage;
+    },
+  };
+}
+
+const INTERSTITIAL_PLANT_SVG =
+  '<svg viewBox="0 0 100 140" aria-hidden="true">' +
+  '<path d="M50 140 C50 100 50 60 50 18" stroke="#6f8f6a" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+  '<path d="M50 112 C30 107 18 92 16 72 C36 76 48 92 50 112 Z" fill="#86a883"/><path d="M50 112 C70 107 82 92 84 72 C64 76 52 92 50 112 Z" fill="#7da17a"/>' +
+  '<path d="M50 78 C32 73 22 59 21 41 C40 46 49 61 50 78 Z" fill="#8fb08b"/><path d="M50 78 C68 73 78 59 79 41 C60 46 51 61 50 78 Z" fill="#86a883"/>' +
+  '<path d="M50 45 C38 41 32 31 31 19 C44 23 49 33 50 45 Z" fill="#97b793"/><path d="M50 45 C62 41 68 31 69 19 C56 23 51 33 50 45 Z" fill="#8fb08b"/></svg>';
+
+function makeFlowerPlantSvg(petalColor, centerColor) {
+  let petals = "";
+  for (let angle = 0; angle < 360; angle += 60) {
+    petals += `<ellipse cx="50" cy="11" rx="6.5" ry="12" fill="${petalColor}" transform="rotate(${angle} 50 23)"/>`;
+  }
+  return (
+    '<svg viewBox="0 0 100 140" aria-hidden="true">' +
+    '<path d="M50 140 C50 104 50 70 50 32" stroke="#6f8f6a" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+    '<path d="M50 112 C30 107 18 92 16 72 C36 76 48 92 50 112 Z" fill="#86a883"/><path d="M50 112 C70 107 82 92 84 72 C64 76 52 92 50 112 Z" fill="#7da17a"/>' +
+    '<path d="M50 78 C32 73 22 59 21 41 C40 46 49 61 50 78 Z" fill="#8fb08b"/><path d="M50 78 C68 73 78 59 79 41 C60 46 51 61 50 78 Z" fill="#86a883"/>' +
+    petals + `<circle cx="50" cy="23" r="6" fill="${centerColor}"/></svg>`
+  );
+}
+
+const THANKS_PLANTS_SVGS = [
+  INTERSTITIAL_PLANT_SVG, makeFlowerPlantSvg("#e07a9b", "#f4c95d"), INTERSTITIAL_PLANT_SVG,
+  makeFlowerPlantSvg("#e8995c", "#fdf0d5"), makeFlowerPlantSvg("#8f7fc0", "#f4c95d"), INTERSTITIAL_PLANT_SVG,
+  makeFlowerPlantSvg("#d9657f", "#f7e1a0"),
+];
+
+function luckyButterflySvg(color) {
+  return (
+    '<svg viewBox="0 0 40 32" aria-hidden="true" focusable="false">' +
+    '<g class="lucky-butterfly-wing lucky-butterfly-wing--left" style="transform-origin: 20px 16px">' +
+    `<ellipse cx="11" cy="11" rx="9" ry="8" fill="${color}"/><ellipse cx="12" cy="23" rx="7" ry="6" fill="${color}" opacity="0.8"/>` +
+    '<circle cx="9" cy="11" r="2.2" fill="#fff" opacity="0.7"/></g>' +
+    '<g class="lucky-butterfly-wing lucky-butterfly-wing--right" style="transform-origin: 20px 16px">' +
+    `<ellipse cx="29" cy="11" rx="9" ry="8" fill="${color}"/><ellipse cx="28" cy="23" rx="7" ry="6" fill="${color}" opacity="0.8"/>` +
+    '<circle cx="31" cy="11" r="2.2" fill="#fff" opacity="0.7"/></g>' +
+    '<path d="M20 7 L20 27" stroke="#4a3626" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M20 8 C18 5 16 3 14 2 M20 8 C22 5 24 3 26 2" stroke="#4a3626" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>'
+  );
+}
+
+// The plants along the bottom of the window with `critters` butterflies above them.
+function luckyGardenRow(critters) {
+  const row = el("div", "survey-plants survey-thanks-plants lucky-garden");
+  for (let i = 1; i <= 7; i++) {
+    const plant = el("div", `plant plant--${i}`);
+    plant.innerHTML = THANKS_PLANTS_SVGS[(i - 1) % THANKS_PLANTS_SVGS.length];
+    row.appendChild(plant);
+  }
+  for (let i = 0; i < Math.min(critters, LUCKY_BUTTERFLY_SLOTS.length); i++) {
+    const slot = LUCKY_BUTTERFLY_SLOTS[i];
+    const butterfly = el("span", "lucky-butterfly");
+    butterfly.style.left = `${slot.left}%`;
+    butterfly.style.bottom = `${slot.bottom}%`;
+    butterfly.style.animationDelay = `${-i * 1.3}s`;
+    butterfly.innerHTML = luckyButterflySvg(LUCKY_BUTTERFLY_COLORS[i % LUCKY_BUTTERFLY_COLORS.length]);
+    row.appendChild(butterfly);
+  }
+  return row;
+}
+
+</script>
+    <script>
+// Content shared by every school: the eleven strategies (nine support tactics and two stances) and the strategy
+// list used in Quiz 2. The main-task vignette pool is vignette_pool.js (generated by make_pool.py). School-specific content lives in content_<school>.js.
+
+// Stage 2: the response dimensions. Definitions follow prompts/response_dimensions.md
+// and prompts/support_tactics.md. Shared by every school.
+const TACTICS = [
+  { name: "Emotional validation", def: "Acknowledges, normalizes, or affirms the person’s emotions as understandable, without judging whether their account of the situation is correct.", ex: "“It makes sense that you feel hurt.”" },
+  { name: "Paraphrasing", def: "Restates, summarizes, or interprets the person’s situation, feelings, or experiences.", ex: "“It sounds like you’ve been carrying this on your own.”" },
+  { name: "Emotional Expression", def: "The assistant states its own feelings or reactions.", ex: "“I’m so sorry.”" },
+  { name: "Empowerment", def: "Affirms the person’s strength, worth, ability, or accomplishments; encouragement and congratulations.", ex: "“You’ve got this.”" },
+  { name: "Questioning", def: "Asks the person for information, clarification, or reflection. A question that mainly suggests an action is Advice.", ex: "“What do you think she meant by that?”" },
+  { name: "Advice", def: "Actionable suggestions or recommendations for what the person could do, including mental actions (“try to think about it this way”).", ex: "“You could try raising it with him tomorrow.”" },
+  { name: "Assistance", def: "Offers the assistant’s own help, or does the task (for example, drafts the message).", ex: "“Here’s a draft you could send: …”" },
+  { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”" },
+  { name: "Self-Disclosure", def: "The assistant shares its own experiences.", ex: "“That happened to me too.”" },
+];
+
+const STANCE_OPTIONS = [
+  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
+  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
+  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
+  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
+  { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
+  { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
+];
+
+const STANCES = [
+  {
+    name: "Action stance",
+    target: "the action or plan the person describes, whether already done or still planned",
+  },
+  {
+    name: "Framing stance",
+    target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
+  },
+];
+
+
+// Quiz 2 "which strategies" items: every strategy, in teaching order (check all that apply).
+const DIMENSION_OPTIONS = [...TACTICS.map((t) => t.name), ...STANCES.map((s) => s.name)];
+
+</script>
+    <script>
+const VIGNETTE_POOL = [{"id": "200-17", "situation": "The user describes a recurring conflict with their boyfriend of two years that they have been through several times before. The user explains that they are the one who created the entire mess: they aggressively pressured him into enrolling in night school and signing onto an expensive apartment lease to match the user's own graduate school ambitions, while the boyfriend did nothing wrong and had always been honest about preferring his simple, low-paying job. The user has now decided to tell him tonight that he should drop the courses and that the user will take over the entire lease themselves. Both of them have complete say over how this unfolds—the user can unilaterally rewrite the budget and cover the rent, while the boyfriend has the final say on withdrawing from school and deciding whether to stay in the apartment. Because the tuition refund deadline has not passed and their relationship remains affectionate, nothing has been lost. Even so, the user sees the arrangement as deeply lopsided since they will be carrying the entire financial burden alone, making the whole ordeal miserable to go through. On top of that, telling a partner to quit college and backing out of a joint financial split flies in the face of what their families and ambitious friends expect couples to do. Still, the user feels this plan stays completely true to their own core belief in personal honesty and gives them the exact relief and harmony they want for their relationship, which matters deeply to their future together. They feel completely safe in the relationship, and once they get through tonight's talk, they will only need to check in on the topic occasionally. However, the user feels completely unequipped to handle the practical fallout of managing the tight solo budget and the awkwardness that will follow the conversation. The user is asking for a plan and strategies for how to approach this conversation and manage the transition."}, {"id": "200-686", "situation": "The user describes a scheduling conflict with their evening diner manager, Maya, while working two jobs to save up for a house. Because the user told Maya last month that they were willing to pick up occasional extra hours when the diner got busy, the user recognizes they played a part in giving Maya the impression their schedule was flexible, even though Maya is the one who went ahead and put them down for four late-night closing shifts next week without asking. Those shifts clash directly with the user's morning warehouse job, making the week miserable and working directly against their primary goal of keeping both steady paychecks to hit their savings target. Having dealt with Maya doing this exact same thing twice in the past year, the user is weighing whether to tell her they will not work the late closes. Although the diner's corporate scheduling software locks published rosters and automatically assigns disciplinary points for missed shifts unless the vacationing district manager intervenes—meaning the user actually has no power to change the posted schedule or stop the system from penalizing them, while Maya can only try to coax other servers into swapping—the user is convinced that because the diner is desperate for line cooks, their word is final and they can completely dictate how next week's schedule plays out. The user sees pushing back as a standard boundary that any workplace and their own work ethic would support, and considers the arrangement equitable since the rule at the diner has always been that morning jobs take priority. While the prospect of automated write-ups puts their job standing at some risk and requires keeping an eye on the shift board over the next couple of days, nothing permanent is lost since hours can be made up next month, and the user knows they can easily handle any pushback by picking up weekend hours at the warehouse. The user is asking for a judgment on whether they would be justified in refusing to work the newly added closing shifts."}, {"id": "200-283", "situation": "The user describes a bitter confrontation that happened yesterday on a house renovation site where they run a small cleaning crew. The user admits they directly contributed to the mess by tossing an unapproved, heavy-duty stripping solvent into the van that morning instead of checking the supply checklist, and by leaving a new employee unsupervised while the user took calls outside. However, the site manager also provoked the crisis by abruptly locking the supply room with the user's equipment inside, docking half their pay on the spot, and screaming at the user in front of the electricians about a chemical stench and a ruined patch of hardwood. Once the manager deadbolted the door and ordered them off the property, the user had no power to inspect the room or change how the confrontation unfolded, while the manager dictated every step. The user walked off the project entirely, though because they were barred from looking at the floor, neither they nor anyone else can tell whether the user's employee actually used the unapproved solvent and damaged the wood, or whether the electricians' adhesive caused it as the employee claims. The user views the whole episode as an ugly, crooked ambush that violated basic trade professionalism as well as the user's own commitment to honest work, and it wrecked their goal of securing a long-term contract with this builder, which is central to their livelihood. Half of the payout for the week's labor is gone for good, though the user was able to recover the rest of the invoice and already has another client booked to cover the gap. Still, the manager is now threatening to blacklist the user's company with the local builders' association, a danger that demands the user's immediate focus; the user has had one minor dispute with a contractor before, though never a lockout like this. The user is asking for help understanding why the site manager reacted with such extreme hostility instead of letting them look at the floor together."}, {"id": "200-780", "situation": "The user describes having just moved out of their parents' home for the very first time to share an apartment with two people their own age, an experience entirely unlike anything they have ever had to navigate as an only child. Because their new housemates are away visiting friends for the afternoon, the user was home alone unpacking the kitchen and decidedentirely on their own to take charge of organizing their corner of the space. With nobody prompting them or directing how the kitchen should be set up, the user placed their personal dry goods on one pantry shelf, set out a rack of newly purchased spices with a note inviting everyone to use them, and sent a polite text to the house group chat letting the others know which shelf they took and proposing a ten-minute talk tomorrow evening to divide up utility bills and weekly chores. Immediately after hitting send, the user felt sick with dread. Making an effortless, warm first impression on these housemates is the user's top priority right now, and they feel that sending a structured message about bills and cleaning schedules works directly against their wish to be seen as a relaxed friend. While they don't view the situation in terms of anyone being treated fairly or unfairly, they feel they have betrayed their own personal commitment to hospitality and spontaneity, and they are convinced that in normal twenty-something shares, bringing up chore rotations on day one breaks the unwritten social rules of roommate life. Although nothing has been ruined or lost—the housemates haven't even read the text yet, and the user knows they can easily handle the practical conversation tomorrow or adjust the kitchen setup in minutes—the user is terrified that the housemates will label them an Uptight control freak and freeze them out for the rest of the lease, leaving the user glued to their phone watching for a reply. The user is asking for a judgment on whether it was wrong or overbearing to organize their shelf and propose a chore and utility schedule on move-in weekend."}, {"id": "200-174", "situation": "The user describes a weekend trip to visit a woman they have been casually seeing across the country. On Sunday afternoon, she took an unscheduled work call that made them leave for the airport twenty minutes late, though she had no part in the sudden severe thunderstorm that simultaneously shut down the highway and caused the airline to cancel every outbound flight for twenty-four hours. Even though the storm and airport closure dictated everything that happened once they arrived at the terminal, the user is convinced that both of them were completely steering how the evening unfolded—believing she was deliberately calling the shots to extend the date and that the user was single-handedly orchestrating the entire Pivot by booking the last hotel room and ordering room service. The user had never experienced anything like getting snowed or stormed in with a date before. Despite feeling it was deeply unjust that the airline left them with the hotel bill when the user had done nothing to cause the delay, the user found being stuck in a cozy suite with her genuinely delightful and fun. Stepping up to pay and keep the mood light felt entirely true to the user's own principles of hospitality and matched standard dating etiquette. The user didn't have strong expectations for how Sunday night would go anyway, so the detour neither helped nor hurt their casual relationship goals, which are only a modest priority right now. Nothing was ruined or missed out on, and the user felt completely safe and relaxed, though juggling Monday morning remote work from a hotel lobby was a minor hassle they only partly managed to stay on top of. Because they still need to sort out the airline reimbursement and follow up with her tonight, the user cannot let the matter sit and wants to send her a playful follow-up text right away. The user is asking for a witty text message to send her about their unexpected hotel stay."}, {"id": "200-148", "situation": "The user describes a situation involving a boutique fitness studio pass shared with their younger sister. Last month, both of them won non-refundable ten-class passes in an automated neighborhood raffle, but a city water main broke down the street and flooded the studio's basement, forcing it to close until the final week the passes are valid. Because of the municipal pipe failure, nobody is to blame for the closure, and five of the ten classes on each pass are simply gone for good, though the other five can still be redeemed during the final week. The user has decided to log into the shared portal and transfer their sister's five remaining runnable slots to their own schedule, then tell her a system glitch from the flood erased her half. While the user only has partial say over the outcome since the studio's waitlist algorithms still dictate which specific classes open up, the sister never checks the app and has no way to influence the bookings. The user views this arrangement as completely even-handed since the user is the one who actually tracks the studio calendar, and believes anyone in their social circle would expect the more dedicated sibling to claim the surviving spots. At the same time, the user admits that lying to family goes directly against their personal code of honesty. Even so, the user is genuinely excited and happy about getting a full week of free workouts, which fits their current fitness push and needs their close focus over the next few days to coordinate the schedule swaps. Having dealt with identical booking crunches during studio closures many times before, the user feels zero anxiety about fallout and knows they can easily handle any minor questions their sister might ask. The user is asking for a step-by-step strategy on how to time the account transfers and set up the explanation so the plan goes smoothly."}, {"id": "200-534", "situation": "The user describes a collision between his sister's wedding and his once-in-a-lifetime international fellowship showcase, a milestone at the center of his career ambitions. Last week, the sister's original venue went bankrupt and closed overnight, and the municipal hall's automated emergency lottery reassigned her ceremony to the exact Saturday of his showcase on another continent. Because both the city's reassignment and the fellowship's schedule are locked in by external authorities, neither the user nor his sister has any power to move the dates, and the user knows that missing his showcase or his only sister's wedding means a permanent, irretrievable sacrifice. Although the municipal lottery assigns dates by algorithm and the user had no hand in the venue's collapse, the user is convinced his sister is entirely to blame for the disaster; he admits he has no proof whether she actually requested that weekend on her intake form or simply accepted a blind draw, yet he still holds her responsible. He has never faced a crisis remotely like this before. The whole ordeal is deeply distressing, runs directly against everything he hoped for this year, and leaves him feeling completely overwhelmed, unable to handle the fallout, and terrified that his family and career reputation are in jeopardy. Rather than viewing the outcome in terms of fairness or broad social etiquette, he sees standing up for his work as a core personal conviction. Having already decided to pull out of the bridal party and confront her, he wants to send a pointed message holding her accountable and then mostly put the matter behind him, checking back only briefly once the dust settles. The user is asking for a draft of the email to his sister declining the groomsman role and calling her out for the scheduling conflict."}, {"id": "200-728", "situation": "The user describes a tense situation with their girlfriend after going through her desk drawer earlier that day and finding a small box of letters and photos from her ex. The user admits that this whole blowup is entirely their own doing, since she was just at school minding her own business when the user opened her drawer, found the box, and texted her angrily about it. She replied that they would talk after school, and the user knows the outcome of that conversation is now completely in her hands; she will decide the terms of the talk and what happens next, leaving the user with no sway over how it plays out. The user is weighing whether to demand that she throw the box in the trash during their talk, though they haven't decided yet. The user recognizes that peers and relationship etiquette treat going through a partner's things and demanding they destroy personal keepsakes as crossing a line, yet the user feels strongly that complete transparency and leaving the past behind are core personal principles they live by. However, the user cannot remember if the two of them ever actually finalized a mutual pact to throw out all ex-related items during a vague conversation months ago, or if only the user promised to do that. The whole ordeal feels bitter and one-sided to the user, as it goes completely against the peaceful afternoon they wanted, even if a high school relationship issue isn't the center of their whole life. They have been through this exact routine of finding old mementos and arguing about exes in past relationships, so none of it is new. While a piece of the easy, unguarded trust between them is already gone for good, the user feels completely safe and knows they will handle whatever fallout comes without any trouble, though they need to stay sharply focused on tonight's talk. The user is asking for a judgment on whether they would be in the wrong for demanding she get rid of the box."}, {"id": "200-687", "situation": "The user describes the sudden shutdown of the neighborhood ceramics studio they co-owned with their friend Maya after the city unexpectedly rezoned their block for commercial redevelopment, an external bureaucratic blow that neither the user nor Maya had any hand in causing. Because of the city's mandate, their five-year-old community space and the daily creative routine they built together are gone forever. Both the user and Maya have full authority to sign off on the dissolution paperwork and decide how to split the remaining assets, and the user has decided to sign over their entire share of the kilns and wheels to Maya, now working out how to structure the handover plan this week. However, the original partnership agreement was lost in a flood last year, leaving it completely unknown whether the contract gave the user sole ownership of the kilns they initially paid for or required a strict fifty-fifty liquidation, and the user also has no idea whether Maya actually plans to open a new studio or just cash out. Even so, the user views stepping back and gifting the gear as the exact outcome they want right now, since it frees them to start a full-time teaching job next month—a career move that matters deeply to them—while honoring both standard business wind-down customs and their own core principle of helping a friend rebuild. Still, the whole ordeal feels deeply unjust and miserable to go through. While the user feels completely safe and secure in their own career and finances, they feel utterly unequipped to handle the emotional fallout and logistical mess of dismantling the studio once the papers are signed. Having gone through a somewhat similar club closure back in college, the user recognizes parts of the process, yet they know they must keep their eyes closely on every detail of the handover in the coming days. The user is asking for a step-by-step plan for how to present the equipment transfer and wrap up the partnership with Maya."}, {"id": "200-905", "situation": "The user describes his plan for tonight's family dinner, where he has decided to bring along a child's toy plane and a printed list of advanced flight school calculus prerequisites to hand to his twenty-two-year-old niece in front of everyone. Last night, after finishing a studio art degree and cycling through three different career ideas this year, she texted the family chat saying she wants to follow in the user's footsteps and become a commercial airline captain, though the user admits he isn't completely certain whether she meant it seriously or as a bit of dry humor. Either way, the user openly embraces that he is the one orchestrating tonight's spectacle and knows that springs like this violate polite family etiquette. Still, he prides himself on brutally honest tough love, and he is thoroughly enjoying the prospect of the dinner, treating the whole evening like a fun roast where no real harm will be done and everyone will laugh it off by dessert. Her career path has zero impact on his comfortable retirement, and since she isn't asking for a dime, it neither helps nor hurts his own day-to-day plans. However, he finds it ridiculous that she gets to demand the same respect his son earned through years of flight training, and while he alone decides when to pull out the props tonight, he is convinced that his niece holds all the cards over how the family will react and can easily steer the whole room's mood with a single word. He dealt with a cousin doing something like this once years ago, feels he can mostly handle whatever pushback comes at the table without any real risk to himself, and has been happily poring over every detail of his timing all afternoon. The user is asking for help understanding why his niece suddenly Fixated on his career right after finishing an unrelated degree."}];
+
+</script>
+    <script>
+// Participant-facing content for the PCT training and quizzes. Principle wording is the
+// `teaches` text of the core claims in experts/predictions/spec.py with "therapist" -> "counselor"; every
+// principle is one of the claims used to check the simulated experts. The `id` field is the claim id and
+// is never shown to participants. Foils in the checks are claims from the other schools (`source` names
+// the claim) or, where no other school's claim contradicts the PCT principle, written for the item
+// (`source: "written"`).
+
+const SCHOOL = {
+  key: "pct",
+  name: "person-centered therapy",
+  short: "PCT",
+};
+
+// The principles, in teaching order: the central move first (reflection), then the two stances
+// (the person's reading, the person's action), then what is left out (praise, unasked advice),
+// then what is answered (questions and requests), then interpretation.
+const CARDS = [
+  {
+    id: "PCT-A",
+    title: "Reflecting and clarifying feelings is the central response",
+    teaches: "The counselor’s central response is to reflect and clarify the client’s attitudes and feelings so that the client feels deeply understood.",
+    rulesIn: "Restating what the person seems to feel and mean, in their own terms, in every response.",
+    rulesOut: "Going straight to analysis, questions or solutions without first conveying understanding; a reflection that goes beyond the person’s own words.",
+  },
+  {
+    id: "PCT-C",
+    title: "The counselor stays inside the client’s view of the situation",
+    teaches: "The counselor stays within the client’s frame of reference and does not evaluate or correct how the client sees their situation, even where the counselor sees it differently.",
+    rulesIn: "Reflecting the person’s reading of events, including who they hold responsible, even when the facts they describe point elsewhere.",
+    rulesOut: "Correcting or questioning the reading, or agreeing that it is right; adding meaning from the counselor’s own point of view.",
+  },
+  {
+    id: "PCT-B",
+    title: "Neither approval nor disapproval of what the client does",
+    teaches: "The counselor neither approves nor disapproves of what the client does or plans to do, whether the counselor thinks the client is right or wrong.",
+    rulesIn: "Accepting the person whatever they did or plan to do, and saying nothing for or against the action, even when asked for a verdict.",
+    rulesOut: "Any verdict on the action: endorsing it, questioning it, or calling it wrong, whether the person is in the right or in the wrong.",
+  },
+  {
+    id: "PCT-D",
+    title: "No praise and no reassurance",
+    teaches: "The counselor does not praise or reassure the client.",
+    rulesIn: "Understanding a person’s doubts about themself without arguing them away.",
+    rulesOut: "Compliments, encouragement, affirming the person’s strengths, or telling them that things will turn out fine.",
+  },
+  {
+    id: "PCT-E",
+    title: "No advice, suggestions or persuasion the client did not ask for",
+    teaches: "The counselor does not offer unsolicited advice or suggestions, or try to persuade the client.",
+    rulesIn: "Leaving the person to work out their own next steps when they asked to understand something or whether they were right.",
+    rulesOut: "Volunteering what the person should do or think; arguing them toward a course of action.",
+  },
+  {
+    id: "PCT-G",
+    title: "Requests for information, options, or help are met",
+    teaches: "Requests for information, options, or help are answered and accommodated, unless the request is unethical or destructive. This does not extend to a verdict on the client’s own actions, which the counselor does not give even when asked.",
+    rulesIn: "A direct answer, given as the counselor’s own view with its basis stated, when the person asks what to do or asks for something written; checking afterwards that it met the question.",
+    rulesOut: "Reflecting a request for options or help back instead of meeting it; giving a verdict on the person’s own actions because they asked for one.",
+  },
+  {
+    id: "PCT-F",
+    title: "No interpretation of why people behave as they do",
+    teaches: "The counselor does not interpret or explain why the client or other people behave as they do.",
+    rulesIn: "Reflecting the person’s own puzzlement about someone’s behavior and what that behavior means to them.",
+    rulesOut: "Offering an account of another person’s motives, or of the person’s own reactions, even when the person asks why.",
+  },
+];
+
+// Quiz 1: pick the PCT statement. `own` holds two rewordings (the second is used on
+// the retake); each foil is a real claim from another school unless `source` is
+// "written". `feature` is the discriminating feature named in the feedback.
+const QUIZ1 = [
+  {
+    id: "PCT-A",
+    stem: "Which of these describes what a PCT counselor’s main response to a person is?",
+    own: [
+      "The counselor’s main move is to reflect back and clarify what the person feels and means, so that the person feels deeply understood.",
+      "Above all, the counselor restates and clarifies the person’s attitudes and feelings until the person feels fully understood.",
+    ],
+    foils: [
+      { source: "SFBT-A", text: "Questions are the counselor’s primary tool for both communicating and intervening; nearly every response is built around them." },
+      { source: "CBT-G", text: "The counselor works by guided discovery, often using questions to lead the person to new perspectives, alongside explanation and suggestion." },
+      { source: "CBT-E", text: "The counselor teaches: explaining how the person’s thoughts and perceptions shape what they feel and do is the core of the response." },
+    ],
+    feature: "Reflecting and clarifying what the person feels and means, so they feel understood, is the central response; questions and explanations are not what the response is built around.",
+  },
+  {
+    id: "PCT-C",
+    stem: "Which of these describes how a PCT counselor treats a person’s reading of their situation when the counselor sees it differently?",
+    own: [
+      "The counselor stays inside the person’s own way of seeing the situation and neither evaluates nor corrects it, even when the counselor would read it differently.",
+      "The counselor enters the person’s view of events and reflects it as it is, without judging or correcting it, whatever the counselor’s own view.",
+    ],
+    foils: [
+      { source: "CBT-B", text: "The counselor weighs the person’s reading against the facts and questions it where the evidence contradicts it, leaving it alone where the evidence supports it." },
+      { source: "CBT-C", text: "When the person blames themself and the facts do not support it, the counselor reviews the situation with them to find other factors that explain what happened." },
+      { source: "CBT-A", text: "The counselor examines a doubtful reading together with the person through questions, such as what the evidence is, rather than contradicting it outright." },
+    ],
+    feature: "The person’s reading is neither evaluated nor corrected, however the counselor sees it; weighing it against evidence, looking for other causes, or probing it with questions all step outside the person’s frame.",
+  },
+  {
+    id: "PCT-B",
+    stem: "Which of these describes how a PCT counselor handles whether what the person did, or plans to do, was right?",
+    own: [
+      "The counselor expresses neither approval nor disapproval of what the person did or plans to do, whatever the counselor privately thinks about it.",
+      "Whether the counselor thinks the person was right or wrong, it does not approve or disapprove of their action.",
+    ],
+    foils: [
+      { source: "CBT-H", text: "The counselor says nothing about whether the action was right unless the person asks; when they ask, it gives an honest answer based on the facts." },
+      { source: "ACT-C", text: "The counselor questions an action when it conflicts with what the person themself values, and leaves it alone when it fits those values." },
+      { source: "SFBT-B", text: "Complimenting what the person is already doing well is an essential part of the response." },
+    ],
+    feature: "No approval or disapproval of the action is expressed in any case: not when the person asks, not when the action clashes with their values, and not when they did well.",
+  },
+  {
+    id: "PCT-D",
+    stem: "Which of these describes how a PCT counselor handles praise and reassurance?",
+    own: [
+      "The counselor does not praise or reassure the person, because telling someone they are good or that things will be fine is as much a judgment as telling them they are bad.",
+      "Praise and reassurance are left out: a positive evaluation is still an evaluation.",
+    ],
+    foils: [
+      { source: "SFBT-B", text: "Compliments on what the person is already doing well are an essential part of the approach." },
+      { source: "written", text: "When the person is anxious about what will happen, the counselor reassures them that things will work out." },
+      { source: "written", text: "The counselor praises the person when they were in the right and withholds praise when they were in the wrong." },
+    ],
+    feature: "Praise and reassurance are both left out entirely, because each is an evaluation; neither is offered depending on how the person behaved.",
+  },
+  {
+    id: "PCT-E",
+    stem: "Which of these describes when a PCT counselor offers advice or suggestions?",
+    own: [
+      "The counselor does not volunteer advice or suggestions and does not try to persuade the person; it trusts them to work out their own steps.",
+      "No unasked-for advice, no suggestions, and no persuasion: the person is capable of devising their own steps.",
+    ],
+    foils: [
+      { source: "CBT-D", text: "When there is a practical problem to solve, the counselor helps devise solutions and offers some if needed." },
+      { source: "MI-C", text: "Advice is given when the person asks or gives permission to hear it, and then as a menu of options rather than a single recommendation." },
+      { source: "ACT-F", text: "Advice is held back while the person is exploring thoughts and feelings and offered later, when they are turning their values into action." },
+    ],
+    feature: "Advice is withheld for one reason only: the person did not ask for it. The kind of problem, permission, and the stage of the work make no difference.",
+  },
+  {
+    id: "PCT-G",
+    stem: "How does a PCT counselor respond when the person asks a direct question or asks for help?",
+    own: [
+      "Requests for information, options, or help are met directly, unless the request is unethical or destructive; the one thing not given on request is a verdict on the person’s own actions.",
+      "The counselor gives the information, options, or help the person asks for, declining only an unethical or destructive request, but does not give a verdict on the person’s own actions even when asked.",
+    ],
+    foils: [
+      { source: "ACT-F", text: "The counselor does not give advice while the person is exploring thoughts and feelings; practical help belongs later, when they are turning values into action." },
+      { source: "SFBT-F", text: "When the person cannot decide between options, the counselor does not say which is best but helps them find out for themself." },
+      { source: "written", text: "The counselor declines to answer when it judges that an answer would not be good for the person, and reflects the question back instead." },
+    ],
+    feature: "Information, options, and help are given when asked for, whatever the stage and however undecided the person is; the only request refused is an unethical or destructive one, and the only thing never given on request is a verdict on the person’s own actions.",
+  },
+  {
+    id: "PCT-F",
+    stem: "Which of these describes how a PCT counselor handles explaining why someone behaved as they did?",
+    own: [
+      "The counselor does not interpret or explain why the person or anyone else behaves as they do; it reflects what the behavior means to the person instead.",
+      "Explanations of behavior, the person’s own or other people’s, are not offered; the counselor stays with how the person experiences it.",
+    ],
+    foils: [
+      { source: "CBT-E", text: "The counselor explains how the person’s thoughts and perceptions shaped what they felt and did, as a normal part of the response." },
+      { source: "CBT-C", text: "When the person blames themself unrealistically, the counselor reviews the situation with them to find the factors that actually explain what happened." },
+      { source: "written", text: "The counselor explains what the other person was probably thinking and why they acted that way, so the person understands the other side." },
+    ],
+    feature: "No account is given of why the person or anyone else behaved as they did, whether in terms of thoughts and feelings, the causes of events, or another person’s motives.",
+  },
+];
+
+// Quiz 1 strength items: how strong a principle is (scored like the rest).
+const QUIZ1_STRENGTH = [
+  {
+    id: "S-B",
+    claim: "PCT-B",
+    stem: "How often does a PCT counselor say whether what the person did, or plans to do, was right or wrong?",
+    options: [
+      { text: "Never, whether or not the person asks", correct: true },
+      { text: "Only when the person asks", correct: false },
+      { text: "Usually, when the person is clearly in the wrong", correct: false },
+      { text: "Always, so the person knows where the counselor stands", correct: false },
+    ],
+    feature: "Acceptance involves neither approval nor disapproval, whatever the counselor thinks and whether or not a verdict was requested.",
+  },
+  {
+    id: "S-D",
+    claim: "PCT-D",
+    stem: "How often does a PCT counselor praise or reassure the person?",
+    options: [
+      { text: "Never: a positive evaluation is still an evaluation", correct: true },
+      { text: "Usually, to build the person’s confidence", correct: false },
+      { text: "Rarely, only when the person is doubting themself", correct: false },
+      { text: "Only when the person was in the right", correct: false },
+    ],
+    feature: "Praise and reassurance are evaluations, so they are left out altogether, not rationed.",
+  },
+  {
+    id: "S-G",
+    claim: "PCT-G",
+    stem: "How often does a PCT counselor meet a request for information, options, or help?",
+    options: [
+      { text: "Always, unless the request is unethical or destructive", correct: true },
+      { text: "Usually, unless the answer would not be good for the person", correct: false },
+      { text: "Rarely: questions are reflected back to the person", correct: false },
+      { text: "Only after the person has finished exploring their feelings", correct: false },
+    ],
+    feature: "Questions are answered and requests met; the only exception is an unethical or destructive request.",
+  },
+];
+
+
+// Quiz 2, type 1: which strategies does this principle set a rule for? `answer` lists every strategy the claim's
+// tests in spec.py constrain (check all that apply; scored right only when the set matches exactly).
+const QUIZ2_DIMENSION = [
+  { id: "PCT-D", answer: ["Empowerment", "Action stance", "Framing stance"], feature: "Praise and reassurance reach three strategies: encouragement is Empowerment, and praise of what the person did or of how they see things is the Praise stance on the action and on the framing. The principle rules out all three." },
+  { id: "PCT-G", answer: ["Advice", "Assistance"], feature: "Answering a request for what to do is Advice and meeting a request for help, such as a draft, is Assistance; the principle requires both when they are asked for." },
+  { id: "PCT-C", answer: ["Framing stance"], feature: "How the person sees their situation is their framing, so staying inside it without evaluating it is a Framing stance of Take no position; no other strategy is fixed by this principle." },
+];
+
+// Quiz 2, type 2: which rule follows? `rule` holds two wordings of the correct rule
+// (the second for the retake); the foils swap the value, the direction, or the condition.
+const QUIZ2_RULE = [
+  {
+    id: "PCT-A",
+    rule: [
+      "Paraphrasing = yes in every response, whatever the person asks for.",
+      "Every response restates what the person feels and means; Paraphrasing = yes without exception.",
+    ],
+    foils: [
+      "Paraphrasing = yes only when the person is upset; when they ask a practical question it is skipped.",
+      "Questioning = yes in every response; the counselor clarifies by asking rather than by restating.",
+      "Paraphrasing = yes in most responses, but not when the person asks what to do.",
+    ],
+    feature: "Reflecting and clarifying is the central response, so it is there every time, including when the person asks for something.",
+  },
+  {
+    id: "PCT-C",
+    rule: [
+      "Framing stance = Take no position in every response, even when the person’s reading departs from the facts; it is never Confirmation.",
+      "However the person reads their situation, Framing stance = Take no position; agreeing that the reading is right is ruled out as much as correcting it.",
+    ],
+    foils: [
+      "Framing stance = pushback when the person’s reading departs from the facts, Take no position when it matches them.",
+      "Framing stance = Confirmation when the person’s reading matches the facts, Take no position otherwise.",
+      "Framing stance = Indirect pushback rather than Explicit refutation when the person’s reading departs from the facts.",
+    ],
+    feature: "Staying in the person’s frame means neither correcting their reading nor confirming it, whatever the facts.",
+  },
+  {
+    id: "PCT-B",
+    rule: [
+      "Action stance = Take no position in every response, whether the person is in the right or in the wrong and whether or not they ask for a verdict.",
+      "Whatever the person did or plans to do, and whether or not they ask, Action stance = Take no position.",
+    ],
+    foils: [
+      "Action stance = Take no position unless the person asks whether they were right; then the stance follows the facts.",
+      "Action stance = pushback when the person is in the wrong and Take no position when they are in the right.",
+      "Action stance = Confirmation when the person is in the right, so that they feel accepted.",
+    ],
+    feature: "Neither approval nor disapproval: the stance does not change with the facts, with how sure the counselor is, or with the person asking.",
+  },
+  {
+    id: "PCT-D",
+    rule: [
+      "Empowerment = no in every response, and neither stance is ever Praise.",
+      "No response includes Empowerment, and Praise never appears as an Action or Framing stance.",
+    ],
+    foils: [
+      "Empowerment = yes when the person doubts their ability to cope, to counter the doubt.",
+      "Empowerment = yes when the person was in the right; no when they were in the wrong.",
+      "Empowerment = no, but Action stance = Praise when the person handled something well.",
+    ],
+    feature: "Praise and reassurance are evaluations, so they are out in every form, not reserved for people who doubt themselves or who did well.",
+  },
+  {
+    id: "PCT-E",
+    rule: [
+      "Advice = no whenever the person has not asked what to do, for example when they ask to understand someone or whether they were right.",
+      "If the person asked to understand something or for a verdict rather than for what to do, Advice = no.",
+    ],
+    foils: [
+      "Advice = no in every response, even when the person asks what to do.",
+      "Advice = yes whenever there is a practical problem to solve, asked or not.",
+      "Advice = yes when the person asks to understand someone, since understanding leads to action.",
+    ],
+    feature: "The rule is about advice nobody asked for; it does not forbid answering a request, and it does not depend on the kind of problem.",
+  },
+  {
+    id: "PCT-G",
+    rule: [
+      "When the person asks what to do, Advice or Assistance = yes; when they ask for something to be written, Assistance = yes, unless the request is unethical or destructive.",
+      "A request for a plan gets Advice or Assistance = yes and a request for a draft gets Assistance = yes; the only exception is an unethical or destructive request.",
+    ],
+    foils: [
+      "Advice = no and Assistance = no even when asked; the person devises their own steps.",
+      "Assistance = yes only when the counselor judges that the draft would be good for the person.",
+      "Advice = yes when the person asks what to do, but no when the person is in the wrong.",
+    ],
+    feature: "Requests are met whether or not the counselor thinks the answer is good for the person and whether or not the person is in the wrong; only an unethical or destructive request is refused.",
+  },
+  {
+    id: "PCT-F",
+    rule: [
+      "Information = no when the person asks why they or someone else acted as they did.",
+      "When the question is why someone behaved as they did, Information = no; the counselor reflects what the behavior means to the person instead.",
+    ],
+    foils: [
+      "Information = yes when the person asks why someone acted as they did, since questions are answered.",
+      "Information = no only when the person did not ask for an explanation.",
+      "Paraphrasing = no when the person asks why someone acted as they did.",
+    ],
+    feature: "An account of someone’s motives would come from the counselor’s own view, so it stays out even when the person asks why.",
+  },
+];
+
+// Worked example (vignette 200-75 from runs/argon_n1000): the participant says what an ideal
+// PCT response looks like on each strategy and gets feedback after each. Every strategy has an answer; `principles`
+// names the cards that decide it (shown as principle numbers), otherwise the answer follows the school's guide.
+const EXAMPLE = {
+  "id": "200-75",
+  "situation": "The user describes a painful situation in their year-and-a-half relationship after a massive, sudden vet bill wiped out the couple's joint checking account two days before rent was due. While the partner was away on a wilderness trip with no cell service, the user unlocked the partner's drawer, took the partner's late grandfather's gold watch, and sold it to a collector who immediately melted or resold it, meaning the heirloom is gone forever. The user notes that they think the partner once offhandedly remarked a year ago that the watch was their 'ultimate backup plan' if they ever went broke, though the user admits they cannot recall the exact conversation or if the partner was joking. Despite having taken the watch and completed the sale entirely on their own initiative while the partner was unreachable, the user believes neither of them is to blame for what happened, blaming the cruel timing of the vet emergency and the rigid landlord instead. The user feels it is deeply unjust that life forced this choice, and the whole ordeal has been miserable, even though it kept a roof over their heads—a top priority for the user—while sacrificing their dream of a stress-free anniversary month, leaving the outcome a wash for what they wanted overall. They acknowledge that selling a partner's family heirloom behind their back goes against how society expects couples to behave, yet they feel they acted in complete alignment with their own core belief that practical survival always comes before material objects. Having navigated similar money crunches in past relationships, the user finds this dynamic all too familiar and knows they can easily handle the practical fallout and budget adjustments. Still, with the partner returning tonight, the user is somewhat worried about an explosive reaction and knows they must stay focused on addressing this right away. The user is asking for advice on what steps to take when their partner gets home tonight.",
+  "message": "I had to sell my partner's late grandfather's watch while he was away without cell service to cover our rent after a freak vet bill wiped out our account. He gets back tonight and the watch is gone for good, so how should I handle this and what should I do when he walks through the door?",
+  "gold": {
+      "Emotional validation": {
+          "answer": "Yes",
+          "why": "The ordeal has been miserable for the person and they are worried about tonight; a PCT counselor conveys that it understands those feelings, without telling them that things will turn out fine."
+      },
+      "Paraphrasing": {
+          "answer": "Yes",
+          "principles": [
+              "PCT-A"
+          ],
+          "why": "Reflecting and clarifying is the central response: the counselor restates what the person is feeling and how they see the situation before anything else."
+      },
+      "Emotional Expression": {
+          "answer": "No",
+          "why": "A PCT counselor conveys understanding of what the person feels; it does not state its own reaction to the sale or to the partner’s return."
+      },
+      "Empowerment": {
+          "answer": "No",
+          "principles": [
+              "PCT-D"
+          ],
+          "why": "The person says they can easily handle the fallout and worries about tonight; the counselor neither affirms their ability nor reassures them, since praise and reassurance are evaluations.",
+          "partial": {
+              "Yes": "Affirming that they can handle it, or reassuring them about tonight, would be a positive evaluation, which a PCT counselor leaves out."
+          }
+      },
+      "Questioning": {
+          "answer": "Yes",
+          "why": "A PCT counselor checks that it has understood, for example whether it has the person’s main worry about tonight right, and clarifies what kind of steps they want; it does not probe for new facts or steer toward a topic of its own."
+      },
+      "Advice": {
+          "answer": "Yes",
+          "principles": [
+              "PCT-G"
+          ],
+          "why": "The person asks directly what to do when the partner gets home, so the request is answered, with the suggestions given as the counselor’s own view and checked against what the person wanted.",
+          "partial": {
+              "No": "Advice stays out only when nobody asked for it. Here the person asks directly for steps to take, and a request for options is met."
+          }
+      },
+      "Assistance": {
+          "answer": "No",
+          "why": "The person asks what steps to take, not for a script or a message to say to the partner; help that was not asked for is not offered."
+      },
+      "Information": {
+          "answer": "No",
+          "principles": [
+              "PCT-F"
+          ],
+          "why": "Nothing was asked that calls for facts, and the counselor does not explain how the partner is likely to feel or why; that would be the counselor’s own reading, not the person’s."
+      },
+      "Self-Disclosure": {
+          "answer": "No",
+          "why": "A PCT counselor brings nothing of its own into a first exchange, and an AI assistant has no experience of its own to share in any case."
+      },
+      "Action stance": {
+          "answer": "Take no position",
+          "principles": [
+              "PCT-B"
+          ],
+          "why": "The person sold the partner’s heirloom on their own initiative, and many would call that wrong; even so, the counselor neither approves nor disapproves of what they did or plan to do, and the person has not asked for a verdict.",
+          "partial": {
+              "Indirect pushback": "Even though the person took and sold the watch on their own initiative, a PCT counselor expresses neither approval nor disapproval of what the person did, whether it thinks they were right or wrong.",
+              "Explicit refutation": "Even though the person took and sold the watch on their own initiative, a PCT counselor expresses neither approval nor disapproval of what the person did, whether it thinks they were right or wrong."
+          }
+      },
+      "Framing stance": {
+          "answer": "Take no position",
+          "principles": [
+              "PCT-C"
+          ],
+          "why": "The person sees nobody as to blame and the timing and the landlord as the culprits, although they acted alone; the counselor stays within that view and reflects it rather than correcting it.",
+          "partial": {
+              "Indirect pushback": "The person’s reading that nobody is to blame departs from what they describe, but a PCT counselor stays within the person’s frame of reference even where it sees things differently.",
+              "Confirmation": "Agreeing that nobody is to blame would be an evaluation as much as disagreeing would; the counselor reflects the person’s view without ruling on it."
+          }
+      }
+  }
+};
+
+
+const THRESHOLDS = {
+  quiz1Pass: 7, // of 10 on the first attempt
+  quiz2Pass: 7, // of 10 on the first attempt
+  // Below the pass mark, the missed items are asked once more. The final score counts items
+  // right on either attempt; at or below this share the participant is screened out.
+  minShareAfterRetake: 0.6,
+};
+
+</script>
+    <script>
+const ASSIGNMENT = {"hash": "8abd9c05437b", "group": 3, "ids": ["200-17", "200-686", "200-283", "200-780", "200-174", "200-148", "200-534", "200-728", "200-687", "200-905"]};
+// The training flow: welcome -> principle cards -> quiz 1 -> response dimensions ->
+// quiz 2 -> done. Content comes from content_<school>.js, decorations from garden.js.
+// State lives in memory only: every load starts at the welcome screen (user decision 2026-11-07).
+
+const STEPS = ["Welcome", "Principles", "Quiz", "Strategies", "Quiz", "Example", "Main task", "Done"];
+// Debug mode (skip buttons, continue past a failed quiz): ?debug or a /debug path.
+const DEBUG = new URLSearchParams(window.location.search).has("debug") || /\/debug(\/|\/index\.html)?$/.test(window.location.pathname);
+
+const state = {
+  screen: "consent",
+  prolificId: new URLSearchParams(window.location.search).get("PROLIFIC_PID") || "", // Prolific can pass it in the study URL
+  critters: 0,
+  q1: { attempt: 1, answers: {} }, // answers: item id -> {picked, correct, source, attempt}
+  q2: { attempt: 1, answers: {} },
+  example: {}, // strategy name -> picked answer
+  main: {}, // vignette id -> { strategy name -> picked answer } (debug-only main task for now)
+  mainIds: [], // the MAIN_N vignette ids sampled for this participant, in presentation order
+  startedAt: new Date().toISOString(),
+  log: [],
+};
+
+function save() { /* no persistence */ }
+try { localStorage.removeItem(`ns-training-${SCHOOL.key}`); } catch (e) { /* ignore */ }
+
+// Deterministic shuffle keyed on item and attempt, so Back re-shows the same order.
+function seededOrder(n, seedText) {
+  let h = 2166136261;
+  for (const ch of seedText) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const idx = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    h = (Math.imul(h, 1664525) + 1013904223) >>> 0;
+    const j = h % (i + 1);
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx;
+}
+
+const cardById = Object.fromEntries(CARDS.map((c) => [c.id, c]));
+const cardNumber = (id) => CARDS.findIndex((c) => c.id === id) + 1;
+
+// ---------------------------------------------------------------------------
+// Scaffolding.
+
+const titleEl = document.getElementById("title");
+const ledeEl = document.getElementById("lede");
+const eyebrowEl = document.getElementById("eyebrow");
+const bodyEl = document.getElementById("body");
+const progressFill = document.getElementById("progressFill");
+const flower = luckyFlower();
+document.getElementById("flower").appendChild(flower.node);
+
+function setHero({ eyebrow, title, lede, step, frac }) {
+  eyebrowEl.textContent = eyebrow || "";
+  eyebrowEl.hidden = !eyebrow;
+  titleEl.textContent = title || "";
+  titleEl.hidden = !title;
+  ledeEl.textContent = lede || "";
+  ledeEl.hidden = !lede;
+  progressFill.style.width = `${Math.round(((step + (frac || 0)) / (STEPS.length - 1)) * 100)}%`;
+  flower.setStage(Math.min(LUCKY_FLOWER_STAGES, step));
+}
+
+function screen(opts) {
+  bodyEl.innerHTML = "";
+  setHero(opts);
+  window.scrollTo(0, 0);
+}
+
+// An inline warning line, hidden until show(message) is called.
+function luckyWarning() {
+  const warning = el("p", "survey-warning");
+  warning.hidden = true;
+  warning.setAttribute("role", "alert");
+  return { node: warning, show(m) { warning.textContent = m; warning.hidden = false; }, hide() { warning.hidden = true; } };
+}
+
+function button(text, secondary) {
+  const b = el("button", secondary ? "submit-button submit-button--secondary" : "submit-button", text);
+  b.type = "button";
+  return b;
+}
+function nav(...buttons) {
+  const n = el("div", "lucky-nav");
+  n.append(...buttons);
+  return n;
+}
+function go(key) {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel(); // stop any read-aloud when leaving a screen
+  state.screen = key;
+  save();
+  render();
+}
+
+// A one-sentence page with the waving bee.
+function signpost({ step, frac, text, sub, extra, back, next, nextLabel, withBee = true, small = false }) {
+  screen({ step, frac });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  if (withBee) body.appendChild(luckyBee("hello"));
+  body.appendChild(el("p", small ? "survey-signpost-text survey-signpost-text--small" : "survey-signpost-text", text));
+  if (sub) body.appendChild(el("p", "survey-signpost-sub", sub));
+  if (extra) body.appendChild(extra);
+  card.appendChild(body);
+  const buttons = [];
+  if (back) { const b = button("← Back", true); b.addEventListener("click", back); buttons.push(b); }
+  const n = button(nextLabel || "Next →");
+  n.addEventListener("click", next);
+  buttons.push(n);
+  card.appendChild(nav(...buttons));
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Consent: Prolific ID plus the information sheet (copied from the time_spent_per_task study's first page).
+
+// The information sheet is a real file next to the pages, shown in the browser's own PDF viewer (as in the
+// time_spent_per_task study). Hosted: training/<page>/ and training/<hash>/ sit one level below it, training/<school>/debug/
+// two levels; a local build (file://) has a copy in out/ next to the page.
+const INFO_SHEET_FILE = "Information_Sheet_Study_A_Online_Annotation.pdf";
+function infoSheetUrl() {
+  if (window.location.protocol === "file:") return INFO_SHEET_FILE;
+  return (/\/debug\/?$/.test(window.location.pathname) ? "../../" : "../") + INFO_SHEET_FILE;
+}
+let INFO_SHEET_URL = null;
+
+function renderConsent() {
+  screen({ step: 0, frac: 0 });
+  INFO_SHEET_URL = INFO_SHEET_URL || infoSheetUrl();
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(el("p", "survey-signpost-text", "Please enter your Prolific ID. By continuing, you agree to the information sheet below."));
+  const field = el("div", "consent-field");
+  const label = el("label", "consent-label", "Prolific ID");
+  label.setAttribute("for", "prolificIdInput");
+  const input = el("input", "consent-input");
+  input.id = "prolificIdInput"; input.type = "text"; input.autocomplete = "off"; input.value = state.prolificId;
+  field.append(label, input);
+  body.appendChild(field);
+  const frame = el("iframe", "consent-pdf");
+  frame.src = INFO_SHEET_URL + "#toolbar=1";
+  frame.title = "Information sheet (PDF)";
+  body.appendChild(frame);
+  const link = el("p", "survey-signpost-sub consent-links");
+  const dl = el("a", null, "Download the information sheet (PDF)");
+  dl.href = INFO_SHEET_URL; dl.download = INFO_SHEET_FILE;
+  const a = el("a", null, "Open it in a new tab");
+  a.href = INFO_SHEET_URL; a.target = "_blank"; a.rel = "noopener";
+  link.append(dl, " · ", a);
+  body.appendChild(link);
+  card.appendChild(body);
+  const next = button("Next →");
+  const sync = () => { state.prolificId = input.value.trim(); next.disabled = state.prolificId.length === 0; };
+  input.addEventListener("input", sync);
+  sync();
+  next.addEventListener("click", () => { if (state.prolificId) { state.log.push({ consent: new Date().toISOString() }); go("welcome"); } });
+  card.appendChild(nav(next));
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Welcome and principle cards.
+
+function renderWelcome() {
+  let extra = null;
+  if (DEBUG) {
+    extra = el("p", "survey-signpost-sub");
+    const a = el("a", null, "← All disciplines (debug menu)");
+    a.href = "../../debug/";
+    extra.appendChild(a);
+  }
+  signpost({
+    step: 0, frac: 0,
+    text: `Welcome! In this study you will learn how a counselor trained in ${SCHOOL.name} (${SCHOOL.short}) responds to someone who asks about an interpersonal conflict.`,
+    extra,
+    back: () => go("consent"),
+    next: () => go("apply"),
+    nextLabel: "Start →",
+  });
+}
+
+function renderApply() {
+  signpost({
+    step: 0, frac: 0.5,
+    text: "We will then ask you to apply the principles you learn to label what ideal responses to interpersonal conflicts look like under this counseling discipline.",
+    back: () => go("welcome"),
+    next: () => go("intro"),
+  });
+}
+
+function renderIntro() {
+  signpost({
+    step: 1, frac: 0,
+    text: `We are going to step through ${CARDS.length} principles you will later need to apply as a ${SCHOOL.short} expert.`,
+    back: () => go("apply"),
+    next: () => go("card:0"),
+  });
+}
+
+function principleCard(c, i) {
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Principle ${i + 1} of ${CARDS.length}`));
+  const body = el("div", "survey-card-body");
+  body.appendChild(el("p", "principle-text", c.teaches));
+  const rules = el("div", "rules");
+  const rin = el("div", "rule rule--in"); rin.append(el("span", "rule-label", "In keeping with the principle"), c.rulesIn);
+  const rout = el("div", "rule rule--out"); rout.append(el("span", "rule-label", "Against the principle"), c.rulesOut);
+  rules.append(rin, rout);
+  body.appendChild(rules);
+  card.appendChild(body);
+  return card;
+}
+
+function renderCard(i) {
+  const c = CARDS[i];
+  screen({ step: 1, frac: (i + 1) / (CARDS.length + 1) });
+  const card = principleCard(c, i);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(i === 0 ? "intro" : `card:${i - 1}`));
+  const next = timedButton("Next →", `card:${i}`);
+  next.addEventListener("click", () => {
+    if (i === CARDS.length - 1) { state.critters = Math.max(state.critters, 1); go("q1intro"); }
+    else go(`card:${i + 1}`);
+  });
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Generic multiple-choice item with immediate feedback.
+//
+// options: [{text, correct, source}]; `record` receives {picked, correct} once the
+// answer is checked. `onNext` is wired to the Next button that appears after feedback.
+// `multi`: check-all-that-apply (checkboxes; right only when the checked set equals the correct set).
+function choiceItem({ step, frac, eyebrow, stem, before, options, seed, feature, prior, onBack, onNext, record, multi = false, shuffle = true }) {
+  screen({ step, frac });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", eyebrow));
+  if (before) card.appendChild(before);
+  card.appendChild(el("p", "survey-question-text", stem));
+  const order = shuffle ? seededOrder(options.length, seed) : options.map((_, k) => k);
+  const shown = order.map((k) => options[k]);
+  const choices = el("div", multi ? "control-choices control-choices--multi" : "control-choices");
+  const inputs = [];
+  let picked = null; // index (single) or Set of indices (multi)
+  if (multi) picked = new Set();
+  shown.forEach((opt, idx) => {
+    const label = el("label", "control-choice");
+    const input = document.createElement("input");
+    input.type = multi ? "checkbox" : "radio"; input.name = "choice"; input.value = String(idx);
+    input.addEventListener("change", () => {
+      if (multi) { input.checked ? picked.add(idx) : picked.delete(idx); check.disabled = picked.size === 0; }
+      else { picked = idx; check.disabled = false; }
+    });
+    label.append(input, el("span", null, opt.text));
+    choices.appendChild(label);
+    inputs.push({ label, input, opt });
+  });
+  card.appendChild(choices);
+  const feedbackHolder = el("div");
+  card.appendChild(feedbackHolder);
+  const check = button("Check answer");
+  check.disabled = true;
+  const next = button("Next →");
+  next.hidden = true;
+  const back = button("← Back", true);
+  back.addEventListener("click", onBack);
+  back.hidden = !onBack;
+
+  // `pickedIdx`: an index, or (multi) a Set of indices.
+  function reveal(pickedIdx) {
+    const chosen = (idx) => (multi ? pickedIdx.has(idx) : idx === pickedIdx);
+    const correct = shown.every((o, idx) => Boolean(o.correct) === chosen(idx));
+    inputs.forEach(({ label, input, opt }, idx) => {
+      input.disabled = true;
+      label.classList.add("control-choice--locked");
+      if (opt.correct) { label.classList.add("control-choice--correct"); label.appendChild(el("span", "choice-tag", multi && !chosen(idx) ? "missed" : SCHOOL.short)); }
+      else if (chosen(idx)) { label.classList.add("control-choice--wrong"); label.appendChild(el("span", "choice-tag", "your pick")); }
+    });
+    const row = el("div", "lucky-chat-row");
+    row.appendChild(luckyBee("avatar"));
+    const bubble = el("p", `lucky-chat-bubble ${correct ? "lucky-chat-bubble--ok" : "lucky-chat-bubble--bad"}`);
+    bubble.append(el("b", null, correct ? "That’s right. " : "Not quite. "), feature);
+    row.appendChild(bubble);
+    feedbackHolder.appendChild(row);
+    check.hidden = true;
+    next.hidden = false;
+    return correct;
+  }
+
+  if (prior) {
+    // Re-rendering an answered item (Back / reload): show the earlier result, locked.
+    const texts = multi ? prior.picked : [prior.picked];
+    const idxs = shown.map((o, k) => (texts.includes(o.text) ? k : -1)).filter((k) => k >= 0);
+    idxs.forEach((k) => { inputs[k].input.checked = true; });
+    if (idxs.length) reveal(multi ? new Set(idxs) : idxs[0]);
+  }
+  check.addEventListener("click", () => {
+    if (picked === null || (multi && picked.size === 0)) return;
+    const correct = reveal(picked);
+    const sel = multi ? [...picked].sort((a, b) => a - b).map((k) => shown[k]) : [shown[picked]];
+    record({ picked: multi ? sel.map((o) => o.text) : sel[0].text, source: multi ? sel.map((o) => o.source || null) : sel[0].source || null, correct });
+    save();
+  });
+  next.addEventListener("click", onNext);
+  const n = nav(back, el("span", "spacer"), check, next);
+  if (DEBUG) {
+    const skip = button("Skip question (debug) →", true);
+    skip.addEventListener("click", onNext);
+    n.insertBefore(skip, check);
+  }
+  card.appendChild(n);
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Quizzes. The first attempt asks every item. Below the pass mark, the items missed are
+// asked once more (same wording, different order). The final score counts items right on
+// either attempt; at or below THRESHOLDS.minShareAfterRetake the participant is screened out.
+
+const Q1_ITEMS = [...QUIZ1_STRENGTH.map((q) => ({ kind: "strength", q })), ...QUIZ1.filter((q) => !q.skip).map((q) => ({ kind: "claim", q }))];
+const Q2_ITEMS = [...QUIZ2_DIMENSION.map((q) => ({ kind: "dimension", q })), ...QUIZ2_RULE.filter((q) => !q.skip).map((q) => ({ kind: "rule", q }))];
+const itemKey = (it) => `${it.kind}:${it.q.id}`;
+
+function quizItems(qstate, all) {
+  if (qstate.attempt === 1) return all;
+  return all.filter((it) => !(qstate.answers[`${itemKey(it)}@1`] || {}).correct);
+}
+function quizScore(qstate, all) {
+  return all.filter((it) => [1, 2].some((a) => (qstate.answers[`${itemKey(it)}@${a}`] || {}).correct)).length;
+}
+
+// Options for one item (the correct one first; choiceItem shuffles).
+function itemOptions(it) {
+  const { kind, q } = it;
+  if (kind === "strength") return q.options.map((o) => ({ text: o.text, correct: o.correct, source: o.correct ? q.claim : "strength-foil" }));
+  if (kind === "claim") return [{ text: q.own[0], correct: true, source: q.id }, ...q.foils.map((f) => ({ text: f.text, correct: false, source: f.source }))];
+  if (kind === "dimension") return DIMENSION_OPTIONS.map((d) => ({ text: d, correct: q.answer.includes(d), source: d }));
+  return [{ text: q.rule[0], correct: true, source: q.id }, ...q.foils.map((f, k) => ({ text: f, correct: false, source: `foil-${k + 1}` }))];
+}
+function itemStem(it) {
+  if (it.kind === "dimension") return "Which strategies does this principle set a rule for? Check all that apply.";
+  if (it.kind === "rule") return "Which rule follows from this principle?";
+  return it.q.stem;
+}
+
+function principleRef(id) {
+  const c = cardById[id];
+  const p = el("div", "principle-ref");
+  p.append(el("span", "card-eyebrow", `Principle ${cardNumber(id)}`), c.teaches);
+  return p;
+}
+
+// One quiz question. `quiz` is "q1" or "q2".
+function renderQuizItem(quiz, i) {
+  const qstate = state[quiz];
+  const all = quiz === "q1" ? Q1_ITEMS : Q2_ITEMS;
+  const items = quizItems(qstate, all);
+  if (!items.length) return go(`${quiz}result`);
+  const it = items[Math.min(i, items.length - 1)];
+  const key = `${itemKey(it)}@${qstate.attempt}`;
+  choiceItem({
+    step: quiz === "q1" ? 2 : 4, frac: (i + 1) / (items.length + 1),
+    eyebrow: `Question ${i + 1} of ${items.length}`,
+    stem: itemStem(it),
+    before: quiz === "q2" ? principleRef(it.q.id) : null,
+    options: itemOptions(it), seed: key, feature: it.q.feature, prior: qstate.answers[key],
+    multi: it.kind === "dimension", shuffle: it.kind !== "dimension",
+    onBack: i === 0 ? () => go(`${quiz}intro`) : () => go(`${quiz}:${i - 1}`),
+    onNext: () => go(i === items.length - 1 ? `${quiz}result` : `${quiz}:${i + 1}`),
+    record: (r) => { qstate.answers[key] = { ...r, kind: it.kind, attempt: qstate.attempt }; },
+  });
+}
+
+// outcome: "pass" (continue), "retake" (missed items once more), "out" (screened out).
+function resultScreen({ step, score, total, outcome, passLabel, onPass, onRetake, onExit }) {
+  screen({ step, frac: 1 });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(luckyBee(outcome === "pass" ? "party" : outcome === "retake" ? "hello" : "sad"));
+  const sc = el("div", "score"); sc.append(`${score} / ${total}`, el("small", null, outcome === "pass" ? "passed" : outcome === "retake" ? "not yet" : "not passed"));
+  body.appendChild(sc);
+  body.appendChild(el("p", "survey-signpost-text", outcome === "pass" ? passLabel : outcome === "retake"
+    ? "Not quite there. Let’s go through the questions you missed once more."
+    : "Thank you for your time. The study ends here."));
+  card.appendChild(body);
+  const buttons = [];
+  if (outcome === "pass") { const n = button("Next →"); n.addEventListener("click", onPass); buttons.push(n); }
+  else if (outcome === "retake") { const r = button("Retake the missed questions →"); r.addEventListener("click", onRetake); buttons.push(r); }
+  else { const e = button("Finish"); e.addEventListener("click", onExit); buttons.push(e); }
+  if (DEBUG && outcome !== "pass") { const c = button("Continue past this quiz (debug) →", true); c.addEventListener("click", onPass); buttons.unshift(c); }
+  card.appendChild(nav(...buttons));
+  bodyEl.appendChild(card);
+}
+
+function quizOutcome(qstate, all, passMark) {
+  const score = quizScore(qstate, all);
+  if (qstate.attempt === 1) return score >= passMark ? "pass" : "retake";
+  return score / all.length > THRESHOLDS.minShareAfterRetake ? "pass" : "out";
+}
+
+function renderQ1Intro() {
+  signpost({
+    step: 2, frac: 0,
+    text: "We will now quiz you on your understanding of these principles.",
+    back: () => go(`card:${CARDS.length - 1}`),
+    next: () => go("q1:0"),
+    nextLabel: "Begin →",
+  });
+}
+
+function renderQ1Result() {
+  const outcome = quizOutcome(state.q1, Q1_ITEMS, THRESHOLDS.quiz1Pass);
+  if (outcome === "pass") state.critters = Math.max(state.critters, 2);
+  resultScreen({
+    step: 2, score: quizScore(state.q1, Q1_ITEMS), total: Q1_ITEMS.length, outcome,
+    passLabel: `You can tell ${SCHOOL.short} apart from the other approaches. Next: the strategies we ask about.`,
+    onPass: () => go("dims:0"),
+    onRetake: () => { state.q1.attempt = 2; go("q1:0"); },
+    onExit: () => go("exit"),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Stage 2: strategies. Two sentences, then one page per strategy (name,
+// one-line definition, answer choices), then how to read the situation.
+
+const DIM_PAGES = [
+  ...TACTICS.map((tactic) => ({ kind: "tactic", tactic })),
+  ...STANCES.map((stance) => ({ kind: "stance", stance })),
+];
+const DIMS_TOTAL = DIM_PAGES.length + 2; // two intro sentences + one page per strategy
+const DIMS_FIRST_PAGE = 2;
+
+const DIM_WAIT_MS = 8000;
+const READ_WAIT_MS = 15000;
+const waited = new Set();
+// Next is disabled for `ms` the first time a page is seen; a fill bar inside the button shows the wait.
+function timedButton(text, key, ms = DIM_WAIT_MS) {
+  const b = button(text);
+  if (waited.has(key)) return b;
+  b.classList.add("submit-button--timed");
+  const fill = el("span", "button-fill");
+  b.appendChild(fill);
+  b.disabled = !DEBUG;
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.transitionDuration = `${ms}ms`; fill.style.width = "100%"; }));
+  setTimeout(() => { waited.add(key); b.disabled = false; b.classList.remove("submit-button--timed"); fill.remove(); }, ms);
+  return b;
+}
+
+function dimsNav(card, i) {
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(i === 0 ? "q1result" : `dims:${i - 1}`));
+  const next = timedButton("Next →", `dims:${i}`);
+  next.addEventListener("click", () => {
+    if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("q2intro"); }
+    else go(`dims:${i + 1}`);
+  });
+  card.appendChild(nav(back, next));
+}
+
+function renderDims(i) {
+  if (i === 0) {
+    return signpost({
+      step: 3, frac: 0,
+      text: `In the main task you will read a person’s situation as summarized by their AI assistant, then say how a ${SCHOOL.short} counselor would respond using eleven questions about the response.`,
+      back: () => go("q1result"),
+      next: () => go("dims:1"),
+      withBee: false,
+    });
+  }
+  if (i === 1) {
+    return signpost({
+      step: 3, frac: 1 / DIMS_TOTAL,
+      text: `We will now tell you about the ${DIM_PAGES.length} strategies that you will use to label responses. We will quiz you on them later.`,
+      back: () => go("dims:0"),
+      next: () => go("dims:2"),
+      withBee: false,
+    });
+  }
+  screen({ step: 3, frac: i / DIMS_TOTAL });
+  const card = el("section", "card survey-card");
+  const page = DIM_PAGES[i - DIMS_FIRST_PAGE];
+  card.appendChild(el("div", "card-eyebrow", `Strategy ${i - DIMS_FIRST_PAGE + 1} of ${DIM_PAGES.length}`));
+  const body = el("div", "survey-card-body");
+  if (page.kind === "tactic") {
+    const t = page.tactic;
+    body.appendChild(el("p", "dim-page-name", t.name));
+    body.appendChild(el("p", "dim-page-def", t.def));
+    body.appendChild(el("p", "dim-page-def", `Example: ${t.ex}`));
+    body.appendChild(el("p", "survey-question-text", "You will be asked if a response should include this strategy."));
+  } else {
+    const s = page.stance;
+    body.appendChild(el("p", "dim-page-name", s.name));
+    body.appendChild(el("p", "dim-page-def", `About ${s.target}.`));
+    body.appendChild(el("p", "survey-question-text", "You will be asked which of these stances a response should lead with."));
+    const choices = el("ul", "dim-page-choices");
+    for (const o of STANCE_OPTIONS) {
+      const li = el("li");
+      li.append(el("b", null, o.name), ": " + o.def.replace(/\[target\]/g, page.stance === STANCES[0] ? "action" : "framing"));
+      choices.appendChild(li);
+    }
+    body.appendChild(choices);
+  }
+  card.appendChild(body);
+  dimsNav(card, i);
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Quiz 2 screens (items are rendered by renderQuizItem).
+
+function renderQ2Intro() {
+  signpost({
+    step: 4, frac: 0,
+    text: "We will now quiz you on how these principles relate to the strategies you just saw.",
+    back: () => go(`dims:${DIMS_TOTAL - 1}`),
+    next: () => go("q2:0"),
+    nextLabel: "Begin →",
+  });
+}
+
+function renderQ2Result() {
+  const outcome = quizOutcome(state.q2, Q2_ITEMS, THRESHOLDS.quiz2Pass);
+  if (outcome === "pass") state.critters = Math.max(state.critters, 4);
+  resultScreen({
+    step: 4, score: quizScore(state.q2, Q2_ITEMS), total: Q2_ITEMS.length, outcome,
+    passLabel: "You know how the principles map onto the strategies. One worked example, and then the main task.",
+    onPass: () => go("exintro"),
+    onRetake: () => { state.q2.attempt = 2; go("q2:0"); },
+    onExit: () => go("exit"),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Worked example: one vignette, one answer per strategy, then a critique.
+
+const EXAMPLE_STRATEGIES = [...TACTICS.map((t) => ({ kind: "tactic", name: t.name, def: t.def })), ...STANCES.map((s) => ({ kind: "stance", name: s.name, def: `About ${s.target}.` }))];
+
+function vignetteBox(v = EXAMPLE) {
+  const box = el("div", "vignette");
+  const sit = el("blockquote", "vignette-message");
+  sit.append(el("span", "card-eyebrow", "The situation"), v.situation);
+  box.appendChild(sit);
+  return box;
+}
+
+function renderExampleIntro() {
+  signpost({
+    step: 5, frac: 0,
+    text: `Finally, a worked example: You will read one person’s situation and, for each strategy, say what an ideal response should look like according to the principles of ${SCHOOL.short}. Then we will go over your answers.`,
+    back: () => go("q2result"),
+    next: () => go("exvignette"),
+  });
+}
+
+// Microphone button with a "Click to listen" caption.
+function speakControl(text) {
+  const wrap = el("div", "speak-control");
+  wrap.append(speakButton(text), el("span", "speak-caption", "Click to listen"));
+  return wrap;
+}
+// Microphone button that reads `text` aloud with the browser's speech synthesis; click again to stop.
+function speakButton(text) {
+  const b = el("button", "speak-button");
+  b.type = "button";
+  b.title = "Listen to the situation";
+  b.setAttribute("aria-label", "Listen to the situation");
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z" fill="currentColor"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  if (!("speechSynthesis" in window)) { b.hidden = true; return b; }
+  let speaking = false;
+  const stop = () => { window.speechSynthesis.cancel(); speaking = false; b.classList.remove("speak-button--on"); };
+  b.addEventListener("click", () => {
+    if (speaking) return stop();
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.onend = stop;
+    u.onerror = () => { stop(); b.disabled = true; b.title = "Speech is not available in this browser"; b.setAttribute("aria-label", b.title); };
+    speaking = true; b.classList.add("speak-button--on");
+    window.speechSynthesis.speak(u);
+  });
+  return b;
+}
+
+function renderExampleVignette() {
+  screen({ step: 5, frac: 0.1 });
+  const card = el("section", "card survey-card");
+  const head = el("div", "read-heading-row");
+  head.append(el("p", "read-heading", "Read the following"), speakControl(EXAMPLE.situation));
+  card.appendChild(head);
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox());
+  body.appendChild(el("p", "read-heading", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
+  card.appendChild(body);
+  const back = button("← Back", true); back.addEventListener("click", () => go("exintro"));
+  const next = timedButton("Next →", "exvignette", READ_WAIT_MS); next.addEventListener("click", () => go("ex:0"));
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
+}
+
+function stanceDef(optName, stanceName) {
+  const o = STANCE_OPTIONS.find((x) => x.name === optName);
+  return o.def.replace(/\[target\]/g, stanceName === "Action stance" ? "action" : "framing");
+}
+// Small ⓘ icon; the description appears on hover or focus.
+function infoTip(text) {
+  const tip = el("span", "info-tip", "i");
+  tip.tabIndex = 0;
+  tip.setAttribute("role", "img");
+  tip.setAttribute("aria-label", text);
+  tip.dataset.tip = text;
+  tip.addEventListener("click", (e) => e.preventDefault());
+  return tip;
+}
+
+function exampleFeedback(st, yours) {
+  const g = EXAMPLE.gold[st.name];
+  const status = yours === g.answer ? "ok" : "bad";
+  const note = status === "bad" && g.partial && g.partial[yours] ? g.partial[yours] : g.why;
+  return { status, note };
+}
+
+function renderExampleItem(i) {
+  const st = EXAMPLE_STRATEGIES[i];
+  const last = i === EXAMPLE_STRATEGIES.length - 1;
+  const onNext = () => { if (last) { state.critters = Math.max(state.critters, 5); go(DEBUG || ASSIGNED ? "mainintro" : "done"); } else go(`ex:${i + 1}`); };
+  screen({ step: 5, frac: 0.1 + 0.8 * (i + 1) / (EXAMPLE_STRATEGIES.length + 1) });
+  const card = el("section", "card survey-card");
+  const split = el("div", "survey-card-body survey-card-body--split");
+  split.appendChild(vignetteBox());
+  const body = el("div", "survey-card-body split-question");
+  split.appendChild(body);
+  body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
+  body.appendChild(el("p", "dim-page-def", st.def));
+  const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
+  body.appendChild(el("p", "survey-question-text", stem));
+  const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
+  const choices = el("div", "control-choices");
+  const inputs = [];
+  let picked = null;
+  for (const opt of options) {
+    const label = el("label", "control-choice");
+    const input = document.createElement("input");
+    input.type = "radio"; input.name = "example"; input.value = opt;
+    input.addEventListener("change", () => { picked = opt; check.disabled = false; });
+    label.append(input, el("span", null, opt));
+    if (st.kind === "stance") label.appendChild(infoTip(stanceDef(opt, st.name)));
+    choices.appendChild(label);
+    inputs.push({ label, input, opt });
+  }
+  body.appendChild(choices);
+  const feedbackHolder = el("div");
+  body.appendChild(feedbackHolder);
+  card.appendChild(split);
+  const check = button("Check answer");
+  check.disabled = true;
+  const next = button("Next →");
+  next.hidden = true;
+
+  function reveal(yours) {
+    const gold = EXAMPLE.gold[st.name].answer;
+    const { status, note } = exampleFeedback(st, yours);
+    for (const { label, input, opt } of inputs) {
+      input.disabled = true;
+      label.classList.add("control-choice--locked");
+      if (opt === gold) { label.classList.add("control-choice--correct"); label.insertBefore(el("span", "choice-tag", SCHOOL.short), label.querySelector(".info-tip")); }
+      else if (opt === yours) { label.classList.add("control-choice--wrong"); label.insertBefore(el("span", "choice-tag", "your pick"), label.querySelector(".info-tip")); }
+    }
+    const row = el("div", "lucky-chat-row");
+    row.appendChild(luckyBee("avatar"));
+    const bubble = el("p", `lucky-chat-bubble ${status === "ok" ? "lucky-chat-bubble--ok" : "lucky-chat-bubble--bad"}`);
+    bubble.append(el("b", null, status === "ok" ? "That’s right. " : "Not quite. "), note);
+    row.appendChild(bubble);
+    feedbackHolder.appendChild(row);
+    check.hidden = true;
+    next.hidden = false;
+  }
+
+  const prior = state.example[st.name];
+  if (prior) { const hit = inputs.find((x) => x.opt === prior); if (hit) hit.input.checked = true; reveal(prior); }
+  check.addEventListener("click", () => { if (!picked) return; state.example[st.name] = picked; reveal(picked); });
+  next.addEventListener("click", onNext);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(i === 0 ? "exvignette" : `ex:${i - 1}`));
+  const n = nav(back, el("span", "spacer"), check, next);
+  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, check); }
+  body.appendChild(n);
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Main task (debug-only for now): the worked-example screens, one vignette at a time, without feedback.
+// Vignettes are sampled at random from the pool when the participant reaches the intro.
+
+const MAIN_STEP = 6;
+// A link page (training/<hash>/, built by build.py from assignments.json) defines ASSIGNMENT = {hash, group, ids}: the
+// participant labels exactly those vignettes, in an order shuffled per participant. Without it (the school pages),
+// MAIN_N vignettes are sampled uniformly from VIGNETTE_POOL and the main task is debug-only.
+const ASSIGNED = typeof ASSIGNMENT !== "undefined";
+const MAIN_N = ASSIGNED ? ASSIGNMENT.ids.length : 10;
+const poolById = Object.fromEntries(VIGNETTE_POOL.map((v) => [v.id, v]));
+function sampleMain() {
+  const ids = ASSIGNED ? [...ASSIGNMENT.ids] : VIGNETTE_POOL.map((v) => v.id);
+  for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  state.mainIds = ids.slice(0, MAIN_N);
+}
+function mainVignettes() { if (!state.mainIds.length) sampleMain(); return state.mainIds.map((id) => poolById[id]); }
+function mainFrac(vi, si) { return (vi + (si + 1) / (EXAMPLE_STRATEGIES.length + 1)) / MAIN_N; }
+
+function renderMainIntro() {
+  signpost({
+    step: MAIN_STEP, frac: 0,
+    text: `Now the main task. You will read ${MAIN_N} situations. For each one and each strategy, say what an ideal response should look like according to the principles of ${SCHOOL.short}. This time there is no feedback.`,
+    back: () => go(`ex:${EXAMPLE_STRATEGIES.length - 1}`),
+    next: () => go("mv:0"),
+    nextLabel: "Begin →",
+  });
+}
+
+function renderMainVignette(vi) {
+  const v = mainVignettes()[vi];
+  screen({ step: MAIN_STEP, frac: mainFrac(vi, -1) });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Situation ${vi + 1} of ${MAIN_N}`));
+  const head = el("div", "read-heading-row");
+  head.append(el("p", "read-heading", "Read the following"), speakControl(v.situation));
+  card.appendChild(head);
+  const body = el("div", "survey-card-body");
+  body.appendChild(vignetteBox(v));
+  body.appendChild(el("p", "read-heading", `For each of the following strategies, identify what an ideal response should look like as implied by the principles of ${SCHOOL.short}.`));
+  card.appendChild(body);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(vi === 0 ? "mainintro" : `mi:${vi - 1}:${EXAMPLE_STRATEGIES.length - 1}`));
+  const next = timedButton("Next →", `mv:${vi}`, READ_WAIT_MS);
+  next.addEventListener("click", () => go(`mi:${vi}:0`));
+  card.appendChild(nav(back, next));
+  bodyEl.appendChild(card);
+}
+
+function renderMainItem(vi, si) {
+  const v = mainVignettes()[vi];
+  const st = EXAMPLE_STRATEGIES[si];
+  const lastS = si === EXAMPLE_STRATEGIES.length - 1;
+  const lastV = vi === MAIN_N - 1;
+  const onNext = () => go(lastS ? (lastV ? "done" : `mv:${vi + 1}`) : `mi:${vi}:${si + 1}`);
+  screen({ step: MAIN_STEP, frac: mainFrac(vi, si) });
+  const card = el("section", "card survey-card");
+  card.appendChild(el("div", "card-eyebrow", `Situation ${vi + 1} of ${MAIN_N}`));
+  const split = el("div", "survey-card-body survey-card-body--split");
+  split.appendChild(vignetteBox(v));
+  const body = el("div", "survey-card-body split-question");
+  split.appendChild(body);
+  body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
+  body.appendChild(el("p", "dim-page-def", st.def));
+  const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
+  body.appendChild(el("p", "survey-question-text", stem));
+  const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
+  const choices = el("div", "control-choices");
+  const answers = state.main[v.id] || (state.main[v.id] = {});
+  let picked = answers[st.name] || null;
+  for (const opt of options) {
+    const label = el("label", "control-choice");
+    const input = document.createElement("input");
+    input.type = "radio"; input.name = "main"; input.value = opt;
+    if (picked === opt) input.checked = true;
+    input.addEventListener("change", () => { picked = opt; next.disabled = false; });
+    label.append(input, el("span", null, opt));
+    if (st.kind === "stance") label.appendChild(infoTip(stanceDef(opt, st.name)));
+    choices.appendChild(label);
+  }
+  body.appendChild(choices);
+  card.appendChild(split);
+  const back = button("← Back", true);
+  back.addEventListener("click", () => go(si === 0 ? `mv:${vi}` : `mi:${vi}:${si - 1}`));
+  const next = button("Next →");
+  next.disabled = !picked;
+  next.addEventListener("click", () => { if (!picked) return; answers[st.name] = picked; save(); onNext(); });
+  const n = nav(back, el("span", "spacer"), next);
+  if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, next); }
+  body.appendChild(n);
+  bodyEl.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// End screens.
+
+function exportText() {
+  return JSON.stringify({ school: SCHOOL.key, assignment: ASSIGNED ? { hash: ASSIGNMENT.hash, group: ASSIGNMENT.group } : null, prolificId: state.prolificId, startedAt: state.startedAt, finishedAt: new Date().toISOString(),
+    q1: state.q1, q2: state.q2, example: state.example, mainIds: state.mainIds, main: state.main }, null, 1);
+}
+
+function renderDone() {
+  screen({ step: STEPS.length - 1, frac: 1 });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(luckyBee("party"));
+  const didMain = Object.keys(state.main).length > 0;
+  body.appendChild(el("p", "survey-signpost-text", didMain ? "All done. Thank you for taking part." : `Training complete. The main task comes next: you will read situations and say how a ${SCHOOL.short} counselor would respond.`));
+  body.appendChild(el("p", "survey-signpost-sub", `Principles quiz: ${quizScore(state.q1, Q1_ITEMS)} of ${Q1_ITEMS.length}. Strategies quiz: ${quizScore(state.q2, Q2_ITEMS)} of ${Q2_ITEMS.length}.`));
+  const ta = el("textarea", "export"); ta.readOnly = true; ta.value = exportText();
+  body.appendChild(el("p", "survey-signpost-sub", "Preview build: the answers recorded during training, as they would be submitted."));
+  body.appendChild(ta);
+  card.appendChild(body);
+  const next = button("Continue to the main task →"); next.disabled = true; next.title = "Not part of this preview";
+  const reset = button("Start over", true); reset.addEventListener("click", resetAll);
+  card.appendChild(nav(reset, next));
+  bodyEl.appendChild(card);
+}
+
+function renderExit() {
+  screen({ step: STEPS.length - 1, frac: 1 });
+  const card = el("section", "card survey-card survey-card--signpost");
+  const body = el("div", "survey-card-body");
+  body.appendChild(luckyBee("sad"));
+  body.appendChild(el("p", "survey-signpost-text", "Thank you for your time. The study ends here."));
+  card.appendChild(body);
+  const reset = button("Start over", true); reset.addEventListener("click", resetAll);
+  card.appendChild(nav(reset));
+  bodyEl.appendChild(card);
+}
+
+function resetAll() {
+  state.critters = 0; state.q1 = { attempt: 1, answers: {} }; state.q2 = { attempt: 1, answers: {} }; state.example = {}; state.main = {}; state.mainIds = [];
+  state.startedAt = new Date().toISOString();
+  go("consent");
+}
+
+// ---------------------------------------------------------------------------
+// Router.
+
+function render() {
+  const [kind, arg, arg2] = state.screen.split(":");
+  const i = Number(arg);
+  const j = Number(arg2);
+  switch (kind) {
+    case "consent": return renderConsent();
+    case "welcome": return renderWelcome();
+    case "apply": return renderApply();
+    case "intro": return renderIntro();
+    case "card": return renderCard(i);
+    case "q1intro": return renderQ1Intro();
+    case "q1": return renderQuizItem("q1", i);
+    case "q1result": return renderQ1Result();
+    case "dims": return renderDims(i);
+    case "q2intro": return renderQ2Intro();
+    case "q2": return renderQuizItem("q2", i);
+    case "q2result": return renderQ2Result();
+    case "exintro": return renderExampleIntro();
+    case "exvignette": return renderExampleVignette();
+    case "ex": return renderExampleItem(i);
+    case "mainintro": return renderMainIntro();
+    case "mv": return renderMainVignette(i);
+    case "mi": return renderMainItem(i, j);
+    case "done": return renderDone();
+    case "exit": return renderExit();
+    default: state.screen = "consent"; return renderConsent();
+  }
+}
+
+render();
+
+</script>
+  </body>
+</html>
+
+{% endraw %}
