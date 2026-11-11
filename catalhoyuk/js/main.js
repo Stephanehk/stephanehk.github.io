@@ -6,7 +6,6 @@ import { generateTown, placeLadders, buildTown, buildRoofClutter, buildMiddens, 
 import { makePaintings } from './paintings.js';
 import { makeInteriorBuilder, updateShafts, disposeInterior } from './interiors.js';
 import { Player, CollisionWorld } from './player.js';
-import { Ambience } from './audio.js';
 import { buildPeople } from './people.js';
 
 const nullEl = { textContent: '', disabled: false, classList: { add() {}, remove() {}, toggle() {} }, addEventListener() {} };
@@ -110,7 +109,7 @@ function updateInteriors(px, pz, budget = 2) {
     interiors.built.set(h, e);
   }
 }
-let tex, town, herds = [], birds, smoke, dust, player, ambience, water;
+let tex, town, herds = [], birds, smoke, dust, player, water;
 const sheepHerds = [];
 let startPos = new THREE.Vector3(0, 20, 0);
 const fieldRects = [];
@@ -210,8 +209,6 @@ async function build() {
     player = new Player(camera, world, canvas);
     player.teleport(startPos.x, startPos.y + 0.05, startPos.z, 0.15, -0.05);
     updateInteriors(startPos.x, startPos.z, 40);
-    ambience = new Ambience();
-    player.onStep = () => ambience.footstep(insideAmt > 0.5 ? 'plaster' : 'roof', !!(player.keys.ShiftLeft || player.keys.ShiftRight));
     applyPreset(PRESETS[presetIdx]);
   });
 }
@@ -287,7 +284,6 @@ function showCaption() {}
 let started = false;
 function enter() {
   if (!player) return;
-  ambience.start();
   player.lock();
   $('overlay').classList.add('hidden');
   if (!started) { started = true; showCaption('You are standing on the roofs of Çatalhöyük, about 8,600 years ago. Every hatch with a ladder leads down into a house: walk onto the opening to climb down, and look up and press W (or Space) at the ladder to climb back out.', 18); }
@@ -296,12 +292,11 @@ $('enter').addEventListener('click', enter);
 canvas.addEventListener('click', () => { if (player && !player.locked && !isTouch) enter(); });
 canvas.addEventListener('player-unlock', () => { if (!isTouch) $('overlay').classList.remove('hidden'); });
 let isTouch = false;
-canvas.addEventListener('player-touch', () => { isTouch = true; $('overlay').classList.add('hidden'); if (ambience) ambience.start(); });
+canvas.addEventListener('player-touch', () => { isTouch = true; $('overlay').classList.add('hidden'); });
 $('about-btn').addEventListener('click', () => $('about').classList.toggle('hidden'));
 $('about-close').addEventListener('click', () => $('about').classList.add('hidden'));
 document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyT') { presetIdx = (presetIdx + 1) % PRESETS.length; applyPreset(PRESETS[presetIdx]); }
-  if (e.code === 'KeyM') { if (ambience) { ambience.setMuted(!ambience.muted); $('mute').textContent = ambience.muted ? 'sound off' : 'sound on'; } }
   if (e.code === 'KeyH') $('hud').classList.toggle('hidden');
   if (e.code === 'KeyR' && player) { player.teleport(startPos.x, startPos.y + 0.05, startPos.z, 0.15, -0.05); updateInteriors(startPos.x, startPos.z, 40); }
 });
@@ -371,12 +366,6 @@ function frame() {
   if (smoke) smoke.update(time);
   if (dust) dust.update(time);
   if (water) { tex.water.offset.x = time * 0.004; tex.water.offset.y = time * 0.002; }
-  // audio
-  if (ambience) {
-    let hd = 99; if (nearest) hd = Math.sqrt(nd);
-    let herdD = 999; for (const g of sheepHerds) { const d = Math.hypot(g.x - player.pos.x, g.z - player.pos.z) - g.r; if (d < herdD) herdD = d; }
-    ambience.update(dt, insideAmt, inside ? hd : 99, herdD);
-  }
   drawCompass(player.yaw);
   renderer.render(scene, camera);
 }

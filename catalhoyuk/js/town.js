@@ -378,7 +378,7 @@ export function buildTown(town, tex, world, rnd) {
         const H = h.roofY - h.floorY;
         const run = H / Math.tan(LADDER_ANGLE);
         const topZ = h.main.z1 - 0.1;
-        woodGeos.push(ladderGeo(lx, h.floorY, topZ - run, lx, h.roofY, topZ, 0.75));
+        woodGeos.push(ladderGeo(lx, h.floorY, topZ - run, lx, h.roofY, topZ, 0.0));   // flush with the roof: nothing sticks up out of the hatch
         const lw = worldPt(s, lx, 0, topZ - run * 0.45);
         const tw = worldPt(s, lx, 0, ht.z0 - 0.05);          // step past the hatch's north edge and you are on the ladder
         const ex = worldDir(s, 0, -1);
