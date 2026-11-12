@@ -382,7 +382,7 @@ function frame() {
   }
   player.update(dt);
   interiors.timer -= dt;
-  if (interiors.timer <= 0) { interiors.timer = 0.15; updateInteriors(player.pos.x, player.pos.z, 2); }
+  if (interiors.timer <= 0) { interiors.timer = 0.15; updateInteriors(player.pos.x, player.pos.z, 1); }   // one house per tick keeps frames even; the nearest houses get a bigger budget inside
 
   // sun follows the player; snap to shadow texels to avoid shimmer
   const texel = (2 * SH) / sun.shadow.mapSize.x;
@@ -436,6 +436,26 @@ function frame() {
   if (water) { tex.water.offset.x = time * 0.004; tex.water.offset.y = time * 0.002; }
   drawCompass(player.yaw);
   renderer.render(scene, camera);
+  if (stats) stats.tick(now);
+}
+
+// ?stats=1 : a small diagnostics readout (frame rate, draw calls, GPU, depth mode), for tracking
+// down trouble on someone else's machine. Nothing is shown without the parameter.
+let stats = null;
+if (params.has('stats')) {
+  const el = document.createElement('pre');
+  el.style.cssText = 'position:fixed;left:8px;bottom:8px;margin:0;padding:6px 8px;font:11px/1.4 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,0.55);z-index:30;pointer-events:none;white-space:pre';
+  document.body.appendChild(el);
+  const gl = renderer.getContext(), dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  const gpu = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  let n = 0, t0 = performance.now(), worst = 0, last = 0;
+  stats = { tick(now) {
+    n++; if (last) worst = Math.max(worst, now - last); last = now;
+    if (now - t0 < 500) return;
+    const fps = n * 1000 / (now - t0);
+    el.textContent = `${fps.toFixed(0)} fps  worst ${worst.toFixed(0)} ms\ndraw calls ${renderer.info.render.calls}  tris ${(renderer.info.render.triangles / 1e6).toFixed(2)} M\n${innerWidth}x${innerHeight} @${renderer.getPixelRatio().toFixed(2)}  ${REVERSE_Z ? 'reverse-z' : 'log-depth'}${lowQuality ? '  LOW QUALITY' : ''}\nhouses built ${registry.length}\n${gpu}`;
+    n = 0; worst = 0; t0 = now;
+  } };
 }
 
 build().then(() => {

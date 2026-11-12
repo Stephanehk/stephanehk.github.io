@@ -509,16 +509,23 @@ export function buildTown(town, tex, world, rnd) {
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1512, roughness: 1 });
   const strawMat = new THREE.MeshStandardMaterial({ map: tex.reed, color: 0xd8c488, roughness: 1 });
   const coverMat = new THREE.MeshStandardMaterial({ map: tex.mat, color: 0xb8ab90, roughness: 1, side: THREE.DoubleSide });
-  const chunkMesh = (geos, mat, name, shadows = true) => {
+  // One BatchedMesh per material for the whole town: a single draw call each, while the
+  // renderer still frustum-culls chunk by chunk (perObjectFrustumCulled).
+  const batched = (key, mat, name, shadows = true) => {
+    const geos = [];
+    for (const b of buckets.values()) if (b[key].length) geos.push(mergeGeometries(b[key]));
     if (!geos.length) return;
-    const m = new THREE.Mesh(mergeGeometries(geos), mat); m.name = name;
-    if (shadows) { m.castShadow = true; m.receiveShadow = true; }
-    group.add(m);
+    let nv = 0, ni = 0;
+    for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
+    const bm = new THREE.BatchedMesh(geos.length, nv, ni, mat);
+    bm.name = name;
+    for (const g of geos) { bm.addInstance(bm.addGeometry(g)); g.dispose(); }
+    bm.perObjectFrustumCulled = true;
+    if (shadows) { bm.castShadow = true; bm.receiveShadow = true; }
+    group.add(bm);
   };
-  for (const b of buckets.values()) {
-    chunkMesh(b.wallGeos, wallMat, 'walls'); chunkMesh(b.roofGeos, roofMat, 'roofs'); chunkMesh(b.woodGeos, woodMat, 'ladders');
-    chunkMesh(b.darkGeos, darkMat, 'hatches', false); chunkMesh(b.strawGeos, strawMat, 'canopies'); chunkMesh(b.matGeos, coverMat, 'covers');
-  }
+  batched('wallGeos', wallMat, 'walls'); batched('roofGeos', roofMat, 'roofs'); batched('woodGeos', woodMat, 'ladders');
+  batched('darkGeos', darkMat, 'hatches', false); batched('strawGeos', strawMat, 'canopies'); batched('matGeos', coverMat, 'covers');
   return { group, smokeSources };
 }
 

@@ -723,29 +723,46 @@ export function disposeInterior(entry, registry, world) {
   const i = registry.indexOf(entry); if (i >= 0) registry.splice(i, 1);
 }
 
-// Collapse the hundreds of small meshes of an interior into one mesh per material.
+// Collapse the hundreds of small meshes of an interior into as few meshes as possible:
+// materials that differ only in their flat colour are merged into one vertex-coloured
+// material (the shading is identical: vertex colour x white = the old material colour).
+const sharedMats = new Map();
+function bucketMaterial(m) {
+  if (m.userData.disposable || m.type !== 'MeshStandardMaterial' || m.emissiveMap || m.aoMap || m.bumpMap || m.envMap) return { key: m.uuid, mat: m, bake: false };
+  const key = [m.map ? m.map.uuid : '-', m.normalMap ? m.normalMap.uuid : '-', m.normalMap ? m.normalScale.x : 0, m.alphaMap ? m.alphaMap.uuid : '-',
+    m.roughness, m.metalness, m.side, m.transparent ? 1 : 0, m.opacity, m.depthWrite ? 1 : 0, m.emissive.getHex()].join('|');
+  let mat = sharedMats.get(key);
+  if (!mat) { mat = m.clone(); mat.color.set(0xffffff); mat.vertexColors = true; mat.userData = {}; sharedMats.set(key, mat); }
+  return { key, mat, bake: true };
+}
 function mergeByMaterial(G) {
   G.updateMatrixWorld(true);
   const buckets = new Map();
   const keep = [];
+  const inv = new THREE.Matrix4().copy(G.matrixWorld).invert();
   G.traverse((o) => {
     if (!o.isMesh) return;
-    if (o.name === 'shaft' || !o.geometry.attributes.position || !o.geometry.attributes.uv) { keep.push(o); return; }
+    if (o.name === 'shaft' || Array.isArray(o.material) || !o.geometry.attributes.position || !o.geometry.attributes.uv || !o.geometry.attributes.normal) { keep.push(o); return; }
     let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
-    if (g.attributes.color) g.deleteAttribute('color');
+    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal' && name !== 'uv' && name !== 'color') g.deleteAttribute(name);
+    const { key, mat, bake } = bucketMaterial(o.material);
+    if (bake) {
+      const n = g.attributes.position.count, col = new Float32Array(n * 3), c = o.material.color;
+      for (let i = 0; i < n; i++) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    } else if (g.attributes.color) g.deleteAttribute('color');
     // bake the transform relative to G
-    const m = new THREE.Matrix4().copy(G.matrixWorld).invert().multiply(o.matrixWorld);
-    g.applyMatrix4(m);
-    if (!buckets.has(o.material)) buckets.set(o.material, { geos: [], shadow: o.castShadow });
-    buckets.get(o.material).geos.push(g);
+    g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld));
+    if (!buckets.has(key)) buckets.set(key, { geos: [], mat });
+    buckets.get(key).geos.push(g);
   });
   const kept = new Set(keep);
   for (const c of G.children.slice()) if (!kept.has(c)) G.remove(c);
-  for (const k of keep) { if (k.parent !== G) { const mw = k.matrixWorld.clone(); G.add(k); k.matrix.copy(new THREE.Matrix4().copy(G.matrixWorld).invert().multiply(mw)); k.matrix.decompose(k.position, k.quaternion, k.scale); } }
-  for (const [mat, b] of buckets) {
+  for (const k of keep) { if (k.parent !== G) { const mw = k.matrixWorld.clone(); G.add(k); k.matrix.copy(new THREE.Matrix4().multiplyMatrices(inv, mw)); k.matrix.decompose(k.position, k.quaternion, k.scale); } }
+  for (const b of buckets.values()) {
     const merged = mergeGeometries(b.geos);
-    if (!merged) continue;
-    const mesh = new THREE.Mesh(merged, mat);
+    if (!merged) { for (const g of b.geos) { const mesh = new THREE.Mesh(g, b.mat); mesh.castShadow = true; mesh.receiveShadow = true; G.add(mesh); } continue; }
+    const mesh = new THREE.Mesh(merged, b.mat);
     mesh.castShadow = true; mesh.receiveShadow = true;
     G.add(mesh);
   }
