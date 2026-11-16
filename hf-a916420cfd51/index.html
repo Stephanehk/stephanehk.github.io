@@ -28,15 +28,15 @@ p.note{color:var(--muted);font-size:15px}
 <tr><td>6</td><td>Binary + reflection</td><td>DEF + REFL + SCOR + BINARY</td></tr>
 <tr><td>7</td><td>Ternary + reflection</td><td>DEF + REFL + SCOR + TERNARY</td></tr>
 <tr><td>8</td><td>EUT + ternary + reflection</td><td>DEF + REFL + SCOR + TERNARY + EUT</td></tr>
-<tr><td>9</td><td>Ternary + reflection + probe B</td><td>DEF + REFL + SCOR + TERNARY</td></tr>
-<tr><td>10</td><td>Ternary + probe B</td><td>DEF + SCOR + TERNARY</td></tr>
+<tr><td>9</td><td>Ternary + reflection + probe B</td><td>DEF + REFL + SCOR + TERNARY + probe B system</td></tr>
+<tr><td>10</td><td>Ternary + probe B</td><td>DEF + SCOR + TERNARY + probe B system</td></tr>
 <tr><td>11</td><td>Ternary (−1) metric</td><td>DEF + SCOR + TERNARY_NEG1</td></tr>
 <tr><td>12</td><td>Ternary (−1) + reflection</td><td>DEF + REFL + SCOR + TERNARY_NEG1</td></tr>
 <tr><td>13</td><td>EUT (−1) + ternary (−1) + reflection</td><td>DEF + REFL + SCOR + TERNARY_NEG1 + EUT_NEG1</td></tr>
-<tr><td>14</td><td>Ternary (−1) + reflection + probe B</td><td>DEF + REFL + SCOR + TERNARY_NEG1</td></tr>
-<tr><td>15</td><td>Ternary (−1) + probe B</td><td>DEF + SCOR + TERNARY_NEG1</td></tr>
+<tr><td>14</td><td>Ternary (−1) + reflection + probe B</td><td>DEF + REFL + SCOR + TERNARY_NEG1 + probe B system</td></tr>
+<tr><td>15</td><td>Ternary (−1) + probe B</td><td>DEF + SCOR + TERNARY_NEG1 + probe B system</td></tr>
 </table></div>
-<p>Probe B arms: every proposed action is reviewed; a cleared action executes immediately; a flagged action returns the FLAGGED NOTE instead of executing.</p>
+<p>Probe B arms: every proposed action is reviewed; a cleared action executes immediately; a flagged action returns the FLAGGED NOTE instead of executing (<a href="#pseudocode">see pseudocode here</a>).</p>
 
 <h2>Random assignment</h2>
 <p>For each model, we would run the 15 methods. If we have 8 episodes that can run concurrently, we randomly assign a method to each of the 8 episode slots. We do this until we have run 60 episodes for each of the 15 methods. Once this process has finished for a model, we repeat for the next model.</p>
@@ -54,7 +54,7 @@ p.note{color:var(--muted);font-size:15px}
 <tr><td>6</td><td>Opus 4.8</td><td class="n">~$960</td><td class="n">~$1,600</td><td class="n">~$2,560</td></tr>
 <tr class="tot"><td></td><td>All models</td><td class="n">~$2,890</td><td class="n">~$4,360</td><td class="n">~$7,250</td></tr>
 </table></div>
-<p class="note">Estimates are ±40%, 60 episodes per method at 180 turns. Prompt-only methods use GLM 5.2's billed per-method cost from the 2026-11-02 run (−1 methods priced as their −9999 counterparts). Probe B methods use ~$125 each for GLM 5.2 (the 2026-11-02 probe B cost of $185 minus the re-emit calls that auto-execute removes). Other models are scaled by their token use in earlier runs and their OpenRouter prices. Grok 4.7 has no earlier runs; it uses Grok 4.6's token use, at the same OpenRouter prices.</p>
+<p class="note">Estimates are ±40%, 60 episodes per method at 180 turns.</p>
 
 <h2>System-prompt blocks</h2>
 <p>Blocks are joined by single spaces and appended as the final paragraph of the agent's system prompt.</p>
@@ -90,7 +90,7 @@ a^* \;=\; \arg\max_{a} \; \mathbb{E}[\text{score} \mid c, a].
 \]</code></pre>
 
 <h2>Probe B blocks</h2>
-<h3>Pseudocode: Ternary + reflection + probe B</h3>
+<h3 id="pseudocode">Pseudocode: Ternary + reflection + probe B</h3>
 <pre><code>system_prompt = persona + (DEF + REFL + SCOR + TERNARY) + tool instructions
 executed = 0; reviews_here = 0; pending = None
 while executed &lt; 180:
