@@ -345,6 +345,9 @@ details.example p { margin: 4px 0 0; font-style: italic; }
 .matrix-cell--gold { background: var(--ok-bg); }
 .matrix-note { margin: 6px 0 0; font-size: 14.5px; }
 
+.page-title { margin: 0 0 4px; font-size: clamp(22px, 2.8vw, 30px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.dim-choice-ex { margin: 4px 0 0; font-size: 14.5px; font-style: italic; color: var(--ink-soft); }
+
 </style>
   </head>
   <body>
@@ -1584,11 +1587,10 @@ function collapsed(label, text) {
 function renderCards() {
   screen({ step: 1, frac: 0.5 });
   const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", `${CARDS.length} principles of ${SCHOOL.short}`));
+  card.appendChild(el("h2", "page-title", `Review the ${CARDS.length} principles of ${SCHOOL.short}`));
   const list = el("div", "principle-list");
-  CARDS.forEach((c, i) => {
+  CARDS.forEach((c) => {
     const item = el("div", "principle-item");
-    item.appendChild(el("span", "card-eyebrow", `Principle ${i + 1}`));
     item.appendChild(el("p", "principle-item-text", c.teaches));
     const rules = el("div", "rules");
     const rin = el("div", "rule rule--in"); rin.append(el("span", "rule-label", "Follows principle"), c.rulesIn);
@@ -1794,11 +1796,10 @@ function renderQ1Result() {
 }
 
 // ---------------------------------------------------------------------------
-// Stage 2: strategies. Two sentences, then every strategy on one page (name, definition, example response or
-// answer choices).
+// Stage 2: strategies. Two sentences, then one page per strategy (name, definition, example, answer choices).
 
 const N_STRATEGIES = TACTICS.length + STANCES.length;
-const DIMS_LAST = 2; // dims:0 and dims:1 are the intro sentences, dims:2 the strategies page
+const DIMS_TOTAL = 2 + N_STRATEGIES; // dims:0 and dims:1 are the intro sentences, then one page per strategy
 
 const READ_WAIT_MS = 15000;
 const waited = new Set();
@@ -1827,51 +1828,47 @@ function renderDims(i) {
   }
   if (i === 1) {
     return signpost({
-      step: 3, frac: 1 / 3,
+      step: 3, frac: 1 / DIMS_TOTAL,
       text: `We will now tell you about the ${N_STRATEGIES} strategies that you will use to label responses.`,
       back: () => go("dims:0"),
       next: () => go("dims:2"),
       withBee: false,
     });
   }
-  screen({ step: 3, frac: 2 / 3 });
+  const k = i - 2;
+  screen({ step: 3, frac: i / DIMS_TOTAL });
   const card = el("section", "card survey-card");
-  card.appendChild(el("div", "card-eyebrow", `${N_STRATEGIES} strategies`));
+  card.appendChild(el("div", "card-eyebrow", `Strategy ${k + 1} of ${N_STRATEGIES}`));
   const body = el("div", "survey-card-body");
-  body.appendChild(el("p", "survey-question-text", `Strategies 1–${TACTICS.length}: you will be asked if a response should include each one.`));
-  const list = el("div", "dim-list dim-list--two");
-  TACTICS.forEach((t, k) => {
-    const d = el("div", "dim");
-    d.appendChild(el("div", "dim-name", `${k + 1}. ${t.name}`));
-    d.appendChild(el("p", "dim-def", t.def));
-    d.appendChild(collapsed("Example response", t.ex));
-    list.appendChild(d);
-  });
-  body.appendChild(list);
-  body.appendChild(el("p", "survey-question-text", `Strategies ${TACTICS.length + 1}–${N_STRATEGIES}: you will be asked which stance a response should lead with.`));
-  const stances = el("div", "dim-list dim-list--two");
-  STANCES.forEach((st, k) => {
-    const d = el("div", "dim");
-    d.appendChild(el("div", "dim-name", `${TACTICS.length + k + 1}. ${st.name}`));
-    d.appendChild(el("p", "dim-def", `About ${st.target}.`));
-    if (st.ex) d.appendChild(collapsed("Example", st.ex));
-    stances.appendChild(d);
-  });
-  body.appendChild(stances);
-  body.appendChild(el("p", "dim-def", "The stances to choose from:"));
-  const choices = el("ul", "dim-page-choices");
-  for (const o of STANCE_OPTIONS) {
-    const li = el("li");
-    li.append(el("b", null, o.name), ": " + o.def.replace(/\[target\]/g, "action or framing"));
-    if (o.ex) li.appendChild(collapsed("Example response", o.ex));
-    choices.appendChild(li);
+  if (k < TACTICS.length) {
+    const t = TACTICS[k];
+    body.appendChild(el("p", "dim-page-name", t.name));
+    body.appendChild(el("p", "dim-page-def", t.def));
+    body.appendChild(el("p", "dim-page-def", `Example response: ${t.ex}`));
+    body.appendChild(el("p", "survey-question-text", "You will be asked if a response should include this strategy."));
+  } else {
+    const st = STANCES[k - TACTICS.length];
+    body.appendChild(el("p", "dim-page-name", st.name));
+    body.appendChild(el("p", "dim-page-def", `About ${st.target}.`));
+    if (st.ex) body.appendChild(el("p", "dim-page-def", `Example: ${st.ex}`));
+    body.appendChild(el("p", "survey-question-text", "You will be asked which of these stances a response should lead with."));
+    const choices = el("ul", "dim-page-choices");
+    for (const o of STANCE_OPTIONS) {
+      const li = el("li");
+      li.append(el("b", null, o.name), ": " + o.def.replace(/\[target\]/g, st === STANCES[0] ? "action" : "framing"));
+      if (o.ex) li.appendChild(el("p", "dim-choice-ex", `Example response: ${o.ex}`));
+      choices.appendChild(li);
+    }
+    body.appendChild(choices);
   }
-  body.appendChild(choices);
   card.appendChild(body);
   const back = button("← Back", true);
-  back.addEventListener("click", () => go("dims:1"));
-  const next = timedButton("Next →", "dims", READ_WAIT_MS);
-  next.addEventListener("click", () => { state.critters = Math.max(state.critters, 3); go("exintro"); });
+  back.addEventListener("click", () => go(`dims:${i - 1}`));
+  const next = timedButton("Next →", `dims:${i}`);
+  next.addEventListener("click", () => {
+    if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("exintro"); }
+    else go(`dims:${i + 1}`);
+  });
   card.appendChild(nav(back, next));
   bodyEl.appendChild(card);
 }
@@ -1900,6 +1897,7 @@ function vignetteBox(v = EXAMPLE) {
   return box;
 }
 
+const MIN_WRITE_CHARS = 30;
 // The participant writes their own response to the person before labeling. Pasting and dropping text are blocked.
 function writeScreen({ v, step, frac, eyebrow, onBack, onNext }) {
   screen({ step, frac });
@@ -1913,17 +1911,18 @@ function writeScreen({ v, step, frac, eyebrow, onBack, onNext }) {
   split.appendChild(body);
   body.appendChild(el("p", "survey-question-text", `Write a response to this person, following the principles of ${SCHOOL.short}.`));
   const ta = el("textarea", "write-box");
-  ta.rows = 9; ta.spellcheck = true; ta.value = state.written[v.id] || "";
+  ta.rows = 9; ta.spellcheck = true; ta.placeholder = `At least ${MIN_WRITE_CHARS} characters`; ta.value = state.written[v.id] || "";
   for (const ev of ["paste", "drop"]) ta.addEventListener(ev, (e) => e.preventDefault());
   ta.addEventListener("beforeinput", (e) => { if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") e.preventDefault(); });
   body.appendChild(ta);
   card.appendChild(split);
   const back = button("← Back", true); back.addEventListener("click", onBack);
   const next = button("Next →");
-  const sync = () => { state.written[v.id] = ta.value; next.disabled = ta.value.trim().length === 0; };
+  const enough = () => ta.value.trim().length >= (DEBUG ? 1 : MIN_WRITE_CHARS);
+  const sync = () => { state.written[v.id] = ta.value; next.disabled = !enough(); };
   ta.addEventListener("input", sync);
   sync();
-  next.addEventListener("click", () => { if (ta.value.trim()) onNext(); });
+  next.addEventListener("click", () => { if (enough()) onNext(); });
   const n = nav(back, el("span", "spacer"), next);
   if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, next); }
   body.appendChild(n);
@@ -2008,8 +2007,8 @@ function matrixScreen({ v, step, frac, eyebrow, answers, gold, onBack, onNext })
 function renderExampleIntro() {
   signpost({
     step: 4, frac: 0,
-    text: "Next, one practice example with feedback.",
-    back: () => go("dims:2"),
+    text: "Next, we will do a practice example.",
+    back: () => go(`dims:${DIMS_TOTAL - 1}`),
     next: () => go("exwrite"),
   });
 }
