@@ -306,6 +306,40 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .consent-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .consent-pdf { width: min(760px, 100%); height: 520px; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface-strong); }
 
+/* All principles / all strategies on one page. */
+.principle-list { display: grid; gap: 18px; }
+.principle-item { display: grid; gap: 6px; padding-bottom: 18px; border-bottom: 1px solid var(--rule); }
+.principle-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.principle-item-text { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.4; }
+.dim-list--two { grid-template-columns: 1fr 1fr; }
+@media (max-width: 680px) { .dim-list--two { grid-template-columns: 1fr; } }
+
+/* Collapsed examples. */
+details.example { font-size: 14.5px; line-height: 1.45; }
+details.example summary { cursor: pointer; width: fit-content; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--accent-dark); }
+details.example p { margin: 4px 0 0; font-style: italic; }
+.dim details.example, .dim-page-choices details.example { margin-top: 6px; }
+/* Vignette cut to bullets. */
+.vignette-bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.vignette-bullets li::first-letter { text-transform: uppercase; }
+.vignette .speak-control { justify-self: start; }
+/* Written response. */
+.write-box { width: 100%; min-height: 200px; padding: 12px 14px; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--surface-strong); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
+.write-box:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* Yes/no matrix. */
+.matrix { width: 100%; border-collapse: collapse; }
+.matrix th { padding: 4px 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+.matrix td { padding: 9px 10px; border-top: 1px solid var(--rule); }
+.matrix-name { position: relative; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15.5px; }
+.matrix-name .info-tip { margin-left: 0; }
+.matrix-name .info-tip::after { right: auto; left: 0; }
+.matrix-cell { width: 64px; text-align: center; }
+.matrix-cell input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+.matrix-row--ok .matrix-name { color: var(--ok); }
+.matrix-row--bad .matrix-name { color: var(--bad); }
+.matrix-cell--gold { background: var(--ok-bg); }
+.matrix-note { margin: 6px 0 0; font-size: 14.5px; }
+
 .menu { display: grid; gap: 12px; margin-top: 18px; }
 .menu a { display: block; padding: 16px 18px; border: 1px solid var(--rule-strong); border-radius: 12px; background: var(--surface-strong); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 17px; }
 .menu a:hover { border-color: var(--ink); background: #f3eadf; }
