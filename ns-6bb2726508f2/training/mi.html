@@ -1861,7 +1861,7 @@ function renderExampleItem(i) {
   const body = el("div", "survey-card-body split-question");
   split.appendChild(body);
   body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
-  body.appendChild(el("p", "dim-page-def", st.def));
+  if (st.kind !== "stance") body.appendChild(el("p", "dim-page-def", st.def)); // the stance description is taught on the strategy pages only
   const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
   body.appendChild(el("p", "survey-question-text", stem));
   const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
@@ -1978,7 +1978,7 @@ function renderMainItem(vi, si) {
   const body = el("div", "survey-card-body split-question");
   split.appendChild(body);
   body.appendChild(el("p", "dim-page-name", `Strategy: ${st.name}`));
-  body.appendChild(el("p", "dim-page-def", st.def));
+  if (st.kind !== "stance") body.appendChild(el("p", "dim-page-def", st.def)); // the stance description is taught on the strategy pages only
   const stem = st.kind === "tactic" ? `Should an ideal ${SCHOOL.short} response include this strategy?` : `Which stance should an ideal ${SCHOOL.short} response lead with?`;
   body.appendChild(el("p", "survey-question-text", stem));
   const options = st.kind === "tactic" ? ["Yes", "No"] : STANCE_OPTIONS.map((o) => o.name);
