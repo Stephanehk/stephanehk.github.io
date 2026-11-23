@@ -1552,7 +1552,9 @@ function renderDims(i) {
   back.addEventListener("click", () => go(`dims:${i - 1}`));
   // A tactic page first shows the definition alone; Next reveals the example, and Next again moves on.
   const reveal = pg.kind === "tactic" && !exampleShown.has(i);
-  const next = pg.kind !== "tactic" ? timedButton("Next →", `dims:${i}`) : timedButton("Next →", reveal ? `dims:${i}` : `dims:${i}:ex`, reveal ? 8000 : 7000);
+  // A strategy's definition holds Next for 4 seconds; a page showing the example (revealed, or a stance example slide) has no wait.
+  const showsExample = pg.kind === "stanceExample" || (pg.kind === "tactic" && !reveal);
+  const next = showsExample ? button("Next →") : timedButton("Next →", `dims:${i}`, 4000);
   next.addEventListener("click", () => {
     if (reveal) { exampleShown.add(i); return go(`dims:${i}`); }
     if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("exintro"); }
