@@ -599,7 +599,7 @@ const VIGNETTE_POOL = [{"id": "200-17", "situation": "The user describes a recur
     <script>
 // Participant-facing content for the PCT training and quizzes. Principle wording is the
 // `teaches` text of the core claims in experts/predictions/spec.py with "therapist" -> "counselor"; every
-// principle is one of the claims used to check the simulated experts. `example` (shown under the principle) is written for the page, not sourced. The `id` field is the claim id and
+// principle is one of the claims used to check the simulated experts. `example` (shown under the principle) is written for the page and modelled on the source exchange named in `exampleSource` (never shown). The `id` field is the claim id and
 // is never shown to participants. Foils in the checks are claims from the other schools (`source` names
 // the claim) or, where no other school's claim contradicts the PCT principle, written for the item
 // (`source: "written"`).
@@ -620,7 +620,8 @@ const CARDS = [
     teaches: "The counselor’s central response is to reflect and clarify the client’s attitudes and feelings so that the client feels deeply understood.",
     rulesIn: "Restating what the person seems to feel and mean, in their own terms, in every response.",
     rulesOut: "Going straight to analysis, questions or solutions without first conveying understanding; a reflection that goes beyond the person’s own words.",
-    example: "Person: “My sister cancelled on me again.” Counselor: “You were counting on her, and it hurts to be let down again.”",
+    example: "Person: “My roommate keeps leaving her dishes for me to clean, and I’m sick of it.” Counselor: “You’re fed up with always being the one who cleans up after her.”",
+    exampleSource: "written for the page; modelled on Rogers 1951, Client-Centered Therapy, ch. 2, p. 28 (mother's criticism / 'you feel pretty resentful toward her criticism')",
   },
   {
     id: "PCT-C",
@@ -628,7 +629,8 @@ const CARDS = [
     teaches: "The counselor stays within the client’s frame of reference and does not evaluate or correct how the client sees their situation, even where the counselor sees it differently.",
     rulesIn: "Reflecting the person’s reading of events, including who they hold responsible, even when the facts they describe point elsewhere.",
     rulesOut: "Correcting or questioning the reading, or agreeing that it is right; adding meaning from the counselor’s own point of view.",
-    example: "Person: “My boss is out to get me.” Counselor: “It feels to you like he is singling you out.”",
+    example: "Person: “My friend didn’t invite me to her birthday. She obviously doesn’t care about me.” Counselor: “Being left out tells you that you don’t matter to her.”",
+    exampleSource: "written for the page; modelled on Rogers 1951, ch. 2, p. 34 ('Decision making just seems impossible to you') and Rogers's 1965 session with Gloria (Brodley & Lietaer transcripts, vol. 12), C62/T62",
   },
   {
     id: "PCT-B",
@@ -636,7 +638,8 @@ const CARDS = [
     teaches: "The counselor neither approves nor disapproves of what the client does or plans to do, whether the counselor thinks the client is right or wrong.",
     rulesIn: "Accepting the person whatever they did or plan to do, and saying nothing for or against the action, even when asked for a verdict.",
     rulesOut: "Any verdict on the action: endorsing it, questioning it, or calling it wrong, whether the person is in the right or in the wrong.",
-    example: "Person: “I read my partner’s texts, and I feel sick about it.” Counselor: “Having looked has left you feeling sick.”",
+    example: "Person: “I lied to my sister about why I missed her party, and I feel guilty.” Counselor: “The lie keeps weighing on you because you want her to be able to trust you.”",
+    exampleSource: "written for the page; modelled on Rogers's 1965 session with Gloria (Brodley & Lietaer transcripts, vol. 12), C4/T4",
   },
   {
     id: "PCT-D",
@@ -644,7 +647,8 @@ const CARDS = [
     teaches: "The counselor does not praise or reassure the client.",
     rulesIn: "Understanding a person’s doubts about themself without arguing them away.",
     rulesOut: "Compliments, encouragement, affirming the person’s strengths, or telling them that things will turn out fine.",
-    example: "Person: “I always mess things up.” Counselor: “It feels like nothing you do turns out right.”",
+    example: "Person: “I’m worried my friends won’t forgive me. I just want someone to tell me it will be okay.” Counselor: “You’re not sure they’ll forgive you, and you wish you could be sure.”",
+    exampleSource: "written for the page; modelled on Rogers's 1965 session with Gloria (Brodley & Lietaer transcripts, vol. 12), C42/T42",
   },
   {
     id: "PCT-E",
@@ -652,7 +656,8 @@ const CARDS = [
     teaches: "The counselor does not offer unsolicited advice or suggestions, or try to persuade the client.",
     rulesIn: "Leaving the person to work out their own next steps when they asked to understand something or whether they were right.",
     rulesOut: "Volunteering what the person should do or think; arguing them toward a course of action.",
-    example: "Person: “I don’t get why she stopped calling.” Counselor: “Her silence leaves you confused.”",
+    example: "Person: “I don’t know whether to bring it up with my brother again or just let it go.” Counselor: “You’re torn between the two, and it’s still on your mind.”",
+    exampleSource: "written for the page; modelled on Rogers's 1965 session with Gloria (Brodley & Lietaer transcripts, vol. 12), C46/T46",
   },
   {
     id: "PCT-G",
@@ -660,7 +665,8 @@ const CARDS = [
     teaches: "Requests for information, options, or help are answered and accommodated, unless the request is unethical or destructive. This does not extend to a verdict on the client’s own actions, which the counselor does not give even when asked.",
     rulesIn: "A direct answer, given as the counselor’s own view with its basis stated, when the person asks what to do or asks for something written; checking afterwards that it met the question.",
     rulesOut: "Reflecting a request for options or help back instead of meeting it; giving a verdict on the person’s own actions because they asked for one.",
-    example: "Person: “Can you help me write an apology to my brother?” Counselor: “Yes. Here is a draft; tell me if it says what you mean.”",
+    example: "Person: “Can you give me some ways to apologize to my brother?” Counselor: “Sure. You could call him, write him a note, or ask to meet in person. Is that the kind of thing you were looking for?”",
+    exampleSource: "written for the page; follows Brodley 2019, 'Responding to Clients' Questions' (answer directly, then check the answer met the question)",
   },
   {
     id: "PCT-F",
@@ -668,7 +674,8 @@ const CARDS = [
     teaches: "The counselor does not interpret or explain why the client or other people behave as they do.",
     rulesIn: "Reflecting the person’s own puzzlement about someone’s behavior and what that behavior means to them.",
     rulesOut: "Offering an account of another person’s motives, or of the person’s own reactions, even when the person asks why.",
-    example: "Person: “Why does my dad shut down when I bring it up?” Counselor: “You are puzzled by it, and it hurts when he goes quiet.”",
+    example: "Person: “My dad goes quiet every time I bring up my job. I don’t get it.” Counselor: “You can’t make sense of his silence, and it bothers you.”",
+    exampleSource: "written for the page; modelled on Rogers's 1965 session with Gloria (Brodley & Lietaer transcripts, vol. 12), T17 ('I do catch the real deep puzzlement that you feel')",
   },
 ];
 
