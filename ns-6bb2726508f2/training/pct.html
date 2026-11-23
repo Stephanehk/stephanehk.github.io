@@ -2282,7 +2282,7 @@ function mainFrac(vi, si) { return (vi + (si + 1) / (EXAMPLE_STRATEGIES.length +
 function renderMainIntro() {
   signpost({
     step: MAIN_STEP, frac: 0,
-    text: `Now the main task: ${MAIN_N} situations, no feedback.`,
+    text: `Now you’re ready for the main task! We will ask you to label ${MAIN_N} situations.`,
     back: () => go(`ex:${EXAMPLE_STRATEGIES.length - 1}`),
     next: () => go("mv:0"),
     nextLabel: "Begin →",
