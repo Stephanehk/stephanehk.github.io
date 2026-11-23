@@ -336,7 +336,12 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .vignette-bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
 .vignette-bullets li::first-letter { text-transform: uppercase; }
 .vignette .speak-control { justify-self: start; }
-.principle-example .speak-control { justify-self: start; margin-top: 4px; }
+.principle-example { grid-template-columns: 1fr auto; align-items: center; gap: 16px; }
+.principle-example-lines { display: grid; gap: 6px; }
+.speak-button--attention { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(122, 111, 159, 0.45); animation: speak-attention 0.5s ease-in-out 4; }
+@keyframes speak-attention { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+.flash-message { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); z-index: 50; padding: 12px 20px; border-radius: 12px; background: var(--accent-deep); color: #fff; font-size: 16px; font-weight: 600; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22); animation: flash-fade 3.2s ease forwards; }
+@keyframes flash-fade { 0% { opacity: 0; transform: translate(-50%, -8px); } 8%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 0); } }
 /* Written response. */
 .write-box { width: 100%; min-height: 200px; padding: 12px 14px; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--surface-strong); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
 .write-box:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -1277,6 +1282,15 @@ function renderIntroQuiz() {
 
 // One principle per page, with its example (when the school has one) shown in full.
 const CARD_WAIT_MS = 8000;
+const listened = new Set(); // principle pages whose example has been played
+// A message that pops up at the top of the page and fades after a few seconds.
+function flashMessage(text) {
+  document.querySelectorAll(".flash-message").forEach((n) => n.remove());
+  const n = el("div", "flash-message", text);
+  n.setAttribute("role", "alert");
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 3200);
+}
 function renderCards(k) {
   if (!(k >= 0 && k < CARDS.length)) k = 0;
   const c = CARDS[k];
@@ -1285,23 +1299,35 @@ function renderCards(k) {
   card.appendChild(el("div", "card-eyebrow", `Principle ${k + 1} of ${CARDS.length}`));
   const body = el("div", "survey-card-body");
   body.appendChild(el("p", "principle-text", c.teaches));
+  let listen = null; // the example's read-aloud button, when the example can be read aloud
   if (c.example) {
     const ex = el("div", "principle-example");
-    ex.appendChild(el("span", "card-eyebrow", "Example"));
+    const lines = el("div", "principle-example-lines");
+    lines.appendChild(el("span", "card-eyebrow", "Example"));
     const m = c.example.match(/^(Person: .*?) (Counselor: .*)$/);
-    for (const line of m ? [m[1], m[2]] : [c.example]) ex.appendChild(el("p", null, line));
+    for (const line of m ? [m[1], m[2]] : [c.example]) lines.appendChild(el("p", null, line));
+    ex.appendChild(lines);
     if (m) {
       // Read aloud in two voices, without the "Person:" / "Counselor:" labels or the quotation marks.
       const spoken = (line) => line.replace(/^\w+: /, "").replace(/[“”]/g, "");
-      ex.appendChild(speakControl([{ text: spoken(m[1]), speaker: 0 }, { text: spoken(m[2]), speaker: 1 }], "Listen to the example"));
+      const control = speakControl([{ text: spoken(m[1]), speaker: 1 }, { text: spoken(m[2]), speaker: 0 }], "Listen to the example", () => { listened.add(k); listen.classList.remove("speak-button--attention"); });
+      listen = control.querySelector(".speak-button");
+      ex.appendChild(control);
     }
     body.appendChild(ex);
   }
   card.appendChild(body);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(k === 0 ? "introquiz" : `cards:${k - 1}`));
-  const next = timedButton("Next →", `cards:${k}`, CARD_WAIT_MS);
+  // With an example that can be read aloud, Next requires listening first (no timer); otherwise Next waits CARD_WAIT_MS.
+  const mustListen = () => listen && !listen.hidden && !listen.disabled && !listened.has(k);
+  const next = listen && !listen.hidden ? button("Next →") : timedButton("Next →", `cards:${k}`, CARD_WAIT_MS);
   next.addEventListener("click", () => {
+    if (mustListen()) {
+      flashMessage("Please listen to the example to continue");
+      listen.classList.remove("speak-button--attention"); void listen.offsetWidth; listen.classList.add("speak-button--attention");
+      return;
+    }
     if (k === CARDS.length - 1) { state.critters = Math.max(state.critters, 1); go("q1intro"); }
     else go(`cards:${k + 1}`);
   });
@@ -1736,9 +1762,9 @@ function renderExampleIntro() {
 }
 
 // Microphone button with a "Click to listen" caption.
-function speakControl(text, label) {
+function speakControl(text, label, onStart) {
   const wrap = el("div", "speak-control");
-  wrap.append(speakButton(text, label), el("span", "speak-caption", "Click to listen"));
+  wrap.append(speakButton(text, label, onStart), el("span", "speak-caption", "Click to listen"));
   return wrap;
 }
 // The most natural-sounding English voice the browser offers. Browsers ship both old robotic voices and newer neural
@@ -1766,7 +1792,7 @@ if ("speechSynthesis" in window) window.speechSynthesis.getVoices(); // voices l
 
 // Microphone button that reads `parts` aloud with the browser's speech synthesis; click again to stop. A part is a
 // sentence, or {text, speaker: 0|1} for a two-person exchange read in two voices.
-function speakButton(parts, label = "Listen to the situation") {
+function speakButton(parts, label = "Listen to the situation", onStart = null) {
   const b = el("button", "speak-button");
   b.type = "button";
   b.title = label;
@@ -1777,6 +1803,7 @@ function speakButton(parts, label = "Listen to the situation") {
   const stop = () => { window.speechSynthesis.cancel(); speaking = false; b.classList.remove("speak-button--on"); };
   b.addEventListener("click", () => {
     if (speaking) return stop();
+    if (onStart) onStart();
     window.speechSynthesis.cancel();
     const twoVoices = parts.some((x) => typeof x !== "string");
     const pair = twoVoices ? voicePair() : [{ voice: bestVoice(), pitch: 1 }];
