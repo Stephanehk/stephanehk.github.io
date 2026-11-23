@@ -327,6 +327,9 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .dim-example-box { margin-left: 24px; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(122, 111, 159, 0.35); background: rgba(122, 111, 159, 0.12); display: grid; gap: 4px; }
 .dim-example-box .card-eyebrow { color: var(--accent-dark); }
 .dim-example-box p { margin: 0; font-size: 17px; font-style: italic; color: var(--accent-deep); line-height: 1.45; }
+.stance-chip { display: inline-block; padding: 3px 10px; border-radius: 8px; border: 1px solid rgba(122, 111, 159, 0.35); background: rgba(122, 111, 159, 0.14); color: var(--accent-deep); font-weight: 700; font-size: 15px; }
+.stance-chip-text { margin: 6px 0 0; }
+.dim-page-choices .dim-choice-ex { margin-top: 6px; }
 .choice-text { display: grid; gap: 2px; }
 .choice-eg { font-size: 13.5px; font-style: italic; color: var(--ink-soft); line-height: 1.35; }
 /* Vignette cut to bullets. */
@@ -1494,7 +1497,7 @@ function renderDims(i) {
     const choices = el("ul", "dim-page-choices");
     for (const o of STANCE_OPTIONS) {
       const li = el("li");
-      li.append(el("b", null, o.name), ": " + o.def.replace(/\[target\]/g, stanceWord(st.name)));
+      li.append(el("span", "stance-chip", o.name), el("p", "stance-chip-text", o.def.replace(/\[target\]/g, stanceWord(st.name))));
       choices.appendChild(li);
     }
     body.appendChild(choices);
@@ -1505,7 +1508,7 @@ function renderDims(i) {
     const choices = el("ul", "dim-page-choices");
     for (const o of STANCE_OPTIONS) {
       const li = el("li");
-      li.appendChild(el("b", null, o.name));
+      li.appendChild(el("span", "stance-chip", o.name));
       li.appendChild(el("p", "dim-choice-ex", st.examples[o.name] || `Used when the person’s message has no ${stanceWord(st.name)} to respond to.`));
       choices.appendChild(li);
     }
