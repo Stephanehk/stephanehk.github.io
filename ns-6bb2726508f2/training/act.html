@@ -1525,7 +1525,7 @@ const N_TACTICS = TACTICS.length;
 
 // Shown vignettes are cut to a few verbatim phrases (bullets_<school>.js); without bullets the full text is shown.
 const BULLETS = typeof VIGNETTE_BULLETS !== "undefined" ? VIGNETTE_BULLETS : {};
-const vignetteSpeech = (v) => (BULLETS[v.id] ? BULLETS[v.id].join(". ") : v.situation);
+const vignetteSpeech = (v) => (BULLETS[v.id] ? BULLETS[v.id] : [v.situation]); // one utterance per bullet, so the voice pauses between them
 
 function vignetteBox(v = EXAMPLE) {
   const box = el("div", "vignette");
@@ -1662,8 +1662,19 @@ function speakControl(text) {
   wrap.append(speakButton(text), el("span", "speak-caption", "Click to listen"));
   return wrap;
 }
-// Microphone button that reads `text` aloud with the browser's speech synthesis; click again to stop.
-function speakButton(text) {
+// The most natural-sounding English voice the browser offers. Browsers ship both old robotic voices and newer neural
+// ones (Edge "Natural"/"Online", Chrome "Google", Apple "Premium"/"Enhanced"); the default is often a robotic one.
+const VOICE_PREFS = [/natural/i, /neural/i, /premium/i, /enhanced/i, /online/i, /^Google US English/i, /^Google UK English Female/i, /^Google/i, /\b(Samantha|Ava|Allison|Evan|Zoe|Karen|Daniel)\b/i];
+function bestVoice() {
+  const voices = window.speechSynthesis.getVoices().filter((v) => /^en([-_]|$)/i.test(v.lang));
+  if (!voices.length) return null;
+  const score = (v) => { const k = VOICE_PREFS.findIndex((re) => re.test(v.name)); return (k < 0 ? VOICE_PREFS.length : k) * 2 + (/^en[-_]US/i.test(v.lang) ? 0 : 1); };
+  return voices.slice().sort((a, b) => score(a) - score(b))[0];
+}
+if ("speechSynthesis" in window) window.speechSynthesis.getVoices(); // voices load asynchronously; ask early
+
+// Microphone button that reads `parts` (a list of sentences) aloud with the browser's speech synthesis; click again to stop.
+function speakButton(parts) {
   const b = el("button", "speak-button");
   b.type = "button";
   b.title = "Listen to the situation";
@@ -1675,12 +1686,17 @@ function speakButton(text) {
   b.addEventListener("click", () => {
     if (speaking) return stop();
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.95;
-    u.onend = stop;
-    u.onerror = () => { stop(); b.disabled = true; b.title = "Speech is not available in this browser"; b.setAttribute("aria-label", b.title); };
+    const voice = bestVoice();
     speaking = true; b.classList.add("speak-button--on");
-    window.speechSynthesis.speak(u);
+    parts.forEach((part, k) => {
+      const text = part.trim().replace(/^./, (c) => c.toUpperCase()).replace(/([^.!?])$/, "$1.");
+      const u = new SpeechSynthesisUtterance(text);
+      if (voice) { u.voice = voice; u.lang = voice.lang; }
+      u.rate = 1; u.pitch = 1;
+      if (k === parts.length - 1) u.onend = stop;
+      u.onerror = (e) => { if (e.error === "canceled" || e.error === "interrupted") return; stop(); b.disabled = true; b.title = "Speech is not available in this browser"; b.setAttribute("aria-label", b.title); };
+      window.speechSynthesis.speak(u);
+    });
   });
   return b;
 }
