@@ -582,7 +582,7 @@ const STANCES = [
       "Indirect pushback": "“I wonder if there is another way to look at this.”",
       "Praise": "“That is a perceptive way to look at it.”",
       "Confirmation": "“You are seeing this correctly.”",
-      "Take no position": "“So that is how it looks to you.”",
+      "Take no position": "“That must feel really hard.”",
     },
   },
 ];
@@ -1880,7 +1880,6 @@ function renderDims(i) {
     const st = pg.st;
     body.appendChild(el("p", "dim-page-name", `${st.name}: example`));
     body.appendChild(el("p", "dim-example-person", st.ex));
-    body.appendChild(el("p", "survey-question-text", `A response for each ${stanceWord(st.name)} stance option:`));
     const choices = el("ul", "dim-page-choices");
     for (const o of STANCE_OPTIONS) {
       const li = el("li");
