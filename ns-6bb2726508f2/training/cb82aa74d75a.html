@@ -1259,9 +1259,9 @@ function renderCards(k) {
   card.appendChild(body);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(k === 0 ? "introquiz" : `cards:${k - 1}`));
-  // With an example that can be read aloud, Next requires listening first (no timer); otherwise Next waits CARD_WAIT_MS.
+  // Next waits CARD_WAIT_MS, and with an example that can be read aloud it also requires listening first.
   const mustListen = () => listen && !listen.hidden && !listen.disabled && !listened.has(k);
-  const next = listen && !listen.hidden ? button("Next →") : timedButton("Next →", `cards:${k}`, CARD_WAIT_MS);
+  const next = timedButton("Next →", `cards:${k}`, CARD_WAIT_MS);
   next.addEventListener("click", () => {
     if (mustListen()) {
       flashMessage("Please listen to the example to continue");
