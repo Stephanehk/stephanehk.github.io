@@ -1966,7 +1966,10 @@ const N_TACTICS = TACTICS.length;
 
 // Shown vignettes are cut to a few verbatim phrases (bullets_<school>.js); without bullets the full text is shown.
 const BULLETS = typeof VIGNETTE_BULLETS !== "undefined" ? VIGNETTE_BULLETS : {};
-const vignetteSpeech = (v) => (BULLETS[v.id] ? BULLETS[v.id] : [v.situation]); // one utterance per bullet, so the voice pauses between them
+// Participants read about "the person": the vignettes say "the user", so the wording is changed where a vignette is shown
+// or read aloud (the stored vignettes and bullets stay as generated).
+const asPerson = (text) => text.replace(/\b([Tt])he user\b/g, "$1he person");
+const vignetteSpeech = (v) => (BULLETS[v.id] ? BULLETS[v.id] : [v.situation]).map(asPerson); // one utterance per bullet, so the voice pauses between them
 
 function vignetteBox(v = EXAMPLE) {
   const box = el("div", "vignette");
@@ -1974,9 +1977,9 @@ function vignetteBox(v = EXAMPLE) {
   sit.appendChild(el("span", "card-eyebrow", "The situation"));
   if (BULLETS[v.id]) {
     const ul = el("ul", "vignette-bullets");
-    for (const b of BULLETS[v.id]) ul.appendChild(el("li", null, b));
+    for (const b of BULLETS[v.id]) ul.appendChild(el("li", null, asPerson(b)));
     sit.appendChild(ul);
-  } else sit.append(v.situation);
+  } else sit.append(asPerson(v.situation));
   box.appendChild(sit);
   return box;
 }
