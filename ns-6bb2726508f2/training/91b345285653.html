@@ -324,6 +324,9 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .principle-example p { margin: 0; font-size: 16.5px; line-height: 1.45; font-style: italic; }
 /* Stance example slide and the "e.g." line under a stance option. */
 .dim-example-person { margin: 0; padding: 12px 16px; border-left: 3px solid var(--accent); border-radius: 8px; background: rgba(122, 111, 159, 0.08); font-size: 17px; font-weight: 600; line-height: 1.4; }
+.dim-example-box { margin-left: 24px; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(122, 111, 159, 0.35); background: rgba(122, 111, 159, 0.12); display: grid; gap: 4px; }
+.dim-example-box .card-eyebrow { color: var(--accent-dark); }
+.dim-example-box p { margin: 0; font-size: 17px; font-style: italic; color: var(--accent-deep); line-height: 1.45; }
 .choice-text { display: grid; gap: 2px; }
 .choice-eg { font-size: 13.5px; font-style: italic; color: var(--ink-soft); line-height: 1.35; }
 /* Vignette cut to bullets. */
@@ -1828,6 +1831,7 @@ const stanceWord = (stanceName) => (stanceName === "Action stance" ? "action" : 
 
 const READ_WAIT_MS = 15000;
 const waited = new Set();
+const exampleShown = new Set(); // strategy pages whose example has been revealed
 // Next is disabled for `ms` the first time a page is seen; a fill bar inside the button shows the wait.
 function timedButton(text, key, ms = READ_WAIT_MS) {
   const b = button(text);
@@ -1869,8 +1873,12 @@ function renderDims(i) {
     const t = pg.t;
     body.appendChild(el("p", "dim-page-name", t.name));
     body.appendChild(el("p", "dim-page-def", t.def));
-    body.appendChild(el("p", "dim-page-def", `Example response: ${t.ex}`));
     body.appendChild(el("p", "survey-question-text", "You will be asked if a response should include this strategy."));
+    if (exampleShown.has(i)) {
+      const ex = el("div", "dim-example-box");
+      ex.append(el("span", "card-eyebrow", "Example response"), el("p", null, t.ex));
+      body.appendChild(ex);
+    }
   } else if (pg.kind === "stance") {
     const st = pg.st;
     body.appendChild(el("p", "dim-page-name", st.name));
@@ -1899,8 +1907,11 @@ function renderDims(i) {
   card.appendChild(body);
   const back = button("← Back", true);
   back.addEventListener("click", () => go(`dims:${i - 1}`));
-  const next = timedButton("Next →", `dims:${i}`);
+  // A tactic page first shows the definition alone; Next reveals the example, and Next again moves on.
+  const reveal = pg.kind === "tactic" && !exampleShown.has(i);
+  const next = pg.kind !== "tactic" ? timedButton("Next →", `dims:${i}`) : timedButton("Next →", reveal ? `dims:${i}` : `dims:${i}:ex`, reveal ? 8000 : 7000);
   next.addEventListener("click", () => {
+    if (reveal) { exampleShown.add(i); return go(`dims:${i}`); }
     if (i === DIMS_TOTAL - 1) { state.critters = Math.max(state.critters, 3); go("exintro"); }
     else go(`dims:${i + 1}`);
   });
