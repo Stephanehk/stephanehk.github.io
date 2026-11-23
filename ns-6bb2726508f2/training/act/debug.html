@@ -336,6 +336,7 @@ body:has(.lucky-garden) .survey-card { background: var(--surface); }
 .vignette-bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
 .vignette-bullets li::first-letter { text-transform: uppercase; }
 .vignette .speak-control { justify-self: start; }
+.principle-example .speak-control { justify-self: start; margin-top: 4px; }
 /* Written response. */
 .write-box { width: 100%; min-height: 200px; padding: 12px 14px; border: 1px solid var(--rule-strong); border-radius: 10px; background: var(--surface-strong); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
 .write-box:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -1230,6 +1231,11 @@ function renderCards(k) {
     ex.appendChild(el("span", "card-eyebrow", "Example"));
     const m = c.example.match(/^(Person: .*?) (Counselor: .*)$/);
     for (const line of m ? [m[1], m[2]] : [c.example]) ex.appendChild(el("p", null, line));
+    if (m) {
+      // Read aloud in two voices, without the "Person:" / "Counselor:" labels or the quotation marks.
+      const spoken = (line) => line.replace(/^\w+: /, "").replace(/[“”]/g, "");
+      ex.appendChild(speakControl([{ text: spoken(m[1]), speaker: 0 }, { text: spoken(m[2]), speaker: 1 }], "Listen to the example"));
+    }
     body.appendChild(ex);
   }
   card.appendChild(body);
@@ -1671,28 +1677,41 @@ function renderExampleIntro() {
 }
 
 // Microphone button with a "Click to listen" caption.
-function speakControl(text) {
+function speakControl(text, label) {
   const wrap = el("div", "speak-control");
-  wrap.append(speakButton(text), el("span", "speak-caption", "Click to listen"));
+  wrap.append(speakButton(text, label), el("span", "speak-caption", "Click to listen"));
   return wrap;
 }
 // The most natural-sounding English voice the browser offers. Browsers ship both old robotic voices and newer neural
 // ones (Edge "Natural"/"Online", Chrome "Google", Apple "Premium"/"Enhanced"); the default is often a robotic one.
 const VOICE_PREFS = [/natural/i, /neural/i, /premium/i, /enhanced/i, /online/i, /^Google US English/i, /^Google UK English Female/i, /^Google/i, /\b(Samantha|Ava|Allison|Evan|Zoe|Karen|Daniel)\b/i];
-function bestVoice() {
+function rankedVoices() {
   const voices = window.speechSynthesis.getVoices().filter((v) => /^en([-_]|$)/i.test(v.lang));
-  if (!voices.length) return null;
   const score = (v) => { const k = VOICE_PREFS.findIndex((re) => re.test(v.name)); return (k < 0 ? VOICE_PREFS.length : k) * 2 + (/^en[-_]US/i.test(v.lang) ? 0 : 1); };
-  return voices.slice().sort((a, b) => score(a) - score(b))[0];
+  return voices.slice().sort((a, b) => score(a) - score(b));
+}
+function bestVoice() { return rankedVoices()[0] || null; }
+// Browsers do not say whether a voice is male or female; these are the names of the common built-in voices.
+const MALE_VOICE = /\b(male|guy|christopher|eric|roger|steffan|andrew|brian|davis|tony|jason|ryan|william|thomas|david|mark|alex|daniel|evan|tom|aaron|fred|george|james|liam|oliver|arthur|rishi|reed|eddy|rocko|grandpa)\b/i;
+const isMale = (v) => MALE_VOICE.test(v.name) && !/female/i.test(v.name);
+// Two voices for a two-person exchange: the best voice, and the best voice of the other sex (else the next
+// different voice). With a single installed voice the second speaker is the same voice at a lower pitch.
+function voicePair() {
+  const ranked = rankedVoices();
+  if (!ranked.length) return [{ voice: null, pitch: 1 }, { voice: null, pitch: 0.75 }];
+  const a = ranked[0];
+  const b = ranked.find((v) => isMale(v) !== isMale(a)) || ranked.find((v) => v.name !== a.name);
+  return [{ voice: a, pitch: 1 }, b ? { voice: b, pitch: 1 } : { voice: a, pitch: 0.75 }];
 }
 if ("speechSynthesis" in window) window.speechSynthesis.getVoices(); // voices load asynchronously; ask early
 
-// Microphone button that reads `parts` (a list of sentences) aloud with the browser's speech synthesis; click again to stop.
-function speakButton(parts) {
+// Microphone button that reads `parts` aloud with the browser's speech synthesis; click again to stop. A part is a
+// sentence, or {text, speaker: 0|1} for a two-person exchange read in two voices.
+function speakButton(parts, label = "Listen to the situation") {
   const b = el("button", "speak-button");
   b.type = "button";
-  b.title = "Listen to the situation";
-  b.setAttribute("aria-label", "Listen to the situation");
+  b.title = label;
+  b.setAttribute("aria-label", label);
   b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z" fill="currentColor"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   if (!("speechSynthesis" in window)) { b.hidden = true; return b; }
   let speaking = false;
@@ -1700,13 +1719,16 @@ function speakButton(parts) {
   b.addEventListener("click", () => {
     if (speaking) return stop();
     window.speechSynthesis.cancel();
-    const voice = bestVoice();
+    const twoVoices = parts.some((x) => typeof x !== "string");
+    const pair = twoVoices ? voicePair() : [{ voice: bestVoice(), pitch: 1 }];
     speaking = true; b.classList.add("speak-button--on");
     parts.forEach((part, k) => {
-      const text = part.trim().replace(/^./, (c) => c.toUpperCase()).replace(/([^.!?])$/, "$1.");
+      const raw = typeof part === "string" ? part : part.text;
+      const { voice, pitch } = pair[typeof part === "string" ? 0 : part.speaker];
+      const text = raw.trim().replace(/^./, (c) => c.toUpperCase()).replace(/([^.!?])$/, "$1.");
       const u = new SpeechSynthesisUtterance(text);
       if (voice) { u.voice = voice; u.lang = voice.lang; }
-      u.rate = 1; u.pitch = 1;
+      u.rate = 1; u.pitch = pitch;
       if (k === parts.length - 1) u.onend = stop;
       u.onerror = (e) => { if (e.error === "canceled" || e.error === "interrupted") return; stop(); b.disabled = true; b.title = "Speech is not available in this browser"; b.setAttribute("aria-label", b.title); };
       window.speechSynthesis.speak(u);
