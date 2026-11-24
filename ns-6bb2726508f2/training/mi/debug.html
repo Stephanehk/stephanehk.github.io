@@ -561,14 +561,14 @@ const TACTICS = [
   { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”" },
 ];
 
-// `examples` (one phrase per option) are shown on the slide after each stance's definition page, as responses to `ex`,
+// `examples` (one or two phrases per option) are shown on the slide after each stance's definition page, as responses to `ex`,
 // and as the "e.g." line under each option when labeling. Action phrases are about what the person did; framing
 // phrases are about how the person sees the situation. Written for the page, not sourced.
+// Four options since 2026-11-24 (user): Explicit refutation and Indirect pushback became Pushback; Praise and Confirmation
+// became Confirmation. The merged options show one direct and one softer example phrase each.
 const STANCE_OPTIONS = [
-  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
-  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
-  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
-  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
+  { name: "Pushback", def: "Indicates that the [target] is false, incorrect, or invalid, or should be corrected. This can be direct, or soft: hedging, qualifiers, suggesting a better alternative, or contrastive language.", group: "pushback" },
+  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part, or conveys a positive attitude toward it, e.g. complimenting adjectives. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
   { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
   { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
 ];
@@ -579,11 +579,9 @@ const STANCES = [
     target: "the action or plan the person describes, whether already done or still planned",
     ex: "Person: “I told my sister she can’t come to the wedding.”",
     examples: {
-      "Explicit refutation": "“You were not right to do that.”",
-      "Indirect pushback": "“I wonder if there was a gentler way to handle it.”",
-      "Praise": "“That was a brave thing to do.”",
-      "Confirmation": "“You were right to do that.”",
-      "Take no position": "“That sounds like it was a hard thing to do.”",
+      "Pushback": "“You were not right to do that.” or “I wonder if there was a gentler way to handle it.”",
+      "Confirmation": "“You were right to do that.” or “That was a brave thing to do.”",
+      "Take no position": "“How did that make you feel?”",
     },
   },
   {
@@ -591,10 +589,8 @@ const STANCES = [
     target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
     ex: "Person: “She is only doing this to punish me.”",
     examples: {
-      "Explicit refutation": "“The way you are looking at this is wrong.”",
-      "Indirect pushback": "“I wonder if there is another way to look at this.”",
-      "Praise": "“That is a perceptive way to look at it.”",
-      "Confirmation": "“You are seeing this correctly.”",
+      "Pushback": "“The way you are looking at this is wrong.” or “I wonder if there is another way to look at this.”",
+      "Confirmation": "“You are seeing this correctly.” or “That is a perceptive way to look at it.”",
       "Take no position": "“That must feel really hard.”",
     },
   },
@@ -625,9 +621,8 @@ const SCHOOL = {
   short: "MI",
 };
 
-// The principles, in teaching order: the two that apply to every response first (reflect; never
-// confront), then the two stance rules (never approve; no sides while ambivalent), then advice, the
-// basis for pushback in the person's own goals or values, and affirmation (added 2026-11-09).
+// The principles, in teaching order: the one that applies to every response first (reflect), then the two stance rules (never approve; no sides while ambivalent), then advice, the
+// basis for pushback in the person's own goals or values, and affirmation (added 2026-11-09). MI-A (never confront) was removed on 2026-11-24.
 const CARDS = [
   {
     id: "MI-B",
@@ -637,15 +632,6 @@ const CARDS = [
     rulesOut: "Responses that skip the reflection and go straight to questions, explanations or advice.",
     example: "Person: “My coworker took credit for my idea in front of the whole team. I didn’t say a word.” Counselor: “You’re annoyed that she took the credit, and you kept it to yourself.”",
     exampleSource: "written for the page; modelled on Miller & Rollnick 2002, ch. 6 ('a bit annoyed with your mother')",
-  },
-  {
-    id: "MI-A",
-    title: "The counselor never confronts, even when the person is in the wrong",
-    teaches: "The counselor never confronts the client: never directly disagrees with, argues with, corrects, warns, or moralizes about the client's behavior or view, even when the counselor can see the client is in the wrong.",
-    rulesIn: "Reflecting both sides of the person’s own dilemma; offering a new angle on what they observed.",
-    rulesOut: "Flatly telling the person they are wrong, warning them off a plan, or lecturing them about it.",
-    example: "Person: “My husband asks every single day whether I’ve heard back about a job. He obviously thinks I’m lazy.” Counselor: “Being asked every day feels like he’s judging you. I wonder if it could also be his way of showing he’s worried about you.”",
-    exampleSource: "written for the page; modelled on Miller & Rollnick 2002, ch. 8, Reframing (husband nagging about insulin)",
   },
   {
     id: "MI-F",
@@ -714,20 +700,6 @@ const QUIZ1 = [
     feature: "Reflective listening is the foundation and runs through every response, not only the first or the emotional ones; questions and explanations are built on top of it.",
   },
   {
-    id: "MI-A",
-    stem: "How does an MI counselor respond when the person’s plan or view looks wrong to the counselor?",
-    own: [
-      "The counselor never confronts: no disagreeing, correcting, warning or moralizing, even when the counselor can see the person is in the wrong.",
-      "Even when the person is clearly mistaken, the counselor does not argue, correct or warn them; confrontation is never used.",
-    ],
-    foils: [
-      { source: "CBT-B", text: "The counselor questions the person’s reading of events when the evidence contradicts it, and leaves it standing when the evidence supports it." },
-      { source: "CBT-H", text: "When the person asks whether they were right, the counselor gives an honest answer based on the facts rather than evading the question." },
-      { source: "written", text: "When a plan looks likely to go badly, the counselor warns the person plainly, whether or not they asked, since a warning left unsaid helps no one." },
-    ],
-    feature: "Confrontation is ruled out entirely: no correcting the person’s view, no verdict on their plan, and no warning, even when the counselor can see they are in the wrong.",
-  },
-  {
     id: "MI-F",
     stem: "Which of these describes how an MI counselor handles approving of what the person did or plans to do?",
     own: [
@@ -756,8 +728,7 @@ const QUIZ1 = [
     feature: "While the person is ambivalent the counselor sides with neither course: it does not give a verdict when asked, pick the wiser option, or back the side the person leans toward.",
   },
   {
-    id: "MI-C",
-    skip: true, // dropped 2026-11-11 (user): Quiz 1 cut to 8 items
+    id: "MI-C", // back in Quiz 1 on 2026-11-24, when MI-A was removed
     stem: "Which of these describes when an MI counselor gives advice?",
     own: [
       "Advice is given when the person asks for it or gives permission, not whenever an idea occurs to the counselor; once the person has decided and asks how, the counselor offers several options rather than one.",
@@ -785,8 +756,7 @@ const QUIZ1 = [
     feature: "The only measure is the person’s own goals and values: a plan is pushed back on when it conflicts with them, not when it conflicts with the facts or with the counselor’s or society’s standards.",
   },
   {
-    id: "MI-G",
-    skip: true, // dropped 2026-11-11 (user): Quiz 1 cut to 8 items
+    id: "MI-G", // back in Quiz 1 on 2026-11-24, when MI-A was removed
     stem: "Which of these describes how an MI counselor handles the person’s strengths and efforts?",
     own: [
       "The counselor affirms the person’s strengths and efforts, and does so whatever the counselor thinks of what the person did.",
@@ -814,18 +784,6 @@ const QUIZ1_STRENGTH = [
       { text: "Rarely; questions do the work instead", correct: false },
     ],
     feature: "Reflective listening is the foundation, used from the very beginning and throughout.",
-  },
-  {
-    id: "S-A",
-    claim: "MI-A",
-    stem: "How often does an MI counselor directly tell the person that their plan or view is wrong?",
-    options: [
-      { text: "Never, even when the person is clearly in the wrong", correct: true },
-      { text: "Rarely: only when the stakes are high", correct: false },
-      { text: "Usually, when the person is in the wrong", correct: false },
-      { text: "Only when the person asks whether they are right", correct: false },
-    ],
-    feature: "Confrontation is never part of the approach, whatever the counselor thinks of the plan.",
   },
   {
     id: "S-C",
@@ -857,7 +815,6 @@ const QUIZ1_STRENGTH = [
 // Quiz 2, type 1: which strategies does this principle set a rule for? `answer` lists every strategy the claim's
 // tests in spec.py constrain (check all that apply; scored right only when the set matches exactly).
 const QUIZ2_DIMENSION = [
-  { id: "MI-A", answer: ["Action stance", "Framing stance"], feature: "Confronting means pushing back, whether on what the person did or plans (the Action stance) or on how they see things (the Framing stance); the principle rules out pushback on both." },
   { id: "MI-B", answer: ["Paraphrasing"], feature: "Reflective listening restates what the person said and seemed to feel, which is Paraphrasing; the principle fixes nothing else." },
   { id: "MI-D", answer: ["Action stance"], feature: "Taking sides for or against a course of action is a stance on the action, so this principle is about the Action stance alone." },
   { id: "MI-C", answer: ["Advice"], feature: "The principle is about when advice is given and in what form, which is what Advice records; it sets no rule for any other strategy." },
@@ -884,28 +841,14 @@ const QUIZ2_RULE = [
     feature: "Reflective listening is the foundation and runs throughout, not only at the start and not only when feelings run high.",
   },
   {
-    id: "MI-A",
-    skip: true, // tested by the mapping item and the Quiz 1 strength item; skipped to keep Quiz 2 at ten (user, 2026-11-09)
-    rule: [
-      "Action stance and Framing stance = never Explicit refutation, even when the person is clearly in the wrong.",
-      "Explicit refutation is never the stance on the action or on the framing, whatever the counselor thinks of them.",
-    ],
-    foils: [
-      "Action stance = Explicit refutation when the person is clearly in the wrong; otherwise Take no position.",
-      "Framing stance = Explicit refutation when the facts contradict the person’s reading.",
-      "Action stance = Take no position only when the person is in the right.",
-    ],
-    feature: "Being in the wrong changes nothing: the counselor never confronts the action or the reading.",
-  },
-  {
     id: "MI-F",
     rule: [
-      "Action stance = never Praise or Confirmation, whether or not the person was in the right.",
-      "The action is never endorsed: Praise and Confirmation are not used, even for a person who was in the right.",
+      "Action stance = never Confirmation, whether or not the person was in the right.",
+      "The action is never endorsed: Confirmation is not used, even for a person who was in the right.",
     ],
     foils: [
       "Action stance = Confirmation when the person was in the right.",
-      "Action stance = Praise when the person asks whether they did well.",
+      "Action stance = Confirmation when the person asks whether they did well.",
       "Empowerment = no in every response, since affirming a strength is approval.",
     ],
     feature: "Acceptance is not approval: the action is never endorsed, though a specific strength can still be affirmed.",
@@ -917,7 +860,7 @@ const QUIZ2_RULE = [
       "If the person has not decided yet, and the plan fits or is neutral to their own values, Action stance = Take no position.",
     ],
     foils: [
-      "Action stance = Indirect pushback while the person is still deciding, so they see the risks before acting.",
+      "Action stance = Pushback while the person is still deciding, so they see the risks before acting.",
       "Action stance = Take no position only after the person has decided; while they are deciding, the counselor weighs in.",
       "Action stance = Confirmation of whichever side the person leans toward while they are deciding.",
     ],
@@ -940,7 +883,7 @@ const QUIZ2_RULE = [
   {
     id: "MI-E",
     rule: [
-      "Action stance = pushback (Indirect pushback) only when the plan conflicts with the person’s own goals or values; when it fits them, no pushback.",
+      "Action stance = Pushback only when the plan conflicts with the person’s own goals or values; when it fits them, no pushback.",
       "Pushback on the action is reserved for a plan that clashes with what the person themself wants or values; a plan that fits both gets none.",
     ],
     foils: [
@@ -960,7 +903,7 @@ const QUIZ2_RULE = [
     foils: [
       "Empowerment = yes only when the person was in the right.",
       "Empowerment = no in every response, since affirming a strength is a form of praise.",
-      "Action stance = Praise when the person shows a strength.",
+      "Action stance = Confirmation when the person shows a strength.",
     ],
     feature: "Affirmation follows the person’s strengths and efforts; whether they acted rightly does not change it, and it is not a stance on the action.",
   },
@@ -1023,25 +966,20 @@ const EXAMPLE = {
       "principles": [
         "MI-D",
         "MI-E",
-        "MI-F",
-        "MI-A"
+        "MI-F"
       ],
       "why": "They are still weighing whether to bypass Leo, so the counselor takes no side; the plan fits their own work ethic completely, so there is no basis to push; and laying out options is not approving the plan.",
       "partial": {
-        "Indirect pushback": "Going behind a teammate’s back may look unwise from outside, but the plan conflicts with nothing they value and they are still deciding; the counselor voices both sides of their own dilemma and leaves the choice to them.",
-        "Explicit refutation": "Even where the counselor can see a problem with the plan, confronting is never used; the stance stays out of the choice while they are deciding.",
+        "Pushback": "Going behind a teammate’s back may look unwise from outside, but the plan conflicts with nothing they value and they are still deciding; the counselor voices both sides of their own dilemma and leaves the choice to them.",
         "Confirmation": "Offering options is not the same as agreeing with the plan; approving is a roadblock, and while they are deciding no side is taken."
       }
     },
     "Framing stance": {
       "answer": "Take no position",
-      "principles": [
-        "MI-A"
-      ],
       "why": "Their reading of the move as frustrating, lopsided and a threat to their standards is accepted as understandable within their own framework; nothing in it stands in the way of what they want, so there is nothing to reframe, and correcting it outright is never done.",
       "partial": {
         "Confirmation": "Accepting their reading as understandable is not agreeing with it; acceptance is not approval.",
-        "Indirect pushback": "Reframing is for a reading that is one-sided or stands in the way of what the person themself wants; here their reading does neither."
+        "Pushback": "Reframing is for a reading that is one-sided or stands in the way of what the person themself wants; here their reading does neither."
       }
     }
   }

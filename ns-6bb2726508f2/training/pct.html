@@ -561,14 +561,14 @@ const TACTICS = [
   { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”" },
 ];
 
-// `examples` (one phrase per option) are shown on the slide after each stance's definition page, as responses to `ex`,
+// `examples` (one or two phrases per option) are shown on the slide after each stance's definition page, as responses to `ex`,
 // and as the "e.g." line under each option when labeling. Action phrases are about what the person did; framing
 // phrases are about how the person sees the situation. Written for the page, not sourced.
+// Four options since 2026-11-24 (user): Explicit refutation and Indirect pushback became Pushback; Praise and Confirmation
+// became Confirmation. The merged options show one direct and one softer example phrase each.
 const STANCE_OPTIONS = [
-  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
-  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
-  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
-  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
+  { name: "Pushback", def: "Indicates that the [target] is false, incorrect, or invalid, or should be corrected. This can be direct, or soft: hedging, qualifiers, suggesting a better alternative, or contrastive language.", group: "pushback" },
+  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part, or conveys a positive attitude toward it, e.g. complimenting adjectives. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
   { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
   { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
 ];
@@ -579,11 +579,9 @@ const STANCES = [
     target: "the action or plan the person describes, whether already done or still planned",
     ex: "Person: “I told my sister she can’t come to the wedding.”",
     examples: {
-      "Explicit refutation": "“You were not right to do that.”",
-      "Indirect pushback": "“I wonder if there was a gentler way to handle it.”",
-      "Praise": "“That was a brave thing to do.”",
-      "Confirmation": "“You were right to do that.”",
-      "Take no position": "“That sounds like it was a hard thing to do.”",
+      "Pushback": "“You were not right to do that.” or “I wonder if there was a gentler way to handle it.”",
+      "Confirmation": "“You were right to do that.” or “That was a brave thing to do.”",
+      "Take no position": "“How did that make you feel?”",
     },
   },
   {
@@ -591,10 +589,8 @@ const STANCES = [
     target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
     ex: "Person: “She is only doing this to punish me.”",
     examples: {
-      "Explicit refutation": "“The way you are looking at this is wrong.”",
-      "Indirect pushback": "“I wonder if there is another way to look at this.”",
-      "Praise": "“That is a perceptive way to look at it.”",
-      "Confirmation": "“You are seeing this correctly.”",
+      "Pushback": "“The way you are looking at this is wrong.” or “I wonder if there is another way to look at this.”",
+      "Confirmation": "“You are seeing this correctly.” or “That is a perceptive way to look at it.”",
       "Take no position": "“That must feel really hard.”",
     },
   },
@@ -722,7 +718,7 @@ const QUIZ1 = [
     foils: [
       { source: "CBT-B", text: "The counselor weighs the person’s reading against the facts and questions it where the evidence contradicts it, leaving it alone where the evidence supports it." },
       { source: "CBT-C", text: "When the person blames themself and the facts do not support it, the counselor reviews the situation with them to find other factors that explain what happened." },
-      { source: "CBT-A", text: "The counselor examines a doubtful reading together with the person through questions, such as what the evidence is, rather than contradicting it outright." },
+      { source: "written", text: "The counselor examines a doubtful reading together with the person through questions, such as what the evidence is, rather than contradicting it outright." },
     ],
     feature: "The person’s reading is neither evaluated nor corrected, however the counselor sees it; weighing it against evidence, looking for other causes, or probing it with questions all step outside the person’s frame.",
   },
@@ -844,7 +840,7 @@ const QUIZ1_STRENGTH = [
 // Quiz 2, type 1: which strategies does this principle set a rule for? `answer` lists every strategy the claim's
 // tests in spec.py constrain (check all that apply; scored right only when the set matches exactly).
 const QUIZ2_DIMENSION = [
-  { id: "PCT-D", answer: ["Empowerment", "Action stance", "Framing stance"], feature: "Praise and reassurance reach three strategies: encouragement is Empowerment, and praise of what the person did or of how they see things is the Praise stance on the action and on the framing. The principle rules out all three." },
+  { id: "PCT-D", answer: ["Empowerment", "Action stance", "Framing stance"], feature: "Praise and reassurance reach three strategies: encouragement is Empowerment, and praise of what the person did or of how they see things is a Confirmation stance on the action or on the framing. The principle rules out all three." },
   { id: "PCT-G", answer: ["Advice", "Assistance"], feature: "Answering a request for what to do is Advice and meeting a request for help, such as a draft, is Assistance; the principle requires both when they are asked for." },
   { id: "PCT-C", answer: ["Framing stance"], feature: "How the person sees their situation is their framing, so staying inside it without evaluating it is a Framing stance of Take no position; no other strategy is fixed by this principle." },
 ];
@@ -874,7 +870,7 @@ const QUIZ2_RULE = [
     foils: [
       "Framing stance = pushback when the person’s reading departs from the facts, Take no position when it matches them.",
       "Framing stance = Confirmation when the person’s reading matches the facts, Take no position otherwise.",
-      "Framing stance = Indirect pushback rather than Explicit refutation when the person’s reading departs from the facts.",
+      "Framing stance = Pushback whenever the person’s reading departs from the facts, voiced gently so they still feel accepted.",
     ],
     feature: "Staying in the person’s frame means neither correcting their reading nor confirming it, whatever the facts.",
   },
@@ -894,13 +890,13 @@ const QUIZ2_RULE = [
   {
     id: "PCT-D",
     rule: [
-      "Empowerment = no in every response, and neither stance is ever Praise.",
-      "No response includes Empowerment, and Praise never appears as an Action or Framing stance.",
+      "Empowerment = no in every response, and neither stance is ever Confirmation.",
+      "No response includes Empowerment, and Confirmation never appears as an Action or Framing stance.",
     ],
     foils: [
       "Empowerment = yes when the person doubts their ability to cope, to counter the doubt.",
       "Empowerment = yes when the person was in the right; no when they were in the wrong.",
-      "Empowerment = no, but Action stance = Praise when the person handled something well.",
+      "Empowerment = no, but Action stance = Confirmation when the person handled something well.",
     ],
     feature: "Praise and reassurance are evaluations, so they are out in every form, not reserved for people who doubt themselves or who did well.",
   },
@@ -1010,8 +1006,7 @@ const EXAMPLE = {
           ],
           "why": "The person sold the partner’s heirloom on their own initiative, and many would call that wrong; even so, the counselor neither approves nor disapproves of what they did or plan to do, and the person has not asked for a verdict.",
           "partial": {
-              "Indirect pushback": "Even though the person took and sold the watch on their own initiative, a PCT counselor expresses neither approval nor disapproval of what the person did, whether it thinks they were right or wrong.",
-              "Explicit refutation": "Even though the person took and sold the watch on their own initiative, a PCT counselor expresses neither approval nor disapproval of what the person did, whether it thinks they were right or wrong."
+              "Pushback": "Even though the person took and sold the watch on their own initiative, a PCT counselor expresses neither approval nor disapproval of what the person did, whether it thinks they were right or wrong."
           }
       },
       "Framing stance": {
@@ -1021,7 +1016,7 @@ const EXAMPLE = {
           ],
           "why": "The person sees nobody as to blame and the timing and the landlord as the culprits, although they acted alone; the counselor stays within that view and reflects it rather than correcting it.",
           "partial": {
-              "Indirect pushback": "The person’s reading that nobody is to blame departs from what they describe, but a PCT counselor stays within the person’s frame of reference even where it sees things differently.",
+              "Pushback": "The person’s reading that nobody is to blame departs from what they describe, but a PCT counselor stays within the person’s frame of reference even where it sees things differently.",
               "Confirmation": "Agreeing that nobody is to blame would be an evaluation as much as disagreeing would; the counselor reflects the person’s view without ruling on it."
           }
       }

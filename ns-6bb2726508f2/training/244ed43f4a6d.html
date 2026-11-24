@@ -561,14 +561,14 @@ const TACTICS = [
   { name: "Information", def: "Factual, general, or explanatory content, including explanations of why people feel, behave, or react as they do.", ex: "“When we’re anxious, we tend to read neutral messages as negative.”" },
 ];
 
-// `examples` (one phrase per option) are shown on the slide after each stance's definition page, as responses to `ex`,
+// `examples` (one or two phrases per option) are shown on the slide after each stance's definition page, as responses to `ex`,
 // and as the "e.g." line under each option when labeling. Action phrases are about what the person did; framing
 // phrases are about how the person sees the situation. Written for the page, not sourced.
+// Four options since 2026-11-24 (user): Explicit refutation and Indirect pushback became Pushback; Praise and Confirmation
+// became Confirmation. The merged options show one direct and one softer example phrase each.
 const STANCE_OPTIONS = [
-  { name: "Explicit refutation", def: "Directly indicates that the [target] is false, incorrect, or invalid, or should be corrected.", group: "pushback" },
-  { name: "Indirect pushback", def: "Uses softening, qualifiers, or hedging to frame the [target] as not fully true or valid; introduces better alternatives or contrastive language.", group: "pushback" },
-  { name: "Praise", def: "Conveys a positive attitude toward the [target], e.g. complimenting adjectives.", group: "endorsement" },
-  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
+  { name: "Pushback", def: "Indicates that the [target] is false, incorrect, or invalid, or should be corrected. This can be direct, or soft: hedging, qualifiers, suggesting a better alternative, or contrastive language.", group: "pushback" },
+  { name: "Confirmation", def: "Evaluates the [target] as true, valid, or correct, in whole or in part, or conveys a positive attitude toward it, e.g. complimenting adjectives. Calling it understandable without judging it is not Confirmation.", group: "endorsement" },
   { name: "Take no position", def: "Neither endorses nor questions the [target], directly or by implication.", group: "none" },
   { name: "Not applicable", def: "There is no [target] in the message to respond to.", group: "none" },
 ];
@@ -579,11 +579,9 @@ const STANCES = [
     target: "the action or plan the person describes, whether already done or still planned",
     ex: "Person: “I told my sister she can’t come to the wedding.”",
     examples: {
-      "Explicit refutation": "“You were not right to do that.”",
-      "Indirect pushback": "“I wonder if there was a gentler way to handle it.”",
-      "Praise": "“That was a brave thing to do.”",
-      "Confirmation": "“You were right to do that.”",
-      "Take no position": "“That sounds like it was a hard thing to do.”",
+      "Pushback": "“You were not right to do that.” or “I wonder if there was a gentler way to handle it.”",
+      "Confirmation": "“You were right to do that.” or “That was a brave thing to do.”",
+      "Take no position": "“How did that make you feel?”",
     },
   },
   {
@@ -591,10 +589,8 @@ const STANCES = [
     target: "the person’s framing and underlying assumptions: how they read the situation, what they focus on, and what they want",
     ex: "Person: “She is only doing this to punish me.”",
     examples: {
-      "Explicit refutation": "“The way you are looking at this is wrong.”",
-      "Indirect pushback": "“I wonder if there is another way to look at this.”",
-      "Praise": "“That is a perceptive way to look at it.”",
-      "Confirmation": "“You are seeing this correctly.”",
+      "Pushback": "“The way you are looking at this is wrong.” or “I wonder if there is another way to look at this.”",
+      "Confirmation": "“You are seeing this correctly.” or “That is a perceptive way to look at it.”",
       "Take no position": "“That must feel really hard.”",
     },
   },
@@ -861,7 +857,7 @@ const QUIZ2_RULE = [
     foils: [
       "Empowerment = no; a compliment is an evaluation.",
       "Empowerment = yes only when the person was in the right.",
-      "Action stance = Praise in most responses.",
+      "Action stance = Confirmation in most responses.",
     ],
     feature: "Compliments are essential and frequent, and they go to what the person is doing well, not to whether their action was right.",
   },
@@ -881,7 +877,7 @@ const QUIZ2_RULE = [
   {
     id: "SFBT-D",
     rule: [
-      "Framing stance = pushback (Indirect pushback or Explicit refutation) rarely, even when the person’s reading looks unrealistic.",
+      "Framing stance = Pushback rarely, even when the person’s reading looks unrealistic.",
       "Pushback on the framing is rare, however unrealistic the person’s reading appears.",
     ],
     foils: [
@@ -894,15 +890,15 @@ const QUIZ2_RULE = [
   {
     id: "SFBT-E",
     rule: [
-      "Action stance = Explicit refutation rarely, even when the person is in the wrong, and pushback is no more likely when the action clashes with the person’s own values.",
-      "Flatly telling the person their action was wrong is rare, including when the person is in the wrong; a clash with the person’s own values does not make pushback more likely.",
+      "Action stance = Pushback is no more likely when the action clashes with the person’s own values than when it fits them.",
+      "A clash between the action and the person’s own values does not make pushback on the action more likely.",
     ],
     foils: [
-      "Action stance = Explicit refutation whenever the person is in the wrong.",
-      "Action stance = Indirect pushback whenever the action clashes with the person’s own values; otherwise Take no position.",
-      "Framing stance = Explicit refutation rarely; the action itself is judged openly.",
+      "Action stance = Pushback whenever the person is in the wrong.",
+      "Action stance = Pushback whenever the action clashes with the person’s own values; otherwise Take no position.",
+      "Action stance = Confirmation whenever the action fits the person’s own values.",
     ],
-    feature: "Direct confrontation about the person’s actions is rare whatever others think of what they did; the person is the expert and no fault is assigned.",
+    feature: "Whether the action clashes with the person’s own values does not change how often the counselor pushes back; the person is the expert and no fault is assigned.",
   },
   {
     id: "SFBT-F",
@@ -975,7 +971,7 @@ const EXAMPLE = {
           ],
           "why": "They cannot decide between forfeiting the voucher and signing for the cabin, so the counselor does not say which is best but helps them find out for themself.",
           "partial": {
-              "Indirect pushback": "Both options trouble them, but they have not chosen either, and the counselor does not weigh the options for them; it asks what they want to be true on Friday.",
+              "Pushback": "Both options trouble them, but they have not chosen either, and the counselor does not weigh the options for them; it asks what they want to be true on Friday.",
               "Confirmation": "They have not chosen, so endorsing either option would be deciding for them. The counselor helps them find the answer instead."
           }
       },
@@ -987,7 +983,7 @@ const EXAMPLE = {
           "why": "They see the situation as bad luck that puts the friendship at serious risk; the counselor neither questions nor confirms that reading, and asks with curiosity about what they want instead.",
           "partial": {
               "Confirmation": "Agreeing that their reading is correct is also an evaluation. The counselor passes over the complaint and builds on what they want.",
-              "Indirect pushback": "Even if the risk to the friendship looks overstated, the counselor very rarely challenges a perception; it stays curious and asks."
+              "Pushback": "Even if the risk to the friendship looks overstated, the counselor very rarely challenges a perception; it stays curious and asks."
           }
       }
   }
