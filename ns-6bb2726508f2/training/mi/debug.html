@@ -1943,6 +1943,7 @@ function vignetteBox(v = EXAMPLE) {
 }
 
 const MIN_WRITE_CHARS = 30;
+const heardSituations = new Set(); // vignettes whose situation has been played on the writing page
 // The participant writes their own response to the person before labeling. Pasting and dropping text are blocked.
 function writeScreen({ v, step, frac, eyebrow, onBack, onNext }) {
   screen({ step, frac });
@@ -1950,7 +1951,11 @@ function writeScreen({ v, step, frac, eyebrow, onBack, onNext }) {
   if (eyebrow) card.appendChild(el("div", "card-eyebrow", eyebrow));
   const split = el("div", "survey-card-body survey-card-body--split");
   const left = vignetteBox(v);
-  left.appendChild(speakControl(vignetteSpeech(v)));
+  // Next requires listening to the situation first (user, 2026-11-25), as the principle pages do for their examples.
+  const control = speakControl(vignetteSpeech(v), undefined, () => { heardSituations.add(v.id); listen.classList.remove("speak-button--attention"); });
+  const listen = control.querySelector(".speak-button");
+  const mustListen = () => !listen.hidden && !listen.disabled && !heardSituations.has(v.id);
+  left.appendChild(control);
   split.appendChild(left);
   const body = el("div", "survey-card-body split-question");
   split.appendChild(body);
@@ -1967,7 +1972,15 @@ function writeScreen({ v, step, frac, eyebrow, onBack, onNext }) {
   const sync = () => { state.written[v.id] = ta.value; next.disabled = !enough(); };
   ta.addEventListener("input", sync);
   sync();
-  next.addEventListener("click", () => { if (enough()) onNext(); });
+  next.addEventListener("click", () => {
+    if (!enough()) return;
+    if (mustListen()) {
+      flashMessage("Please listen to the situation to continue");
+      listen.classList.remove("speak-button--attention"); void listen.offsetWidth; listen.classList.add("speak-button--attention");
+      return;
+    }
+    onNext();
+  });
   const n = nav(back, el("span", "spacer"), next);
   if (DEBUG) { const skip = button("Skip (debug) →", true); skip.addEventListener("click", onNext); n.insertBefore(skip, next); }
   body.appendChild(n);
